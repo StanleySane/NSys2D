@@ -1,0 +1,1432 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+// Generated Help ID header file
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include "resource.hm"
+#undef APSTUDIO_HIDDEN_SYMBOLS
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\NSys2D.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_GRAPHTYPE           ICON    DISCARDABLE     "res\\idr_grap.ico"
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\NSys2D.ico"
+IDR_SHEMETYPE           ICON    DISCARDABLE     "res\\icon2.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_BITMAP_XP3          BITMAP  DISCARDABLE     "res\\bitmap1.bmp"
+IDB_BITMAP_XP5          BITMAP  DISCARDABLE     "res\\bitmap_x.bmp"
+IDB_BITMAP_XP1          BITMAP  DISCARDABLE     "res\\bmp00001.bmp"
+IDB_BITMAP_XS1          BITMAP  DISCARDABLE     "res\\bmp00002.bmp"
+IDB_BITMAP_XS3          BITMAP  DISCARDABLE     "res\\bmp00003.bmp"
+IDB_BITMAP_XS5          BITMAP  DISCARDABLE     "res\\bmp00004.bmp"
+IDR_GRAPHTYPE           BITMAP  DISCARDABLE     "res\\toolbar1.bmp"
+IDR_MAINFRAME           BITMAP  MOVEABLE PURE   "res\\Toolbar.bmp"
+IDB_BITMAP_XPS          BITMAP  DISCARDABLE     "res\\bmp00005.bmp"
+IDB_BITMAP_XPX          BITMAP  DISCARDABLE     "res\\bitmap2.bmp"
+IDR_FORMSTYPE           BITMAP  DISCARDABLE     "res\\formstyp.bmp"
+IDB_BITMAP1             BITMAP  DISCARDABLE     "res\\bmp00006.bmp"
+IDB_BITMAP5             BITMAP  DISCARDABLE     "res\\bmp00007.bmp"
+IDB_BITMAP4             BITMAP  DISCARDABLE     "res\\bitmap4.bmp"
+IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\bitmap3.bmp"
+IDB_BITMAP2             BITMAP  DISCARDABLE     "res\\bmp00008.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_SHEMETYPE MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "&Новая схема\tCtrl+N",        ID_FILE_NEW
+        MENUITEM "&Открыть...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "&Закрыть",                    ID_FILE_CLOSE
+        MENUITEM "&Сохранить\tCtrl+S",          ID_FILE_SAVE
+        MENUITEM "Сохранить &как...",           ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Предварительный просмотр",    ID_FILE_PRINT_PREVIEW
+        , GRAYED
+        MENUITEM "Печать...\tCtrl+P",           ID_FILE_PRINT
+        MENUITEM "Настройка печати...",         ID_FILE_PRINT_SETUP
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "В&ыход",                      ID_APP_EXIT
+    END
+    POPUP "&Вид"
+    BEGIN
+        MENUITEM "&Инструменты",                ID_VIEW_TOOLBAR
+        MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
+        MENUITEM SEPARATOR
+        MENUITEM "Обновить",                    ID_REFRESH
+    END
+    POPUP "&Схема"
+    BEGIN
+        MENUITEM "Добавить стержень...",        ID_ADDROD
+        MENUITEM "Добавить демпфер...",         ID_ADDDEMF
+        MENUITEM "Добавить упр. элемент...",    ID_ADDSPRING
+        MENUITEM "Добавить массу...",           ID_ADDMASS
+        MENUITEM SEPARATOR
+        MENUITEM "Удалить элемент",             ID_DELELEM
+        MENUITEM SEPARATOR
+        MENUITEM "Список элементов...",         ID_LISTELEM
+    END
+    POPUP "&Расчеты"
+    BEGIN
+        MENUITEM "Интегрирование...\tF9",       ID_CALC
+        MENUITEM "Вычисление собств. частот",   ID_FREEFORM_CALC
+        MENUITEM SEPARATOR
+        POPUP "Графики"
+        BEGIN
+            MENUITEM "Интегрирование...",           ID_ADDGRAPH
+            MENUITEM "Частотные характеристики...", ID_FREQ_CALC
+            MENUITEM "Спектральная плотность...",   ID_SPECTR_CALC
+        END
+    END
+    POPUP "&Окно"
+    BEGIN
+        MENUITEM "&Каскадом",                   ID_WINDOW_CASCADE
+        MENUITEM "&Расположить",                ID_WINDOW_TILE_HORZ
+        MENUITEM "&Свернуть",                   ID_WINDOW_ARRANGE
+    END
+    POPUP "&Помощь"
+    BEGIN
+        MENUITEM "&О программе ...",            ID_APP_ABOUT
+    END
+END
+
+IDR_POPUPMENUSHEME MENU DISCARDABLE 
+BEGIN
+    POPUP ""
+    BEGIN
+        MENUITEM "Добавить стержень...",        ID_ADDROD
+        MENUITEM "Добавить демпфер...",         ID_ADDDEMF
+        MENUITEM "Добавить упр. элемент...",    ID_ADDSPRING
+        MENUITEM "Добавить массу...",           ID_ADDMASS
+        MENUITEM SEPARATOR
+        MENUITEM "Удалить элемент",             ID_DELELEM
+        MENUITEM SEPARATOR
+        POPUP "График"
+        BEGIN
+            MENUITEM "Интегрирование...",           ID_ADDGRAPH
+            MENUITEM "Частотные характеристики...", ID_FREQ_CALC
+            MENUITEM "Спектральная плотность...",   ID_SPECTR_CALC
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "&Свойства",                   ID_PROP
+    END
+END
+
+IDR_MAINFRAME MENU PRELOAD DISCARDABLE 
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "&Новая схема\tCtrl+N",        ID_FILE_NEW
+        MENUITEM "&Открыть...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+        MENUITEM SEPARATOR
+        MENUITEM "В&ыход",                      ID_APP_EXIT
+    END
+    POPUP "&Вид"
+    BEGIN
+        MENUITEM "&Инструменты",                ID_VIEW_TOOLBAR
+        MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Помощь"
+    BEGIN
+        MENUITEM "&О программе...",             ID_APP_ABOUT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOGCOORD DIALOG DISCARDABLE  0, 0, 137, 129
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ввод координат узла"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,108,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,80,108,50,14
+    EDITTEXT        IDC_EDIT1,31,17,92,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,31,38,92,14,ES_AUTOHSCROLL
+    LTEXT           "x=",IDC_STATIC,17,19,8,8
+    LTEXT           "y=",IDC_STATIC,17,41,8,8
+    GROUPBOX        "Координаты",IDC_STATIC,7,4,123,54
+    GROUPBOX        "Тип закрепления",IDC_STATIC,7,62,123,37
+    COMBOBOX        IDC_COMBO1,17,79,106,81,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOGROD DIALOG DISCARDABLE  0, 0, 201, 199
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Свойства стержня"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO2,16,27,72,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO1,16,57,72,114,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO3,113,26,72,62,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO4,113,57,72,117,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
+                    WS_TABSTOP
+    EDITTEXT        IDC_EDIT4,27,94,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT1,27,112,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,27,131,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,27,150,160,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,7,178,53,14
+    PUSHBUTTON      "Cancel",IDCANCEL,75,178,53,14
+    PUSHBUTTON      "Новый узел...",IDC_BUTNEWKNOT,141,178,53,14
+    GROUPBOX        "Узел 1",IDC_STATIC,7,2,90,76
+    GROUPBOX        "Параметры",IDC_STATIC,7,80,187,91
+    LTEXT           "J=",IDC_STATIC,15,114,8,8
+    LTEXT           "E=",IDC_STATIC,15,133,8,8
+    GROUPBOX        "Узел 2",IDC_STATIC,104,2,90,76
+    LTEXT           "Тип присоединения",IDC_STATIC,15,45,68,8
+    LTEXT           "Тип присоединения",IDC_STATIC,113,45,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,18,14,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,115,14,68,8
+    LTEXT           "m=",IDC_STATIC,13,152,10,8
+    LTEXT           "F=",IDC_STATIC,14,96,9,8
+END
+
+IDD_DIALOGDEMF DIALOG DISCARDABLE  0, 0, 201, 191
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Свойства демпфера"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO2,16,27,72,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO3,113,26,72,62,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    65,16,8
+    CONTROL         "",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    85,16,8
+    CONTROL         "",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    105,16,8
+    CONTROL         "",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    125,16,8
+    CONTROL         "",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    145,16,8
+    EDITTEXT        IDC_EDIT1,37,63,126,14,ES_AUTOHSCROLL | WS_GROUP
+    EDITTEXT        IDC_EDIT2,37,83,126,14,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
+    EDITTEXT        IDC_EDIT3,37,103,126,14,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
+    EDITTEXT        IDC_EDIT4,37,123,126,14,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
+    EDITTEXT        IDC_EDIT5,37,143,125,14,ES_AUTOHSCROLL | WS_DISABLED | 
+                    WS_GROUP
+    DEFPUSHBUTTON   "OK",IDOK,7,170,53,14
+    PUSHBUTTON      "Cancel",IDCANCEL,75,170,53,14
+    PUSHBUTTON      "Новый узел...",IDC_BUTNEWKNOT,141,170,53,14
+    GROUPBOX        "Узел 1",IDC_STATIC,7,2,90,47
+    GROUPBOX        "Коэфф. демпфирования",IDC_STATIC,7,50,187,115
+    GROUPBOX        "Узел 2",IDC_STATIC,104,2,90,47
+    LTEXT           "Номер/координаты",IDC_STATIC,18,14,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,115,14,68,8
+    CONTROL         164,IDC_STATIC,"Static",SS_BITMAP,166,83,18,13
+    CONTROL         165,IDC_STATIC,"Static",SS_BITMAP,166,103,18,13
+    CONTROL         166,IDC_STATIC,"Static",SS_BITMAP,166,65,13,10
+    CONTROL         196,IDC_STATIC,"Static",SS_BITMAP,166,124,25,10
+    CONTROL         198,IDC_STATIC,"Static",SS_BITMAP,165,144,25,14
+END
+
+IDD_DIALOGSPRING DIALOG DISCARDABLE  0, 0, 201, 174
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Свойства упругого элемента"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO2,16,27,72,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO3,113,26,72,62,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    EDITTEXT        IDC_EDIT1,37,63,131,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,37,83,131,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT3,37,103,131,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_EDIT4,37,123,150,14,ES_AUTOHSCROLL | WS_DISABLED
+    DEFPUSHBUTTON   "OK",IDOK,7,153,53,14
+    PUSHBUTTON      "Cancel",IDCANCEL,75,153,53,14
+    PUSHBUTTON      "Новый узел...",IDC_BUTNEWKNOT,141,153,53,14
+    GROUPBOX        "Узел 1",IDC_STATIC,7,2,90,47
+    GROUPBOX        "Жёсткость",IDC_STATIC,7,50,187,96
+    GROUPBOX        "Узел 2",IDC_STATIC,104,2,90,47
+    LTEXT           "Номер/координаты",IDC_STATIC,18,14,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,115,14,68,8
+    CONTROL         "",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    85,16,8
+    CONTROL         "",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    105,16,8
+    CONTROL         "",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    65,16,8
+    CONTROL         169,IDC_STATIC,"Static",SS_BITMAP,171,83,18,13
+    CONTROL         170,IDC_STATIC,"Static",SS_BITMAP,171,103,18,13
+    CONTROL         168,IDC_STATIC,"Static",SS_BITMAP,171,65,13,10
+    CONTROL         "",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_GROUP,18,
+                    128,16,8
+END
+
+IDD_DIALOGMASS DIALOG DISCARDABLE  0, 0, 158, 134
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Свойства массы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO1,16,27,78,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "Новый ...",IDC_BUTNEWKNOT,101,27,41,14
+    EDITTEXT        IDC_EDIT1,28,63,115,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,28,83,115,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,18,113,53,14
+    PUSHBUTTON      "Cancel",IDCANCEL,87,113,53,14
+    GROUPBOX        "Узел",-1,7,2,144,47
+    GROUPBOX        "Параметры",-1,7,50,144,56
+    LTEXT           "Номер/координаты",-1,18,14,68,8
+    LTEXT           "m=",-1,14,66,10,8
+    LTEXT           "Jp=",-1,12,85,12,8
+END
+
+IDD_DIALOGELEM DIALOG DISCARDABLE  0, 0, 253, 127
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Список элементов"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "List3",IDC_LISTCONTROL,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | 
+                    WS_BORDER | WS_TABSTOP,7,7,239,91
+    PUSHBUTTON      "Свойства",IDC_BUTTONPROP,20,106,50,14
+    PUSHBUTTON      "Удалить",IDC_BUTTONDEL,101,106,50,14
+    DEFPUSHBUTTON   "Закрыть",IDOK,182,106,50,14
+END
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 231, 107
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "О программе"
+FONT 8, "MS Sans Serif"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
+    CTEXT           "NSys2D версия 2.5                     Copyright (C) 1999-2000",
+                    IDC_STATIC,31,7,187,8,SS_NOPREFIX
+    DEFPUSHBUTTON   "OK",IDOK,192,86,32,14,WS_GROUP
+    LTEXT           "Митрофанов С.Б.",IDC_STATIC,31,76,67,8
+    LTEXT           "группа 94-ДПМП",IDC_STATIC,117,76,66,8
+    LTEXT           "Брянский государственный технический университет",
+                    IDC_STATIC,31,60,193,8
+    CTEXT           "Программный комплекс МКЭ для исследования стационарных колебаний плоских систем с нелинейными дискретными элементами",
+                    IDC_STATIC,31,24,187,33,0,WS_EX_CLIENTEDGE
+    LTEXT           "E-mail: sergey@msb.bryansk.ru",IDC_STATIC,31,92,144,8
+END
+
+IDD_DIALOGPRECALC DIALOG DISCARDABLE  0, 0, 183, 136
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Интегрирование"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,26,115,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,107,115,50,14
+    GROUPBOX        "Параметры",IDC_STATIC,7,3,169,56
+    EDITTEXT        IDC_EDIT1,43,18,127,14,ES_AUTOHSCROLL
+    LTEXT           "Время",IDC_STATIC,15,21,23,8
+    LTEXT           "Шаг",IDC_STATIC,15,40,14,8
+    EDITTEXT        IDC_EDIT2,43,37,127,14,ES_AUTOHSCROLL
+    GROUPBOX        "Метод",IDC_STATIC,7,63,169,43
+    CONTROL         "Метод Рунге-Кутта",IDC_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,75,83,10
+    CONTROL         "Метод Парка",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,
+                    90,61,10
+    CONTROL         "Метод Ньюмарка",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,
+                    100,75,73,10
+    CONTROL         "Метод Адамса",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED,100,90,66,10
+END
+
+IDD_KNOTPAGE1 DIALOG DISCARDABLE  0, 0, 218, 110
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Параметры"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT1,31,13,169,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,31,36,169,14,ES_AUTOHSCROLL
+    LTEXT           "x=",IDC_STATIC,17,15,8,8
+    LTEXT           "y=",IDC_STATIC,17,39,8,8
+    GROUPBOX        "Координаты",IDC_STATIC,7,1,204,56
+    GROUPBOX        "Тип закрепления",IDC_STATIC,7,59,204,36
+    COMBOBOX        IDC_COMBO1,54,73,105,81,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_KNOTPAGE2 DIALOG DISCARDABLE  0, 0, 219, 110
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Начальные условия"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT1,30,14,75,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,30,43,75,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,30,72,75,14,ES_AUTOHSCROLL
+    LTEXT           "Ux=",IDC_STATIC,15,17,14,8
+    LTEXT           "Uy=",IDC_STATIC,15,46,14,8
+    LTEXT           "Ua=",IDC_STATIC,15,75,14,8
+    EDITTEXT        IDC_EDIT5,128,14,75,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,128,43,75,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,128,72,75,14,ES_AUTOHSCROLL
+    LTEXT           "Ux=",IDC_STATIC,112,17,14,8
+    LTEXT           "Uy=",IDC_STATIC,112,46,14,8
+    LTEXT           "Ua=",IDC_STATIC,112,75,14,8
+    LTEXT           ".",IDC_STATIC,114,10,8,8
+    LTEXT           ".",IDC_STATIC,114,39,8,8
+    LTEXT           ".",IDC_STATIC,114,68,8,8
+    GROUPBOX        "",IDC_STATIC,7,2,205,94
+END
+
+IDD_DIALOGTYPEGRAPH DIALOG DISCARDABLE  0, 0, 154, 196
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Выбор координат графика"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,14,175,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,88,175,50,14
+    GROUPBOX        "По горизотали",IDC_STATIC,82,3,65,165
+    CONTROL         "Ux",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    100,17,25,10
+    CONTROL         "Uy",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,100,32,25,10
+    CONTROL         "Ua",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,100,47,25,10
+    CONTROL         "Ux'",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON,100,62,25,
+                    10
+    CONTROL         "Uy'",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON,100,77,25,
+                    10
+    CONTROL         "Ua'",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON,100,92,25,
+                    10
+    CONTROL         "Ux''",IDC_RADIO15,"Button",BS_AUTORADIOBUTTON,100,107,
+                    25,10
+    CONTROL         "Uy''",IDC_RADIO16,"Button",BS_AUTORADIOBUTTON,100,122,
+                    25,10
+    CONTROL         "Ua''",IDC_RADIO17,"Button",BS_AUTORADIOBUTTON,100,137,
+                    25,10
+    CONTROL         "t",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON,100,152,25,10
+    GROUPBOX        "По вертикали",IDC_STATIC,7,3,65,165
+    CONTROL         "Ux",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON | WS_GROUP,
+                    26,17,25,10
+    CONTROL         "Uy",IDC_RADIO9,"Button",BS_AUTORADIOBUTTON,26,32,25,10
+    CONTROL         "Ua",IDC_RADIO10,"Button",BS_AUTORADIOBUTTON,26,47,25,10
+    CONTROL         "Ux'",IDC_RADIO11,"Button",BS_AUTORADIOBUTTON,26,62,25,
+                    10
+    CONTROL         "Uy'",IDC_RADIO12,"Button",BS_AUTORADIOBUTTON,26,77,25,
+                    10
+    CONTROL         "Ua'",IDC_RADIO13,"Button",BS_AUTORADIOBUTTON,26,92,25,
+                    10
+    CONTROL         "Ux''",IDC_RADIO18,"Button",BS_AUTORADIOBUTTON,26,107,25,
+                    10
+    CONTROL         "Uy''",IDC_RADIO19,"Button",BS_AUTORADIOBUTTON,26,122,25,
+                    10
+    CONTROL         "Ua''",IDC_RADIO20,"Button",BS_AUTORADIOBUTTON,26,137,25,
+                    10
+    CONTROL         "t",IDC_RADIO14,"Button",BS_AUTORADIOBUTTON,26,152,25,10
+END
+
+IDD_PROGRESSDIALOG DIALOG DISCARDABLE  0, 0, 274, 52
+STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "Интегрирование"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Отмена",IDCANCEL,112,31,50,14
+    CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,
+                    7,7,260,14
+END
+
+IDD_KNOTPAGE3 DIALOG DISCARDABLE  0, 0, 217, 151
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Силовое возмущение"
+FONT 8, "MS Sans Serif"
+BEGIN
+    GROUPBOX        "       Px ( x, x', t )",IDC_STATIC,7,3,204,68
+    GROUPBOX        "       Py ( x, x', t )",IDC_STATIC,7,75,204,68
+    CONTROL         "",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,3,
+                    8,8
+    CONTROL         "Показать",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
+                    BS_NOTIFY | WS_TABSTOP,56,3,49,10
+    LTEXT           "A =",IDC_STATIC,88,17,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,17,11,8,NOT WS_GROUP
+    LTEXT           "fi =",IDC_STATIC,170,18,9,8,NOT WS_GROUP
+    LTEXT           "A =",IDC_STATIC,87,89,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,89,11,8,NOT WS_GROUP
+    LTEXT           "fi=",IDC_STATIC,171,89,8,8,NOT WS_GROUP
+    CONTROL         "Px = A sin ( w t + fi)",IDC_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,16,75,10
+    EDITTEXT        IDC_EDIT1,101,15,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,142,15,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,181,15,25,12,ES_AUTOHSCROLL
+    CONTROL         "Px ( x, x1, t ) =",IDC_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,35,56,10
+    EDITTEXT        IDC_EDIT5,72,34,134,12,ES_AUTOHSCROLL
+    CONTROL         "Случайное",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,54,51,10
+    PUSHBUTTON      "Параметры...",IDC_SPECTRPX,72,51,60,14
+    PUSHBUTTON      "Расширенные...",IDC_CSPECPX,140,51,63,14
+    CONTROL         "",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    75,8,8
+    CONTROL         "Показать",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | 
+                    BS_NOTIFY | WS_TABSTOP,56,75,49,10
+    CONTROL         "Py = A sin (w t + fi)",IDC_RADIO3,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,88,73,10
+    EDITTEXT        IDC_EDIT6,101,87,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,143,87,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT8,181,87,25,12,ES_AUTOHSCROLL
+    CONTROL         "Py ( x, x1, t ) =",IDC_RADIO4,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,107,58,10
+    EDITTEXT        IDC_EDIT10,72,106,134,12,ES_AUTOHSCROLL
+    CONTROL         "Случайное",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,126,51,10
+    PUSHBUTTON      "Параметры...",IDC_SPECTRPY,72,124,60,14,WS_GROUP
+    PUSHBUTTON      "Расширенные...",IDC_CSPECPY,140,124,63,14
+END
+
+IDD_KNOTPAGE4 DIALOGEX 0, 0, 217, 148
+STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
+CAPTION "Кинематическое возмущение"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "A =",IDC_STATIC,87,17,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,17,11,8,NOT WS_GROUP
+    LTEXT           "fi =",IDC_STATIC,170,18,9,8,NOT WS_GROUP
+    GROUPBOX        "       Ux ( t )",IDC_STATIC,7,3,204,67
+    LTEXT           "A =",IDC_STATIC,87,87,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,87,11,8,NOT WS_GROUP
+    LTEXT           "fi=",IDC_STATIC,171,87,8,8,NOT WS_GROUP
+    GROUPBOX        "       Uy ( t )",IDC_STATIC,7,73,204,67
+    CONTROL         "",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,3,
+                    8,8
+    CONTROL         "Показать",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
+                    BS_NOTIFY | WS_TABSTOP,48,3,49,10
+    CONTROL         "Ux = A sin ( w t + fi)",IDC_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,16,74,10
+    EDITTEXT        IDC_EDIT1,101,15,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,144,15,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,181,15,25,12,ES_AUTOHSCROLL
+    CONTROL         "Ux ( t ) =",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,35,41,10
+    EDITTEXT        IDC_EDIT5,53,34,153,12,ES_AUTOHSCROLL
+    CONTROL         "Случайное",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,53,51,10
+    PUSHBUTTON      "Параметры...",IDC_BUTTON1,65,51,62,14
+    PUSHBUTTON      "Расширенные...",IDC_CSPECUX,140,51,63,14
+    CONTROL         "",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
+                    73,8,8
+    CONTROL         "Показать",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | 
+                    BS_NOTIFY | WS_TABSTOP,48,73,49,10
+    CONTROL         "Uy = A sin (w t + fi)",IDC_RADIO3,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,86,74,10
+    EDITTEXT        IDC_EDIT6,101,85,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,144,85,25,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT8,181,85,25,12,ES_AUTOHSCROLL
+    CONTROL         "Uy ( t ) =",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,105,39,10
+    EDITTEXT        IDC_EDIT10,53,104,153,12,ES_AUTOHSCROLL
+    CONTROL         "Случайное",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,12,123,51,10
+    PUSHBUTTON      "Параметры...",IDC_BUTTON2,65,121,62,14
+    PUSHBUTTON      "Расширенные...",IDC_CSPECUY,140,121,63,14,0,0,
+                    HIDC_CSPECUY
+END
+
+IDD_FREQDLG DIALOG DISCARDABLE  0, 0, 176, 217
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Построение частотных характеристик"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "АЧХ",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,21,15,32,10
+    CONTROL         "АФХ",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,68,16,36,10
+    CONTROL         "ФЧХ",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,119,16,35,10
+    EDITTEXT        IDC_EDIT1,25,48,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,76,48,31,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,131,48,31,12,ES_AUTOHSCROLL
+    CONTROL         "Логарифмические координаты",IDC_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,66,125,10
+    COMBOBOX        IDC_COMBO1,14,100,64,121,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Ux",IDC_RADIO4,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,12,129,24,10
+    CONTROL         "Uy",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    36,129,23,10
+    CONTROL         "Ua",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    59,129,24,10
+    COMBOBOX        IDC_COMBO2,98,100,64,121,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    CONTROL         "Ux",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,96,129,23,10
+    CONTROL         "Uy",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    119,129,24,10
+    CONTROL         "Ua",IDC_RADIO9,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,
+                    143,129,25,10
+    CONTROL         "0-я",IDC_RADIO10,"Button",BS_AUTORADIOBUTTON | WS_GROUP | 
+                    WS_TABSTOP,35,157,31,10
+    CONTROL         "1-я",IDC_RADIO11,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,35,167,30,10
+    CONTROL         "2-я",IDC_RADIO12,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,35,177,27,10
+    CONTROL         "Силовое",IDC_RADIO13,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,97,160,45,10
+    CONTROL         "Кинематическое",IDC_RADIO14,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,97,174,69,10
+    DEFPUSHBUTTON   "OK",IDOK,23,196,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,104,196,50,14
+    GROUPBOX        "Частотная характеристика",IDC_STATIC,7,2,162,32
+    LTEXT           "от",IDC_STATIC,13,49,10,8
+    LTEXT           "до",IDC_STATIC,63,49,10,8
+    GROUPBOX        "Изменение частоты",IDC_STATIC,7,36,162,46
+    LTEXT           "шаг",IDC_STATIC,115,49,15,8
+    GROUPBOX        "Вход",IDC_STATIC,7,85,78,59
+    GROUPBOX        "Выход",IDC_STATIC,91,85,78,59
+    LTEXT           "Координата",IDC_STATIC,14,117,43,8
+    LTEXT           "Координата",IDC_STATIC,98,116,43,8
+    GROUPBOX        "Производная",IDC_STATIC,7,147,78,44
+    GROUPBOX        "Возмущение",IDC_STATIC,91,147,78,44
+END
+
+IDD_FREQVIEW DIALOG DISCARDABLE  0, 0, 139, 102
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Собственные частоты системы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,82,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,82,24,50,14
+    LISTBOX         IDC_LIST1,7,7,67,88,NOT LBS_NOTIFY | 
+                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL
+END
+
+IDD_KNOTSPECTR DIALOG DISCARDABLE  0, 0, 319, 218
+STYLE DS_MODALFRAME | DS_CONTEXTHELP | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Спектральная плотность"
+FONT 8, "MS Sans Serif"
+BEGIN
+    CONTROL         "Идеальный\nполосовой шум",IDC_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | BS_MULTILINE | WS_GROUP | 
+                    WS_TABSTOP,14,12,68,16
+    CONTROL         "Реальный\nполосовой шум",IDC_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON | BS_MULTILINE | WS_TABSTOP,14,30,70,
+                    16
+    CONTROL         "Шумовой сигнал\nс подчеркнутой\nчастотой",IDC_RADIO3,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_TABSTOP,
+                    14,48,76,24
+    CONTROL         "Шумовой сигнал\nс подчеркнутыми\nчастотами",IDC_RADIO4,
+                    "Button",BS_AUTORADIOBUTTON | BS_MULTILINE | WS_TABSTOP,
+                    14,74,77,25
+    CONTROL         "Реальный\nузкополосный шум",IDC_RADIO5,"Button",
+                    BS_AUTORADIOBUTTON | BS_MULTILINE | WS_TABSTOP,14,99,78,
+                    18
+    CONTROL         "S(w) =",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,14,121,29,11
+    LTEXT           "S =",IDC_STATIC,93,16,11,8
+    LTEXT           "Wc =",IDC_STATIC,159,16,17,8
+    LTEXT           "S =",IDC_STATIC,93,35,11,8
+    LTEXT           "a =",IDC_STATIC,137,35,11,8
+    LTEXT           "Wo =",IDC_STATIC,130,57,18,8
+    LTEXT           "S =",IDC_STATIC,93,56,11,8
+    LTEXT           "a =",IDC_STATIC,180,58,11,8
+    LTEXT           "S =",IDC_STATIC,93,79,11,8
+    LTEXT           "a =",IDC_STATIC,137,79,11,8
+    LTEXT           "b =",IDC_STATIC,180,80,11,8
+    LTEXT           "S =",IDC_STATIC,93,102,11,8
+    LTEXT           "a =",IDC_STATIC,137,102,11,8
+    LTEXT           "b =",IDC_STATIC,180,102,11,8
+    EDITTEXT        IDC_EDIT1,105,13,38,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,179,13,33,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,105,32,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT4,151,32,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT5,105,55,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT6,151,55,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT7,193,55,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT8,105,77,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT9,151,77,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT10,193,77,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT11,105,99,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT12,151,99,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT13,193,99,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT14,48,119,71,14,ES_AUTOHSCROLL
+    GROUPBOX        "",IDC_STATIC,7,1,305,139
+    EDITTEXT        IDC_EDIT15,151,119,23,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT16,193,119,23,14,ES_AUTOHSCROLL
+    LTEXT           "до",IDC_STATIC,180,122,11,8
+    LTEXT           "w   от",IDC_STATIC,130,122,19,8
+    GROUPBOX        "Инициализация",IDC_STATIC,7,143,108,49
+    CONTROL         "Автоматическая",IDC_RADIO7,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,14,156,75,10
+    CONTROL         "Ручная",IDC_RADIO8,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,14,172,40,10
+    EDITTEXT        IDC_EDIT17,57,170,48,14,ES_AUTOHSCROLL
+    GROUPBOX        "Параметры интегрирования",IDC_STATIC,122,143,190,49
+    EDITTEXT        IDC_EDIT19,192,155,96,14,ES_AUTOHSCROLL
+    LTEXT           "Wmax",IDC_STATIC,134,158,33,8
+    EDITTEXT        IDC_EDIT18,192,174,96,14,ES_AUTOHSCROLL
+    LTEXT           "с",IDC_STATIC,295,177,8,8
+    DEFPUSHBUTTON   "Ok",IDOK,90,197,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,180,197,50,14
+    CONTROL         223,IDC_STATIC,"Static",SS_BITMAP,219,97,67,17
+    CONTROL         222,IDC_STATIC,"Static",SS_BITMAP,219,13,41,17
+    CONTROL         224,IDC_STATIC,"Static",SS_BITMAP,219,75,83,17
+    CONTROL         225,IDC_STATIC,"Static",SS_BITMAP,219,54,91,17
+    CONTROL         226,IDC_STATIC,"Static",SS_BITMAP,219,32,33,17
+    CONTROL         "Показать",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,16,1,49,10
+    LTEXT           "Запаздывание",IDC_STATIC,132,177,53,8
+END
+
+IDD_COMPLEXSPECTR DIALOG DISCARDABLE  0, 0, 186, 110
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Взаимная спектральная плотность"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO1,7,15,81,77,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO2,97,15,23,56,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    DEFPUSHBUTTON   "&Добавить",IDC_BUTTON2,129,14,50,14
+    PUSHBUTTON      "Свойства",IDC_BUTTON3,129,39,50,14
+    LTEXT           "Узел",IDC_STATIC,7,3,18,8
+    LTEXT           "XYA",IDC_STATIC,100,3,14,8
+    PUSHBUTTON      "&Удалить",IDC_BUTTON1,129,64,50,14
+    PUSHBUTTON      "&Закрыть",IDOK,129,89,50,14
+    CONTROL         "",IDC_MSFLEXGRID1,
+                    "{6262D3A0-531B-11CF-91F6-C2863C385E30}",WS_TABSTOP,7,37,
+                    113,66
+END
+
+IDD_SPECTRDLG DIALOG DISCARDABLE  0, 0, 159, 124
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION
+CAPTION "Спектр. плотность вых. сигнала"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,16,103,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,92,103,50,14
+    COMBOBOX        IDC_COMBO1,20,28,82,81,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO2,113,28,27,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    GROUPBOX        "Выберите степень свободы",IDC_STATIC,7,3,145,45
+    LTEXT           "Узел",IDC_STATIC,20,15,18,8
+    LTEXT           "XYA",IDC_STATIC,115,15,15,8
+    EDITTEXT        IDC_EDIT1,25,65,26,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,71,65,26,12,ES_AUTOHSCROLL
+    LTEXT           "от",IDC_STATIC,13,66,10,8
+    LTEXT           "до",IDC_STATIC,58,66,10,8
+    GROUPBOX        "Изменение частоты",IDC_STATIC,7,50,145,46
+    LTEXT           "шаг",IDC_STATIC,104,66,15,8
+    EDITTEXT        IDC_EDIT3,120,65,26,12,ES_AUTOHSCROLL
+    CONTROL         "Логарифмические координаты",IDC_CHECK1,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,13,82,121,10
+END
+
+IDD_DIALOG4 DIALOG DISCARDABLE  0, 0, 158, 71
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "График возмущения"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,17,50,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,92,50,50,14
+    LTEXT           "от",IDC_STATIC,13,22,10,8
+    EDITTEXT        IDC_EDIT1,25,19,25,14,ES_AUTOHSCROLL
+    LTEXT           "до",IDC_STATIC,56,22,10,8
+    EDITTEXT        IDC_EDIT2,69,19,25,14,ES_AUTOHSCROLL
+    LTEXT           "шаг",IDC_STATIC,101,22,15,8
+    EDITTEXT        IDC_EDIT3,119,19,25,14,ES_AUTOHSCROLL
+    GROUPBOX        "Время",IDC_STATIC,6,2,145,43
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_DIALOGCOORD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 130
+        BOTTOMMARGIN, 122
+    END
+
+    IDD_DIALOGROD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 192
+    END
+
+    IDD_DIALOGDEMF, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 184
+    END
+
+    IDD_DIALOGSPRING, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 167
+    END
+
+    IDD_DIALOGMASS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 151
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 127
+    END
+
+    IDD_DIALOGELEM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 246
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 120
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 224
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 100
+    END
+
+    IDD_DIALOGPRECALC, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 176
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 129
+    END
+
+    IDD_KNOTPAGE1, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 211
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 102
+    END
+
+    IDD_KNOTPAGE2, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 212
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 102
+    END
+
+    IDD_DIALOGTYPEGRAPH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 147
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 189
+    END
+
+    IDD_PROGRESSDIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 267
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 45
+    END
+
+    IDD_KNOTPAGE3, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 144
+    END
+
+    IDD_KNOTPAGE4, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 210
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 141
+    END
+
+    IDD_FREQDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 169
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 210
+    END
+
+    IDD_FREQVIEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 132
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 95
+    END
+
+    IDD_KNOTSPECTR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 312
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 211
+    END
+
+    IDD_COMPLEXSPECTR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 179
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 103
+    END
+
+    IDD_SPECTRDLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 152
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 117
+    END
+
+    IDD_DIALOG4, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 151
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 64
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_DIALOGROD DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 7, 0
+0xb8c6, 0xf2f1, 0xeeea, "\000" 
+    IDC_COMBO1, 0x403, 9, 0
+0xe0d8, 0xedf0, 0xf0e8, 0xeeed, "\000" 
+    IDC_COMBO4, 0x403, 7, 0
+0xb8c6, 0xf2f1, 0xeeea, "\000" 
+    IDC_COMBO4, 0x403, 9, 0
+0xe0d8, 0xedf0, 0xf0e8, 0xeeed, "\000" 
+    0
+END
+
+IDD_COMPLEXSPECTR DLGINIT
+BEGIN
+    IDC_COMBO2, 0x403, 2, 0
+0x0058, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0059, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0041, 
+    IDC_MSFLEXGRID1, 0x37a, 402, 0
+0x0024, 0x0000, 0x0037, 0x0032, 0x0045, 0x0036, 0x0037, 0x0031, 0x0032, 
+0x0030, 0x002d, 0x0035, 0x0039, 0x0035, 0x0039, 0x002d, 0x0031, 0x0031, 
+0x0063, 0x0066, 0x002d, 0x0039, 0x0031, 0x0046, 0x0036, 0x002d, 0x0043, 
+0x0032, 0x0038, 0x0036, 0x0033, 0x0043, 0x0033, 0x0038, 0x0035, 0x0045, 
+0x0033, 0x0030, 0x0012, 0x0000, 0x0001, 0x0000, 0x000a, 0x0000, 0x004c, 
+0x0000, 0x0000, 0x4321, 0x1234, 0x0008, 0x0000, 0x12b0, 0x0000, 0x0aea, 
+0x0000, 0x6f42, 0x506f, 0x0005, 0x0000, 0x0080, 0x0000, 0x0004, 0x0000, 
+0x0002, 0x0000, 0x0001, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0005, 
+0x8000, 0x0008, 0x8000, 0x000f, 0x8000, 0x0012, 0x8000, 0x000d, 0x8000, 
+0x0005, 0x8000, 0x0005, 0x8000, 0xc0c0, 0x00c0, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0001, 0x0000, 0x0000, 0x0000, 0xffff, 0xffff, 0x0001, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0001, 0x0001, 0x0000, 0x0001, 0x0002, 
+0x0003, 0x0001, 0x0000, 0x0001, 0x0000, 0x0001, 0x0001, 0x0000, 0x0001, 
+0x0004, 0x0000, 0x007e, 0x0000, 0x0000, 0x0044, 0x0000, 0x0000, 0x0000, 
+0x4600, 0x0000, 0x0041, 0x0041, 0x0030, 0x0030, 0x0034, 0x0042, 0x0042, 
+0x0000, 0xffff, 0x0000, 0x0000, 0x0004, 0x0000, 0x0003, 0x0000, 0x00b4, 
+0x0000, 0x0001, 0x02ec, 0x0004, 0x11d0, 0x0000, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x9e18, 0x004d, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x9e44, 0x004d, 0x0000, 
+0x0000, 0x0000, 0x0000, 0x0000, 0xcc01, 0x0000, 0x0190, 0x30b0, 0x0001, 
+0x4d0d, 0x2053, 0x6153, 0x736e, 0x5320, 0x7265, 0x6669, 0x746c, 0x0000, 
+0x0000, 0x0000, 0xa000, 
+    0
+END
+
+IDD_SPECTRDLG DLGINIT
+BEGIN
+    IDC_COMBO2, 0x403, 2, 0
+0x0058, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0059, 
+    IDC_COMBO2, 0x403, 2, 0
+0x0041, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_GRAPHTYPE TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_AUTOSIZE
+    SEPARATOR
+    BUTTON      ID_GETCOORD
+    SEPARATOR
+    BUTTON      ID_LOADGRAPH2
+    BUTTON      ID_SAVEREZ
+    BUTTON      ID_GRAPH2
+    SEPARATOR
+    BUTTON      ID_CALCMAT
+END
+
+IDR_MAINFRAME TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_SCALEADD
+    BUTTON      ID_SCALESUB
+    SEPARATOR
+    BUTTON      ID_CALC
+    SEPARATOR
+    BUTTON      ID_SETNULL
+    BUTTON      ID_SETROD
+    BUTTON      ID_SETSPRING
+    BUTTON      ID_SETDEMF
+    BUTTON      ID_SETMASS
+    SEPARATOR
+    BUTTON      ID_APP_ABOUT
+END
+
+IDR_FORMSTYPE TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      ID_FREQPREW
+    BUTTON      ID_FREQNEXT
+    SEPARATOR
+    BUTTON      ID_MOVEADD
+    BUTTON      ID_MOVESUB
+    SEPARATOR
+    BUTTON      ID_UPDATEFORMS
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 2,5,0,0
+ PRODUCTVERSION 2,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041904b0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "NSys2D MFC Application\0"
+            VALUE "FileVersion", "2, 5, 0, 0\0"
+            VALUE "InternalName", "NSys2D\0"
+            VALUE "LegalCopyright", "Copyright (C) 1999-2000\0"
+            VALUE "OriginalFilename", "NSys2D.EXE\0"
+            VALUE "ProductName", "NSys2D Application\0"
+            VALUE "ProductVersion", "2, 5, 0, 0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x419, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    IDR_MAINFRAME           "NSys2D"
+    IDR_SHEMETYPE           "\nSheme\nSheme\nSheme Files (*.shm)\n.shm\nSheme.Document\nSheme Document"
+    IDR_GRAPHTYPE           "\n\n\n\n\n\n\n\n"
+    IDR_FORMSTYPE           "\n\n\n\n\n\n\n\n"
+END
+
+STRINGTABLE PRELOAD DISCARDABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "NSys2D"
+    AFX_IDS_IDLEMESSAGE     "Ready"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Создать новую схему\nНовая схема"
+    ID_FILE_OPEN            "Открыть существующую схему\nОткрыть"
+    ID_FILE_CLOSE           "Закрыть активный документ\nЗакрыть"
+    ID_FILE_SAVE            "Сохранить активную схему\nСохранить"
+    ID_FILE_SAVE_AS         "Сохранить активный документ с новым именем\nСохранить как"
+    ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
+    ID_FILE_PRINT_SETUP     "Изменение настроек печати\nНастройка печати"
+    ID_FILE_PRINT           "Print the active document\nPrint"
+    ID_FILE_PRINT_PREVIEW   "Показать всю страницу\nПросмотр печати"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "Показать информацию о прорамме\nО программе"
+    ID_APP_EXIT             "Выход из приложения\nВыход"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Open this document"
+    ID_FILE_MRU_FILE2       "Open this document"
+    ID_FILE_MRU_FILE3       "Open this document"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_WINDOW_NEW           "\nNew Window"
+    ID_WINDOW_ARRANGE       "Расположить документ внизу окна\nСвернуть"
+    ID_WINDOW_CASCADE       "Расположить окна как перекрыфающиеся\nОкна каскадом"
+    ID_WINDOW_TILE_HORZ     "Расположить окна как не перекрывающиеся\nРасположить см. ниже"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Copy the selection and put it on the Clipboard\nCopy"
+    ID_EDIT_CUT             "Cut the selection and put it on the Clipboard\nCut"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Insert Clipboard contents\nPaste"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Undo the last action\nUndo"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Показать или скрыть инструменты\nИнструменты"
+    ID_VIEW_STATUS_BAR      "Показать скрыть строку состояния\nСтрока состояния"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_EE_MISSING_CLOSE_BRACKET "отсутствует закрывающая скобка"
+    IDS_EE_UNEXPECTED_SIGN  "знак не на своём месте"
+    IDS_EE_UNDEFINED_ID     "переменная не определена"
+    IDS_EE_BAD_CHAR         "плохой символ"
+    IDS_EE_DIVISION_BY_ZERO "деление на ноль"
+    IDS_EE_UNKNOWN_FUNCTION "функция неизвестна"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    AFX_IDS_PREVIEW_CLOSE   "Close print preview mode\nCancel Preview"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDC_ROD                 "Стержень"
+    IDC_SPRING              "Пружина"
+    IDC_DEMF                "Демпфер"
+    IDC_MASS                "Масса"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_PROPSHT_CAPTION     "Property Sheet"
+    IDS_PROPSHT_CAPTION1    "Property Sheet"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_HORADD               "Увеличить по горизонтали\nУвеличить по горизонтали"
+    ID_VERTADD              "Увеличить во вертикали\nУвеличить во вертикали"
+    ID_SETNULL              "Выбор элемента\nВыбор элемента"
+    ID_AUTOSIZE             "Автоматической масштабирование по размеру окна\nАвтомасштаб"
+    ID_PROP                 "Получить свойства"
+    ID_SAVEREZ              "Записать график в файл\nЗаписать"
+    ID_REFRESH              "Обновить изображение"
+    ID_GETCOORD             "Вывод значений графика, попадающего в рамку\nПолучить значения"
+    ID_FREQ_CALC            "Построение частотных характеристик"
+    ID_MOVEADD              "Увеличить масштаб перемещений\nУвеличить"
+    ID_MOVESUB              "Уменьшить масштаб перемещений\nУменьшить"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCALESUB             "Уменьшить изображение\nУменьшить"
+    ID_SETROD               "Установить текущий элемент стержень\nСтержень"
+    ID_SETMASS              "Установить текущий элемент масса\nМасса"
+    ID_CALC                 "Выполнить интегрирование\nИнтегрирование"
+    ID_HORSUB               "Уменьшить по горизонтали\nУменьшить по горизонтали"
+    ID_VERTSUB              "Уменьшить по вертикали\nУменьшить по вертикали"
+    ID_DELELEM              "Удалить элемент\nУдалить элемент"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_ADDGRAPH             "Вывод графика с результатами интегрирования"
+    ID_SPECTR_CALC          "Вывод графика спектральной плотности выходного сигнала"
+    ID_SETSPRING            "Установить текущий элемент пружина\nПружина"
+    ID_SETDEMF              "Установить текущий элемент демпфер\nДемпфер"
+    ID_SCALEADD             "Увеличить изображение\nУвеличить"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FREQPREW             "Предыдущая форма колебаний\nПредыдущая"
+    ID_FREQNEXT             "Следующая форма колебаний\nСледующая"
+    ID_LOADGRAPH2           "Открыть 2-й график\nОткрыть"
+    ID_GRAPH2               "Включить/Выключить второй график\nВкл./Выкл. 2-й график"
+    ID_UPDATEFORMS          "Обновить формы колебаний\nОбновить"
+    ID_CALCMAT              "Статистическая обработка результатов\nСтатистика"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS PRELOAD MOVEABLE PURE 
+BEGIN
+    "N",            ID_FILE_NEW,            VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_F9,          ID_CALC,                VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Cursor
+//
+
+IDC_POINTER             CURSOR  DISCARDABLE     "arrow.cur"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_FILE_NEW             "Создать новый документ\nНовый"
+    ID_FILE_OPEN            "Открыть документ\nОткрыть"
+    ID_FILE_SAVE            "Сохранить документ\nСохранить"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SETSPRING            "Текущий элемент пружина\nПружина"
+    ID_SETDEMF              "Турущий элемент демпфер\nДемпфер"
+    ID_SCALEADD             "Увеличить\nУвеличить"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCALESUB             "Уменьшить\nУменьшить"
+    ID_SETROD               "Текущий элемент стержень\nСтержень"
+    ID_SETMASS              "Текущий элемент масса\nМасса"
+    ID_CALC                 "Интегрирование\nРасчет"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_APP_ABOUT            "О программе\nО программе"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "res\NSys2D.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxprint.rc"       // printing/print preview resources
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

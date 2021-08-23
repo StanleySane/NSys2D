@@ -1,0 +1,13 @@
+REGEDIT
+; This .REG file may be used by your SETUP program.
+;   If a SETUP program is not available, the entries below will be
+;   registered in your InitInstance automatically with a call to
+;   CWinApp::RegisterShellFileTypes and COleObjectFactory::UpdateRegistryAll.
+
+
+HKEY_CLASSES_ROOT\NSys2D.Document = NSys2D Document
+HKEY_CLASSES_ROOT\NSys2D.Document\CLSID = {09A14A82-BBAC-11D2-AF23-BB2B1C460D22}
+
+HKEY_CLASSES_ROOT\CLSID\{09A14A82-BBAC-11D2-AF23-BB2B1C460D22} = NSys2D Document
+HKEY_CLASSES_ROOT\CLSID\{09A14A82-BBAC-11D2-AF23-BB2B1C460D22}\ProgId = NSys2D.Document
+HKEY_CLASSES_ROOT\CLSID\{09A14A82-BBAC-11D2-AF23-BB2B1C460D22}\LocalServer32 = NSYS2D.EXE
