@@ -12,10 +12,10 @@
 class CParamTime  
 {
 public:
-	void Serialize(CArchive & ar);
+	void Serialize( CArchive &, int );
 	CParamTime();
 	virtual ~CParamTime();
-	CString strT0, strT1, strdT;
+//	CString strT0, strT1, strdT;
 	double T0, T1, dT;
 };
 

@@ -11,31 +11,47 @@
 
 #include "Elem.h"
 
+class CShemeDoc;
+
 class CMass : public CElem  
 {
+	void InitBy( const CMass& );
 public:
-	virtual void Serialize(CArchive & ar);
-	void SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i);
-	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+	//double M,Jp;
+	CShemeExpr m_M, m_Jp;
+	//CString str_M;
+	//CString str_Jp;
 
-	void GetMatrM( CMatr& ) const;
-	void GetMatrD( CMatr& ) const;
-	void GetMatrC( CMatr& ) const;
+	virtual void Serialize( CArchive &ar, int sv );
+	virtual int SetMatrmP( CMatr &, CMatr &, CMatr &, CMatr*, int, double, std::string *pMsg = NULL );
+	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg = NULL );
 
-	CString GetStrJp();
-	CString GetStrM();
-	double GetJp() const;
-	double GetM() const;
-	double SetMassJp(CString strJp);
-	double SetMassM(CString strm);
-	CString str_M;
-	CString str_Jp;
-	double M,Jp;
+	void SetVarState();
+
+	void GetMatrM( CMatr&, std::string *pMsg = NULL );
+	void GetMatrD( CMatr&, std::string *pMsg = NULL );
+	void GetMatrC( CMatr&, std::string *pMsg = NULL );
+
+	//CString GetStrJp();
+	//CString GetStrM();
+	double GetJp( bool flg = true );
+	double GetM( bool flg = true );
+	bool SetMassJp( const CString& );
+	bool SetMassM( const CString& );
+	bool SetMassJp( double );
+	bool SetMassM( double );
+
 	int GoDlg(CListKnot * pListKnot, bool full = true );
-	bool SetCommonProperties( CElem* elem );
+	bool SetCommonProperties( const CElem* elem );
 	void Draw(CDC * pDC, CParamView * pParamView);
-	CMass(CKnot *kn1);
+	void DrawGL( CShemeDoc*, int );
+
+	CString GetName() const;
+
+	CMass( CKnot *kn1, CSheme *p = NULL );
 	virtual ~CMass();
+	CMass( const CMass& );
+	CMass& operator=( const CMass& );
 
 };
 

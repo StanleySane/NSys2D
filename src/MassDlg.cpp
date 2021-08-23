@@ -5,6 +5,10 @@
 #include "NSys2D.h"
 #include "MassDlg.h"
 
+#include "Sheme.h"
+
+using namespace std;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -66,8 +70,8 @@ BOOL CMassDlg::OnInitDialog()
 
 		m_ComboBoxKnot.SetCurSel(pos);
 
-		m_EditM=pMass->GetStrM();
-		m_EditJp=pMass->GetStrJp();
+		m_EditM = pMass->m_M.GetExpr().c_str();
+		m_EditJp = pMass->m_Jp.GetExpr().c_str();
 	}
 
 	GetDlgItem(IDC_COMBO1)->EnableWindow(m_bFull);
@@ -122,13 +126,15 @@ void CMassDlg::OnOK()
 	}
 
 	if (!pMass)
-		pMass=new CMass(kn);
+		pMass = new CMass(kn);
 
-	pMass->knot1=kn;
-	pMass->knot2=kn;
+	pMass->knot1 = kn;
+	pMass->knot2 = kn;
 
-	pMass->SetMassM(m_EditM);
-	pMass->SetMassJp(m_EditJp);
+	bool res = pMass->SetMassM(m_EditM);
+	ASSERT( res == true );
+	res = pMass->SetMassJp(m_EditJp);
+	ASSERT( res == true );
 
 	CDialog::OnOK();
 }
@@ -147,29 +153,20 @@ BOOL CMassDlg::VerifyInfo()
 		}
 	}
 
-	CExpression e;
-	double val;
-	int ret;
-	
-	ret=e.IsNum(m_EditM,&val);
-	if ((ret)||(val<=0))
+	CString mes;
+	ASSERT(pMass->m_pSheme);
+	if( !pMass->m_pSheme->m_VarsTable.IsValidExpr( m_EditM, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Масса не число или меньше нуля"
-				,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении m:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditJp,&val);
-	if ((ret)||(val<0))
+	if( !pMass->m_pSheme->m_VarsTable.IsValidExpr( m_EditJp, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Момент инерции не число или меньше нуля"
-				,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении Jp:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-
 	return TRUE;
 }
 

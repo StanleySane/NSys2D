@@ -44,6 +44,8 @@ public:
 
 	//ф-ции-члены
 	CKnot* GetKnot() const;
+	bool Attach( CKnot* );
+	bool Detach();
 	bool Create( double, double );
 	static bool AddRef( CKnot* );
 	static bool RemoveRef( CKnot* );

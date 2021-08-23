@@ -12,12 +12,12 @@
 class CParamIntegr  
 {
 public:
-	void Serialize(CArchive& ar);
+	void Serialize( CArchive&, int );
 	CParamIntegr();
 	virtual ~CParamIntegr();
 
 	double Step, Time;
-	CString strStep, strTime;
+//	CString strStep, strTime;
 	
 	int TypeMethod;
 };

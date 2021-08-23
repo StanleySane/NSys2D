@@ -26,6 +26,7 @@ CViewStyles::CViewStyles(CWnd* pParent /*=NULL*/)
 	m_strNumElems = _T("(no data)");
 	m_strNumKnots = _T("(no data)");
 	m_ZeroRot = 0.0;
+	m_bRichCalc = FALSE;
 	//}}AFX_DATA_INIT
 	m_clrFree = RGB(0,0,0);
 	m_clrNumElems = RGB(0,0,0);
@@ -54,6 +55,7 @@ void CViewStyles::DoDataExchange(CDataExchange* pDX)
 	DDV_MaxChars(pDX, m_strNumKnots, 30);
 	DDX_Text(pDX, IDC_EDIT_ZERO_ROT, m_ZeroRot);
 	DDV_MinMaxDouble(pDX, m_ZeroRot, 0., 1.);
+	DDX_Check(pDX, IDC_RICH_CALC, m_bRichCalc);
 	//}}AFX_DATA_MAP
 }
 

@@ -11,37 +11,33 @@
 
 #include <afxtempl.h>
 #include "ObjectSheme.h"
-#include "Expression.h"
 #include "Matr.h"
 #include "SpectrParam.h"
 #include "ParamTime.h"
+#include "ShemeExpr.h"
 
-/*#include "ListKnot.h"
-#include "ListSpectr.h"*/
+class CSheme;
 
 class CKnot : public CObjectSheme  
 {
 private:
 	//Координаты
-	CString str_X, str_Y;
 	CCoordD coord;
 
-	//Начальные условия
-	CString str_Ux, str_Uy, str_Ua;
-	CString str_Uxp, str_Uyp, str_Uap;
-	double Ux,Uy,Ua;
-	double Uxp,Uyp,Uap;
-
+	void InitBy( const CKnot& );
 public:
+	void SetVarState( double x, double v, double a, double t );
 	void SetCommonProperties( CKnot *pKnot );
-	int SetKinematicPos(CMatr &matr_RezY1, CMatr &matr_RezY2, int  i, double Tt);
+	int SetKinematicPos( CMatr &Y1, CMatr &Y2, CMatr *pY3, int  i, double Tt, std::string *pMsg = NULL );
 	void DrawPower(CDC * pDC,  POINT & point, CParamView* pParamView);
 	void EndIntegr();
 	int BeginIntegr(double T);
 
+	//Начальные условия
+	CShemeExpr m_Ux, m_Uy, m_Ua;
+	CShemeExpr m_Uxp, m_Uyp, m_Uap;
 	//СИЛОВОЕ ВОЗМУЩЕНИЕ (амплитуда, частота, фаза, произвольное возмущение)
-	CString str_Ax, str_Wx, str_Fix, str_Px;
-	CString str_Ay, str_Wy, str_Fiy, str_Py;
+	CShemeExpr m_Px, m_Py;
 	double Ax, Wx, Fix;
 	double Ay, Wy, Fiy;
 	CSpectrParam SpPx, SpPy;
@@ -51,8 +47,7 @@ public:
 	BOOL PxEnable, PyEnable;
 
 	//КИНЕМАТИЧЕСКОЕ ВОЗМУЩЕНИЕ (амплитуда, частота, фаза, произвольное возмущение)
-	CString str_uAx, str_uWx, str_uFix, str_uUx;
-	CString str_uAy, str_uWy, str_uFiy, str_uUy;
+	CShemeExpr m_uUx, m_uUy;
 	double uAx, uWx, uFix;
 	double uAy, uWy, uFiy;
 	CSpectrParam SpUx, SpUy;
@@ -61,32 +56,24 @@ public:
 	//Флаг наличия возмущения
 	BOOL UxEnable, UyEnable;
 
-	double GetPx(double x, double x1, double Tt);
-	double GetPy(double x, double x1, double Tt);
-	int SetMatrmP(CMatr & mP, double Tt);
+	double GetPx(double x, double x1, double a, double Tt, std::string *pMsg = NULL );
+	double GetPy(double x, double x1, double a, double Tt, std::string *pMsg = NULL );
+	int SetMatrmP( CMatr &mP, CMatr &RezY1, CMatr &RezY2, CMatr *pRezY3, int i, double Tt, std::string *pMsg = NULL );
 	void Init();
-	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt, CMatr & mUM, CMatr & mUD, CMatr & mUC);
+	int SetMatrmP( CMatr &mP, CMatr &RezY1, CMatr &RezY2, CMatr *pRezY3, int i, double Tt, CMatr & mUM, CMatr & mUD, CMatr & mUC, std::string *pMsg = NULL );
 	int SetFixedKnot();
-	virtual void Serialize(CArchive & ar);
-	double SetStrUa(CString str, int p=0);
-	double SetStrUy(CString str, int p=0);
-	double SetStrUx(CString str, int p=0);
-	CString GetStrUa(int p=0);
-	CString GetStrUy(int p=0);
-	CString GetStrUx(int p=0);
-	double GetUa(int p=0);
-	double GetUy(double Tt, int p=0);
-	double GetUx(double Tt, int p=0);
-	void SetFixedKnotMDC(CMatr & mM, CMatr & mD, CMatr & mC);
-	void operator = (CKnot &knot);
+	virtual void Serialize( CArchive &, int );
+
+	double GetUa( double x, double v, double a, double t, std::string *pMsg = NULL, int p=0);
+	double GetUy( double x, double v, double a, double Tt, std::string *pMsg = NULL, int p=0);
+	double GetUx( double x, double v, double a, double Tt, std::string *pMsg = NULL, int p=0);
 
 	void DrawFixed(CDC *pDC, POINT &point, CParamView *pParamView);
 	void DrawFreeNums( CDC*, POINT&, CParamView* );
 	int GoDlg( bool full = true/*CListKnot *pListKnot, CListSpectr *pListSpectr*/);
 	CPoint GetScreenCoord(CParamView* pParamView);
-	CString GetStrY();
-	CString GetStrX();
 	CString GetName(UINT num=0);
+	CString GetFullName();
 
 	//режим выбора узла на дисплее (для прорисовки)
 	int SelectMode, OldMode;
@@ -117,12 +104,20 @@ public:
 	//Тип соединения в узле (жёстко=0/шарнирно)
 	int ConnectType;
 
+	void DrawGL( CShemeDoc*, int );
 	void Draw(CDC * pDC, CParamView* pParamView);
-	int SetCoord(CString strx, CString stry);
+
+	int SetCoord( double, double );
+	double GetCoordX( double multmove = 0.0 );
+	double GetCoordY( double multmove = 0.0 );
 	CCoordD GetCoord(double multmove=0);
-	CKnot();
-	CKnot(CString strx, CString stry);
+
+	CKnot( CSheme *p = NULL );
+	CKnot( double, double, CSheme *p = NULL );
+	CKnot( const CKnot& );
 	virtual ~CKnot();
+	CKnot& operator = ( const CKnot& );
+
 };
 
 #endif // !defined(AFX_KNOT_H__A9AC9422_C7EA_11D2_AF23_BB2B1C460D22__INCLUDED_)

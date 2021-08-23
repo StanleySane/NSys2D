@@ -26,6 +26,7 @@ public:
 	CString	m_strNumElems;
 	CString	m_strNumKnots;
 	double	m_ZeroRot;
+	BOOL	m_bRichCalc;
 	//}}AFX_DATA
 
 	COLORREF m_clrFree, m_clrNumElems, m_clrNumKnots;

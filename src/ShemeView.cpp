@@ -3,11 +3,12 @@
 
 #include "stdafx.h"
 #include "NSys2D.h"
+#include "StdAfxMy.h"
 
 #include "ShemeDoc.h"
 #include "ShemeView.h"
+#include "MovieView.h"
 
-//#include "GraphView.h"
 #include "TypeGraphDlg.h"
 
 #include "GraphFrm.h"
@@ -23,6 +24,9 @@
 
 #include <math.h>
 #include <algorithm>
+#include <string>
+
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -91,8 +95,15 @@ BEGIN_MESSAGE_MAP(CShemeView, CScrollView)
 	ON_UPDATE_COMMAND_UI(ID_FILE_CLOSE, OnUpdateFileClose)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT, OnUpdateFilePrint)
 	ON_UPDATE_COMMAND_UI(ID_FILE_PRINT_SETUP, OnUpdateFilePrintSetup)
-	ON_COMMAND(ID_AUTO_SCALE, OnButtonAutoSize)
 	ON_WM_CREATE()
+	ON_NOTIFY_EX( TTN_NEEDTEXT, 0, OnToolTip )
+	ON_COMMAND(ID_TOOL_TIPS, OnToolTips)
+	ON_UPDATE_COMMAND_UI(ID_TOOL_TIPS, OnUpdateToolTips)
+	ON_COMMAND(ID_GROUP_CLICK_KNOTS, OnGroupClickKnots)
+	ON_COMMAND(ID_GROUP_CLICK_ELEMS, OnGroupClickElems)
+	ON_COMMAND(ID_AUTO_SCALE, OnButtonAutoSize)
+	ON_COMMAND(ID_BUTTON_GRCLICK_ELEMS, OnGroupClickElems)
+	ON_COMMAND(ID_BUTTON_GRCLICK_KNOTS, OnGroupClickKnots)
 	//}}AFX_MSG_MAP
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, CScrollView::OnFilePrint)
@@ -116,6 +127,7 @@ CShemeView::CShemeView()
 	LineNear=0;
 	InitialUpdate=FALSE;
 	m_bClickingGroup = false;
+	m_bEnableToolTips = false;
 }
 
 CShemeView::~CShemeView()
@@ -169,7 +181,7 @@ void CShemeView::OnDraw(CDC* pDC)
 	}
 	bool bDrawGroup = !pDoc->ParamView.m_vecSelNumbers.empty();
 	//bDrawGroup - флаг, показывающий рисуется сейчас группа или нет
-	if (((!StateNew)||(DrawOnce))&&((!KnotOnly)||(DrawAll)))
+	if( ((!StateNew)||(DrawOnce))&&((!KnotOnly)||(DrawAll)) )
 	{
 		POSITION pos=pDoc->m_pSheme->listElem.GetHeadPosition();
 		while (pos)
@@ -481,7 +493,8 @@ void CShemeView::OnLButtonDown(UINT nFlags, CPoint point)
 		if ( (SelKnot) && (SelKnot->GoDlg()) )  
 		{
 			SetScrollView();
-			DrawAll=1;
+			DrawAll = 1;
+			pDoc->SetModifiedFlag();
 			Invalidate(TRUE);
 		}
 		else 
@@ -496,13 +509,10 @@ void CShemeView::OnLButtonDown(UINT nFlags, CPoint point)
 	{
 		if (TypeElem==IDC_MASS)
 		{
-			coordEnd=ScreenToSheme(point);
-			char strex[50],strey[50];
-			sprintf(strex,"%lf",coordEnd.x);
-			sprintf(strey,"%lf",coordEnd.y);
+			coordEnd = ScreenToSheme(point);
 
 			CKnot *knot=
-				(SelKnot? SelKnot: pDoc->m_pSheme->listKnot.AddKnot( CKnot(strex,strey) ) );
+				(SelKnot? SelKnot: pDoc->m_pSheme->listKnot.AddKnot( CKnot(coordEnd.x,coordEnd.y,pDoc->m_pSheme) ) );
 			pDoc->m_pSheme->AddMass(knot);
 			Invalidate(TRUE);
 		}
@@ -568,17 +578,10 @@ void CShemeView::OnLButtonUp(UINT nFlags, CPoint point)
 	// создавать двухузловой эл-т только если задано два узла
 	if( !(coordEnd == coordStart) )
 	{
-		char strbx[50],strby[50],strex[50],strey[50];
-
-		sprintf(strbx,"%lf",coordStart.x);
-		sprintf(strby,"%lf",coordStart.y);
-		sprintf(strex,"%lf",coordEnd.x);
-		sprintf(strey,"%lf",coordEnd.y);
-
 		CKnot *knotstart=
-			(pKnotBeg? pKnotBeg: pDoc->m_pSheme->listKnot.AddKnot( CKnot(strbx,strby) ) );
+			(pKnotBeg? pKnotBeg: pDoc->m_pSheme->listKnot.AddKnot( CKnot(coordStart.x,coordStart.y,pDoc->m_pSheme) ) );
 		CKnot *knotend=
-			(pKnotEnd? pKnotEnd: pDoc->m_pSheme->listKnot.AddKnot( CKnot(strex,strey) ) );
+			(pKnotEnd? pKnotEnd: pDoc->m_pSheme->listKnot.AddKnot( CKnot(coordEnd.x,coordEnd.y,pDoc->m_pSheme) ) );
 
 		if (knotstart!=knotend)
 		{
@@ -654,7 +657,7 @@ void CShemeView::OnMouseMove(UINT nFlags, CPoint point)
 				SelElem=0;
 			}
 		}
-		KnotOnly=1;
+		KnotOnly = 1;
 		Invalidate(FALSE);
 	}
 	else if (!SelKnot)
@@ -698,6 +701,7 @@ void CShemeView::OnMouseMove(UINT nFlags, CPoint point)
 			Invalidate(TRUE);
 		}
 	}
+	m_ToolTip.Activate( (m_bEnableToolTips)&&(SelElem || SelKnot) );
 
 	CScrollView::OnMouseMove(nFlags, point);
 }
@@ -799,7 +803,7 @@ void CShemeView::OnAddrod()
 	ASSERT_VALID(pDoc);
 
 	// TODO: Add your command handler code here
-	CRod rod(0,0);
+	CRod rod( NULL, NULL, pDoc->m_pSheme );
 	int ret=rod.GoDlg(&pDoc->m_pSheme->listKnot);
 
 	if (ret) 
@@ -824,6 +828,7 @@ void CShemeView::OnScaleadd()
 	
 	pDoc->ParamView.Scale*=sqrt(2);
 	SetScrollView();
+//	if( pDoc->m_pMovieView )	pDoc->m_pMovieView->InitMatr(pDoc);
 	pDoc->UpdateAllViews(this);
 	Invalidate(TRUE);
 }
@@ -836,6 +841,7 @@ void CShemeView::OnScalesub()
 	
 	pDoc->ParamView.Scale/=sqrt(2);
 	SetScrollView();
+//	if( pDoc->m_pMovieView )	pDoc->m_pMovieView->InitMatr(pDoc);
 	pDoc->UpdateAllViews(this);
 	Invalidate(TRUE);
 }
@@ -1095,7 +1101,7 @@ void CShemeView::OnAdddemf()
 	CShemeDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	CDemf demf(0,0);
+	CDemf demf( NULL, NULL, pDoc->m_pSheme );
 	int ret=demf.GoDlg(&pDoc->m_pSheme->listKnot);
 
 	if (ret) 
@@ -1171,7 +1177,7 @@ void CShemeView::OnAddspring()
 	CShemeDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	CSpring sprn(0,0);
+	CSpring sprn( NULL, NULL, pDoc->m_pSheme );
 	int ret=sprn.GoDlg(&pDoc->m_pSheme->listKnot);
 
 	if (ret) 
@@ -1212,7 +1218,7 @@ void CShemeView::OnAddmass()
 	CShemeDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
 
-	CMass mass(0);
+	CMass mass( NULL, pDoc->m_pSheme );
 	int ret=mass.GoDlg(&pDoc->m_pSheme->listKnot);
 
 	if (ret) 
@@ -1237,15 +1243,17 @@ void CShemeView::OnDelelem()
 	ASSERT(SelElem);
 
 	//Просматриваем все элементы
-	POSITION pos2,pos=pDoc->m_pSheme->listElem.GetHeadPosition();
-	while (pos)
+	POSITION pos2, pos = pDoc->m_pSheme->listElem.GetHeadPosition();
+	while( pos )
 	{
-		pos2=pos;
+		pos2 = pos;
 		//Получаем указатель на очередной элемент
-		CElem *elem=pDoc->m_pSheme->listElem.GetNext(pos);
+		CElem *elem = pDoc->m_pSheme->listElem.GetNext(pos);
 		//Если нашли позицию выбранного элемента, то ...
-		if (elem==SelElem)
+		if( elem == SelElem )
 		{	
+			pDoc->m_pSheme->DelElem( elem );
+			/*
 			int busy1=0,busy2=0;
 
 			//Ищем элементы, присоединенные к выбранному
@@ -1296,8 +1304,9 @@ void CShemeView::OnDelelem()
 			//Удаление из списка
 			delete elem;
 			pDoc->m_pSheme->listElem.RemoveAt(pos2);
-			OldSelElem=SelElem=0;
 			pDoc->m_pSheme->SetConnectElements();
+			*/
+			OldSelElem = SelElem = NULL;
 			pDoc->SetModifiedFlag();
 			Invalidate(TRUE);
 			return;
@@ -1381,8 +1390,14 @@ void CShemeView::OnFreqCalc()
 	//Обновление степеней свободы
 	int Count=pDoc->m_pSheme->UpdateAllFree();
 	//Формирование матрицы масс, демпфирования и жесткости
-	int code=pDoc->m_pSheme->SetMatrMDC(Count,1);
-	if (code) return;
+	string msg;
+	int code=pDoc->m_pSheme->SetMatrMDC( Count, &msg, 1 );
+	if(code)
+	{
+		if( !msg.empty() )
+			AfxMessageBox( CString("Ошибка вычисления выражения: ") + msg.c_str() );
+		return;
+	}
 
 	//Вывод диалога
 	CFreqDlg dlg(&pDoc->m_pSheme->listKnot, &(pDoc->m_pSheme->ParamFreq) );
@@ -1392,12 +1407,10 @@ void CShemeView::OnFreqCalc()
 	if (dlg.DoModal()==IDOK)
 	{
 		//Вычисление нужной частотной характеристики
-		double w0, w1, dw;
+		double w0 = pDoc->m_pSheme->ParamFreq.m_wBeg;
+		double w1 = pDoc->m_pSheme->ParamFreq.m_wEnd;
+		double dw = pDoc->m_pSheme->ParamFreq.m_wStep;
 		BOOL FlagExit;
-		CExpression e;
-		e.IsNum(pDoc->m_pSheme->ParamFreq.strwBeg, &w0);
-		e.IsNum(pDoc->m_pSheme->ParamFreq.strwEnd, &w1);
-		e.IsNum(pDoc->m_pSheme->ParamFreq.strwStep, &dw);
 		int Free1=pDoc->m_pSheme->ParamFreq.nFree1;
 		int Free2=pDoc->m_pSheme->ParamFreq.nFree2;
 		int s=pDoc->m_pSheme->matr_C.SizeY;
@@ -1408,14 +1421,21 @@ void CShemeView::OnFreqCalc()
 
 		//Создание прогрессбара
 		CProgressDlg progrdlg(SizeX,_T("Вычисление частотных характеристик"));
+		CString strDetail;
 
 		//Вычисление нужной характеристики
 		for (int i=0;i<SizeX;i++)
 		{
-			double w=w0+i*dw;
-
+			double w = w0 + i*dw;
+			if( pDoc->m_pSheme->m_bRichCalc )
+			{
+				strDetail.Format("Вычисление точки %.16g", w );
+				progrdlg.SetDetails( strDetail + _T("\r\nЗаполнение комплексной матрицы") );
+			}
 			C.UnitMatr(pDoc->m_pSheme->matr_C - pDoc->m_pSheme->matr_M*(w*w),pDoc->m_pSheme->matr_D*w);
 			int flag;
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strDetail + _T("\r\nИнвертирование комплексной матрицы") );
 			C=C.GetInvert(flag);
 			if (!flag) 
 			{
@@ -1427,6 +1447,8 @@ void CShemeView::OnFreqCalc()
 				}
 				continue;
 			}
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strDetail + _T("\r\nВычисление значения в точке") );
 
 			double Re, Im;
 			if (pDoc->m_pSheme->ParamFreq.typeForce==0) 
@@ -1449,9 +1471,9 @@ void CShemeView::OnFreqCalc()
 
 			//double Re=D[0][Free2].Re();
 			//double Im=D[0][Free2].Im();
-			double A=sqrt(pow(Re,2)+pow(Im,2));
+			double A = sqrt(Re*Re + Im*Im);
 			double Fi;
-			double pi=acos(-1);
+			double pi = CNSys2DApp::M_PI;
 
 			//CCoordD c(Re,Im);
 			//Fi=-c.GetAng();
@@ -1505,6 +1527,7 @@ void CShemeView::OnFreqCalc()
 		}
 		//Удаление прогрессбара
 
+		progrdlg.SetDetails( _T("Создание графика") );
 		//Заполнение внутреннего массива графика
 		//Создание окна с графиком и присоединение его к документу
 		CString str1, str2, str3;
@@ -1605,20 +1628,24 @@ void CShemeView::OnSpectrCalc()
 	//Обновление степеней свободы
 	int Count=pDoc->m_pSheme->UpdateAllFree();
 	//Формирование матрицы масс, демпфирования и жесткости
-	int code=pDoc->m_pSheme->SetMatrMDC(Count,1);
-	if (code) return;
+	string msg;
+	int code=pDoc->m_pSheme->SetMatrMDC( Count, &msg, 1 );
+	if (code) 
+	{
+		if( !msg.empty() )
+			AfxMessageBox( CString("Ошибка вычисления выражения: ") + msg.c_str() );
+		return;
+	}
 
 	//Вывод диалога
 	CSpectrDlg dlg(&pDoc->m_pSheme->ParamSpectrOut, &pDoc->m_pSheme->listKnot, SelKnot);
 	if (dlg.DoModal()==IDOK)
 	{
 		//Вычисление нужной частотной характеристики
-		double w0, w1, dw;
+		double w0 = pDoc->m_pSheme->ParamSpectrOut.m_wBeg;
+		double w1 = pDoc->m_pSheme->ParamSpectrOut.m_wEnd;
+		double dw = pDoc->m_pSheme->ParamSpectrOut.m_wStep;
 		BOOL FlagExit;
-		CExpression e;
-		e.IsNum(pDoc->m_pSheme->ParamSpectrOut.strwBeg, &w0);
-		e.IsNum(pDoc->m_pSheme->ParamSpectrOut.strwEnd, &w1);
-		e.IsNum(pDoc->m_pSheme->ParamSpectrOut.strwStep, &dw);
 		int Free1=pDoc->m_pSheme->ParamSpectrOut.nFree1;
 		int s = pDoc->m_pSheme->matr_C.SizeY;
 		CComplexMatr C(s,s);
@@ -1627,15 +1654,24 @@ void CShemeView::OnSpectrCalc()
 
 		//Создание прогрессбара
 		CProgressDlg progrdlg(100,_T("Вычисление спектральной плотности"));
+		CString strDetail, strpt, tmpstr;
 
 		//Вычисление спектральной плотности
+		string strMsg;//сообщение об ошибке
 		for (int i=0;i<SizeX;i++)
 		{
-			double w=w0+i*dw;
-			
+			double w = w0 + i*dw;
+			if( pDoc->m_pSheme->m_bRichCalc )
+			{
+				strpt.Format("Вычисление точки %.16g", w );
+				strDetail = strpt;
+				progrdlg.SetDetails( strDetail + _T("\r\nЗаполнение комплексной матрицы") );
+			}
 			C.UnitMatr(pDoc->m_pSheme->matr_C - pDoc->m_pSheme->matr_M*(w*w),pDoc->m_pSheme->matr_D*w);
 			int flag;
-			C=C.GetInvert(flag);
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strDetail + _T("\r\nИнвертирование комплексной матрицы") );
+			C = C.GetInvert(flag);
 			if (!flag) 
 			{
 				//MessageBox("Ошибка вычисления характеристики");
@@ -1647,6 +1683,11 @@ void CShemeView::OnSpectrCalc()
 
 				continue;
 			}
+			if( pDoc->m_pSheme->m_bRichCalc )
+			{
+				strDetail += _T("\r\nВычисление значений в точке");
+				progrdlg.SetDetails( strDetail );
+			}
 
 			double Rez=0;
 			POSITION pos=pDoc->m_pSheme->listKnot.GetHeadPosition();
@@ -1654,14 +1695,35 @@ void CShemeView::OnSpectrCalc()
 			{
 				CKnot *pkn = pDoc->m_pSheme->listKnot.GetNext(pos);
 				int nFx,nFy;
+				if( pDoc->m_pSheme->m_bRichCalc )
+				{
+					tmpstr.Format("\r\nВычисление в узле №%d", pkn->Num );
+					strDetail += tmpstr;
+					progrdlg.SetDetails( strDetail + _T("\r\nСиловое возмущение") );
+				}
 				//Силовое возмущение
 				nFx=pkn->nXRez;
 				if ((nFx>=0)&&(pkn->PxEnable)&&(!pkn->UxEnable)&&(pkn->TypePx==2)) 
-					Rez+=Sqr(C[Free1][nFx])*pkn->SpPx.GetSpectr(w);
+				{
+					Rez += Sqr(C[Free1][nFx])*pkn->SpPx.GetSpectr( w, &strMsg );
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
+				}
 				nFy=pkn->nYRez;
 				if ((nFy>=0)&&(pkn->PyEnable)&&(!pkn->UyEnable)&&(pkn->TypePy==2)) 
-					Rez+=Sqr(C[Free1][nFy])*pkn->SpPy.GetSpectr(w);
-
+				{
+					Rez+=Sqr(C[Free1][nFy])*pkn->SpPy.GetSpectr( w, &strMsg );
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
+				}
+				if( pDoc->m_pSheme->m_bRichCalc )
+					progrdlg.SetDetails( strDetail + _T("\r\nКинематическое возмущение") );
 				//Кинематическое возмущение
 				Complex c;
 				if ((nFx>=0)&&(pkn->UxEnable)&&(pkn->TypeUx==2))
@@ -1671,7 +1733,12 @@ void CShemeView::OnSpectrCalc()
 					else
 						for (int t=0;t<s;t++)
 							c+=(C[Free1][t]*Complex(pDoc->m_pSheme->matr_C[t][nFx],pDoc->m_pSheme->matr_D[t][nFx]*w));
-					Rez+=Sqr(c)*pkn->SpUx.GetSpectr(w);
+					Rez+=Sqr(c)*pkn->SpUx.GetSpectr( w, &strMsg );
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
 				}
 				if ((nFy>=0)&&(pkn->UyEnable)&&(pkn->TypeUy==2))
 				{
@@ -1680,10 +1747,16 @@ void CShemeView::OnSpectrCalc()
 					else
 						for (int t=0;t<s;t++)
 							c+=(C[Free1][t]*Complex(pDoc->m_pSheme->matr_C[t][nFy],pDoc->m_pSheme->matr_D[t][nFy]*w));
-					Rez+=Sqr(c)*pkn->SpUy.GetSpectr(w);
+					Rez+=Sqr(c)*pkn->SpUy.GetSpectr( w, &strMsg );
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
 				}
 			}
-
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strpt + _T("\r\nСиловое возмущение (взаимная плотность)") );
 			//Силовое возмущение (взаимная плотность)
 			pos=pDoc->m_pSheme->listspectrP.GetHeadPosition();
 			while(pos)
@@ -1703,10 +1776,18 @@ void CShemeView::OnSpectrCalc()
 				case 2: nF2=pCS->pKn2->nARez[0];
 				}
 				if ((nF1>=0)&&(nF2>=0)) 
-					Rez+=2*pCS->Sp.GetSpectr(w)*(
-					C[Free1][nF1].Re()*C[Free1][nF2].Re()+
+				{
+					Rez += 2*pCS->Sp.GetSpectr(w,&strMsg)*(	C[Free1][nF1].Re()*C[Free1][nF2].Re()+
 					C[Free1][nF1].Im()*C[Free1][nF2].Im() );
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
+				}
 			}
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strpt + _T("\r\nКинематическое возмущение (взаимная плотность)") );
 			//Кинематическое возмущение (взаимная плотность)
 			pos = pDoc->m_pSheme->listspectrU.GetHeadPosition();
 			while(pos)
@@ -1733,9 +1814,16 @@ void CShemeView::OnSpectrCalc()
 						c1+=(C[Free1][t]*Complex(pDoc->m_pSheme->matr_C[t][nF1],pDoc->m_pSheme->matr_D[t][nF1]*w));
 						c2+=(C[Free1][t]*Complex(pDoc->m_pSheme->matr_C[t][nF2],pDoc->m_pSheme->matr_D[t][nF2]*w));
 					}
-					Rez+=pCS->Sp.GetSpectr(w)*(c1.Re()*c2.Re()+c1.Im()*c2.Im());
+					Rez+=pCS->Sp.GetSpectr(w,&strMsg)*(c1.Re()*c2.Re()+c1.Im()*c2.Im());
+					if( pDoc->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+					{
+						AfxMessageBox( CString("Произошла ошибка при вычислении выражения: ") + strMsg.c_str() );
+						strMsg = "";
+					}
 				}
 			}
+			if( pDoc->m_pSheme->m_bRichCalc )
+				progrdlg.SetDetails( strpt );
 
 			Dat[0][i]=w;
 			Dat[1][i]=Rez;
@@ -1771,6 +1859,7 @@ void CShemeView::OnSpectrCalc()
 		}
 		//Удаление прогрессбара
 
+		progrdlg.SetDetails( _T("Создание графика") );
 		//Заполнение внутреннего массива графика
 		//Создание окна с графиком и присоединение его к документу
 		CString str1, str2, str3;
@@ -1852,7 +1941,7 @@ void CShemeView::OnAddHardRod()
 	ASSERT_VALID(pDoc);
 
 	// TODO: Add your command handler code here
-	CHardRod Hrod(0,0);
+	CHardRod Hrod( NULL, NULL, pDoc->m_pSheme );
 	int ret = Hrod.GoDlg( &pDoc->m_pSheme->listKnot );
 
 	if( ret ) 
@@ -1935,11 +2024,8 @@ void CShemeView::OnMeshElem()
 			double posX2, posY2;//коор-ты нового узла нового элемента
 			posX2 = left.x + XStep*(i+1);
 			posY2 = left.y + YStep*(i+1);
-			CString strPosX2, strPosY2;
-			strPosX2.Format("%.5lf", posX2 );
-			strPosY2.Format("%.5lf", posY2 );
 
-			CKnot knotNew( strPosX2, strPosY2 ), *kn;
+			CKnot knotNew( posX2, posY2, pDoc->m_pSheme ), *kn;
 			kn = pDoc->m_pSheme->listKnot.AddKnot( knotNew );
 
 			CRod *rodNew = (CRod*)pDoc->AddRod( prev, kn );
@@ -1966,11 +2052,8 @@ void CShemeView::OnMeshElem()
 		//коор-ты нового узла нового элемента
 		double posX = left.x + (right.x - left.x)*rel;
 		double posY = left.y + (right.y - left.y)*rel;
-		CString strPosX, strPosY;
-		strPosX.Format("%.5lf", posX );
-		strPosY.Format("%.5lf", posY );
 
-		CKnot knotNew( strPosX, strPosY ), *kn;
+		CKnot knotNew( posX, posY, pDoc->m_pSheme ), *kn;
 		kn = pDoc->m_pSheme->listKnot.AddKnot( knotNew );
 
 		CElem *elem;
@@ -2076,27 +2159,32 @@ void CShemeView::OnConvertTo()
 	
 	CKnot *kn1 = SelElem->knot1, *kn2 = SelElem->knot2;
 
-	CString E, F, J;
-	double m;
+	CString E, F, J, M;
 	int num = SelElem->GetNumber();
 	if( elemType == IDC_ROD )
 	{
-		E = ((CRod*)SelElem)->GetStrE();
-		F = ((CRod*)SelElem)->GetStrF();
-		J = ((CRod*)SelElem)->GetStrJx();
+		CRod *pRd = static_cast<CRod*>(SelElem);
+		E = pRd->m_E.GetExpr().c_str();
+		F = pRd->m_F.GetExpr().c_str();
+		J = pRd->m_Jx.GetExpr().c_str();
 		//делаем из погонной массы массу стержня
-		m = ((CRod*)SelElem)->GetM()*((CRod*)SelElem)->GetLength();
+		M = pRd->m_m0.GetExpr().c_str();
+		CString tmp;
+		tmp.Format("*(%.16g)", pRd->GetLength());
+		M += tmp;
 	}
 	else
 	{
-		E = ((CHardRod*)SelElem)->GetStrE();
-		F = ((CHardRod*)SelElem)->GetStrF();
-		J = ((CHardRod*)SelElem)->GetStrJ();
+		CHardRod *pHRd = static_cast<CHardRod*>(SelElem);
+		E = pHRd->m_E.GetExpr().c_str();
+		F = pHRd->m_F.GetExpr().c_str();
+		J = pHRd->m_J.GetExpr().c_str();
 		//делаем из массы стержня погонную массу
-		m = ((CHardRod*)SelElem)->GetM()/((CHardRod*)SelElem)->GetLength();
+		M = pHRd->m_M.GetExpr().c_str();
+		CString tmp;
+		tmp.Format("/(%.16g)", pHRd->GetLength());
+		M += tmp;
 	}
-	CString M;
-	M.Format("%.5lf", m );
 	//удаляем старый элемент
 	//Просматриваем все элементы
 	POSITION pos2, pos = pDoc->m_pSheme->listElem.GetHeadPosition();
@@ -2119,19 +2207,19 @@ void CShemeView::OnConvertTo()
 	if( elemType == IDC_ROD )
 	{
 		CHardRod *rodNew = (CHardRod*)pDoc->AddHardRod( kn1, kn2 );
-		rodNew->SetE( E );
-		rodNew->SetF( F );
-		rodNew->SetJ( J );
-		rodNew->SetM( M );
+		rodNew->m_E.Reset(E);
+		rodNew->m_F.Reset(F);
+		rodNew->m_J.Reset(J);
+		rodNew->m_M.Reset(M);
 		rodNew->SetNumber( num );
 	}
 	else
 	{
 		CRod *rodNew = (CRod*)pDoc->AddRod( kn1, kn2 );
-		rodNew->SetE( E );
-		rodNew->SetF( F );
-		rodNew->SetJx( J );
-		rodNew->SetM( M );
+		rodNew->m_E.Reset(E);
+		rodNew->m_F.Reset(F);
+		rodNew->m_Jx.Reset(J);
+		rodNew->m_m0.Reset(M);
 		rodNew->SetNumber( num );
 	}
 
@@ -2207,5 +2295,89 @@ int CShemeView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	pDoc->m_pSheme->m_pDoc = pDoc;
 
+	if( m_ToolTip.Create(this) )
+	{
+		m_ToolTip.AddTool(this);
+		m_ToolTip.Activate(FALSE);
+		EnableToolTips( m_bEnableToolTips );
+	}
 	return 0;
+}
+
+BOOL CShemeView::PreTranslateMessage(MSG* pMsg) 
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if( m_bEnableToolTips )
+		m_ToolTip.RelayEvent(pMsg);
+	return CScrollView::PreTranslateMessage(pMsg);
+}
+
+BOOL CShemeView::OnToolTip( UINT id, NMHDR *pTTTStruct, LRESULT *pResult )
+{
+	static const int N = 80;
+	TOOLTIPTEXT *pTTT = (TOOLTIPTEXT*)pTTTStruct;
+	if( pTTT->uFlags & TTF_IDISHWND )
+	{
+		// idFrom is actually the HWND of the tool
+		CString name;
+		if( SelKnot )
+		{
+			name = SelKnot->GetFullName();
+		}
+		else
+		{
+			ASSERT(SelElem);
+			name = SelElem->GetName();
+		}
+		if( name.GetLength() >= (N-1) )
+		{
+			strncpy( pTTT->lpszText, name.LockBuffer(), N - 4 );
+			pTTT->lpszText[N-4] = '.';
+			pTTT->lpszText[N-3] = '.';
+			pTTT->lpszText[N-2] = '.';
+			pTTT->lpszText[N-1] = '\0';
+			name.UnlockBuffer();
+		}
+		else
+		{
+			strcpy( pTTT->lpszText, name.LockBuffer() );
+			name.UnlockBuffer();
+		}
+		DrawAll = 1;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void CShemeView::OnToolTips() 
+{
+	// TODO: Add your command handler code here
+	m_bEnableToolTips = !m_bEnableToolTips;
+	EnableToolTips( m_bEnableToolTips );
+}
+
+void CShemeView::OnUpdateToolTips(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck( m_bEnableToolTips );
+}
+
+void CShemeView::OnGroupClickKnots() 
+{
+	// TODO: Add your command handler code here
+	CShemeDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	m_bEnableToolTips = false;
+	pDoc->GroupClicking( 2 );//набрать группу узлов
+	pDoc->UpdateAllViews(NULL);	
+}
+
+void CShemeView::OnGroupClickElems() 
+{
+	// TODO: Add your command handler code here
+	CShemeDoc* pDoc = GetDocument();
+	ASSERT_VALID(pDoc);
+	m_bEnableToolTips = false;
+	pDoc->GroupClicking( 1 );//набрать группу элементов
+	pDoc->UpdateAllViews(NULL);
 }

@@ -9,13 +9,14 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include "StdAfxMy.h"
 #include <afxwin.h>
 #include "coordd.h"
 
 class CParamView  
 {
 public:
-	void Serialize(CArchive& ar);
+	void Serialize( CArchive&, int );
 	void DelZeroInSelNumbers();
 
 	double Scale;
@@ -40,7 +41,7 @@ public:
 	CString m_strFreeFontName, m_strNumElemsFontName, m_strNumKnotsFontName;
 	//шрифт для вывода номеров узлов
 	CFont m_fntKnot;
-	//шрифт для вывода собств.частот на экране
+	//шрифт для вывода собств.частот и заголовка графика на экране
 	CFont m_fntFree;
 	//шрифт для вывода номеров эл-ов
 	CFont m_fntElems;

@@ -49,12 +49,43 @@ bool SpringPtr::Construct( KnotPtr *kn1, KnotPtr *kn2 )
 	return true;
 }
 
+bool SpringPtr::Attach( CElem *pEl )
+{
+//ф-ция присоединяет к объекту указатель на элемент.
+//после удачного выполнения этой ф-ции данный объект
+//и присоединённый элемент - одно и то же.
+	ASSERT( (pEl != NULL)&&(pEl->TypeElem == IDC_SPRING) );
+	ASSERT( (pEl->knot1 != NULL)&&(pEl->knot2 != NULL) );
+	Destruct();
+	m_pElem = static_cast<CSpring*>(pEl);
+	Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+	if( p.second == false )
+		++(*p.first).second;
+	KnotPtr::AddRef( pEl->knot1 );
+	KnotPtr::AddRef( pEl->knot2 );
+	return true;
+}
+
+bool SpringPtr::Detach()
+{
+//ф-ция отсоединяет от данного объекта указатель на элемент.
+	if( m_pElem == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 void SpringPtr::Destruct()
 {
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+		{
+			m_pElem = NULL;
+			return;
+		}
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -77,15 +108,20 @@ void SpringPtr::InitBy( const SpringPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			ASSERT( it != m_RefMap.end() );
-			(*it).second++;
+			//ASSERT( it != m_RefMap.end() );
+			if( it == m_RefMap.end() )
+			{
+				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+			}
+			else
+				(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}
 	}
 }
 
-CSpring* SpringPtr::GetElem() const
+CElem* SpringPtr::GetElem() const
 {
 	ASSERT(m_pElem);
 	return m_pElem;
@@ -137,4 +173,14 @@ AlgolMatr SpringPtr::GetMatrC() const
 	matr.ConvertToAlgolMatr( am );
 	am.SetMinCol(0);
 	return am;
+}
+
+int SpringPtr::GetRefCount()
+{
+	if( m_pElem == NULL )
+		return -1;
+	SpringPtr::Refs::iterator it = SpringPtr::m_RefMap.find(m_pElem);
+	if( it == SpringPtr::m_RefMap.end() )
+		return -1;
+	return (*it).second;
 }

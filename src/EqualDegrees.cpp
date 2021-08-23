@@ -6,6 +6,8 @@
 #include "NSys2D.h"
 #include "EqualDegrees.h"
 
+#include "StdAfxMy.h"
+
 #include<new>
 #include<algorithm>
 
@@ -109,6 +111,7 @@ void CEqualDegrees::Prepare()
 		AfxMessageBox("Ошибка выделения пямяти. Закройте, пожалуйста, приложение.");
 		return;
 	}
+#ifdef _DEBUG
 	TRACE0("\nTriples before prepare:\n");
 	POSITION pos1 = m_lstTriples->GetHeadPosition();
 	while( pos1 )
@@ -119,24 +122,181 @@ void CEqualDegrees::Prepare()
 			m_lstTriples->GetAt(pos1).L);
 		m_lstTriples->GetNext(pos1);
 	}
+#endif
 
 	//ВНИМАНИЕ: эта ф-ция должна быть обязательно
 	//вызвана в конце заполнения объекта типа CEqualDegrees
 	POSITION pos = m_lstPairs->GetHeadPosition();
 	while( pos )
 	{
-		sort( m_lstPairs->GetAt(pos).begin(),
-				m_lstPairs->GetAt(pos).end() );
-		for( int i = 0; i < m_lstPairs->GetAt(pos).size()-1; i++ )
+		ARRAY *pAr = &m_lstPairs->GetNext(pos);
+		sort( pAr->begin(), pAr->end() );
+		unique( pAr->begin(), pAr->end() );
+	}
+	//готовим вектор решения
+	m_SolVect.clear();
+	for( int i = 0; i < m_size; i++ )
+	{
+		pos = m_lstPairs->GetHeadPosition();
+		bool IsInPairs = false;
+		while( pos )
 		{
-			//поиск в векторе равных значений и удаление лишних из них
-			while( m_lstPairs->GetAt(pos).at(i) == m_lstPairs->GetAt(pos).at(i+1) )
+			if( m_lstPairs->GetAt(pos).at(0) == i )
 			{
-				ARRAY::iterator it = m_lstPairs->GetAt(pos).begin();
-				it += i;//it указывает на (i+1)-й элемент
-				m_lstPairs->GetAt(pos).erase(it);
+				//если эта степень находится в начале одного из векторов,
+				//значит на неё мы "меняем" все остальные степени
+				//и её заносим в вектор решения
+				m_SolVect.push_back( i );
+				IsInPairs = true;
+				break;
 			}
+			int n = m_lstPairs->GetAt(pos).size();
+			//проверяем остальные степени
+			for( int j = 1; j < n; j++ )
+			{
+				if( m_lstPairs->GetAt(pos).at(j) == i )
+				{
+					//если такая степень есть не в начале вектора,
+					//то мы её не должны использовать
+					IsInPairs = true;
+					break;
+				}
+			}
+			m_lstPairs->GetNext(pos);
 		}
+		if( IsInPairs )	continue;
+
+		pos = m_lstTriples->GetHeadPosition();
+		bool IsInTriples = false;
+		while( pos )
+		{
+			#ifdef _DEBUG
+			int tmp = m_lstTriples->GetAt(pos).right_move;
+			ASSERT( tmp >= 0 );
+			#endif
+			if( m_lstTriples->GetAt(pos).right_move == i )
+			{
+				//если эта степень является правым прогибом
+				//стержня, то она точно не участвует в решении
+				IsInTriples = true;
+				break;
+			}
+			m_lstTriples->GetNext(pos);
+		}
+		if( IsInTriples )	continue;
+
+		//если этой степени нет нигде, то она точно участвует в решении
+		//и её заносим в вектор решения
+		m_SolVect.push_back( i );
+	}
+
+	sort( m_SolVect.begin(), m_SolVect.end() );
+///////////////////////////////////////////////////////
+#ifdef _DEBUG
+	TRACE0("\nTriples after prepare:\n");
+	POSITION pos2 = m_lstTriples->GetHeadPosition();
+	while( pos2 )
+	{
+		TRACE("%d=%d+%d*%.3lf\n", m_lstTriples->GetAt(pos2).right_move,
+			m_lstTriples->GetAt(pos2).left_move,
+			m_lstTriples->GetAt(pos2).rotate,
+			m_lstTriples->GetAt(pos2).L);
+		m_lstTriples->GetNext(pos2);
+	}
+#endif
+///////////////////////////////////////////////////////
+	//создание конденсирующих матриц 
+	int n = m_SolVect.size();
+	if( !m_Cond.ReSize( m_size, n ) )
+		return;
+	for( int r = 0; r < n; r++ )
+	{
+		m_Cond( m_SolVect[r], r ) = 1.0;
+	}
+
+	pos = m_lstTriples->GetHeadPosition();
+	while( pos )
+	{
+		InsertTripleInMatr( m_lstTriples->GetNext(pos) );
+	}
+
+	pos = m_lstPairs->GetHeadPosition();
+	while( pos )
+	{
+		ARRAY *pAr = &m_lstPairs->GetNext(pos);
+		ASSERT( pAr->size() > 0 );
+		int base = pAr->at(0);
+		if( base >= 0 )
+		{
+			ARRAY::iterator beg = m_SolVect.begin(), fin = m_SolVect.end();
+			ARRAY::iterator it = find( beg, fin, base );
+			ASSERT( it != fin );
+			base = distance( beg, it );
+			int s = pAr->size();
+			for( int i = 1; i < s; i++ )
+				m_Cond( pAr->at(i), base ) += 1.0;
+		}
+	}
+
+	////////////////////////////////////////////
+#ifdef _DEBUG
+	TRACE0("\n\nCondMatr:\n");
+	for( r = 0; r < m_Cond.SizeY; r++ )
+	{
+		TRACE1("\n%d>>> ", r);
+		for( int c = 0; c < m_Cond.SizeX; c++ )
+		{
+			//TRACE1("%.5lf ", m_Cond[r][c] );
+			TRACE1("%.5lf ", m_Cond.GetAt( r, c ) );
+		}
+	}
+#endif
+	////////////////////////////////////////////
+	m_CondT = !m_Cond;
+}
+
+/*
+void CEqualDegrees::Prepare1()
+{
+	if( !m_lstPairs || !m_lstTriples )
+	{
+		AfxMessageBox("Ошибка выделения пямяти. Закройте, пожалуйста, приложение.");
+		return;
+	}
+#ifdef _DEBUG
+	TRACE0("\nTriples before prepare:\n");
+	POSITION pos1 = m_lstTriples->GetHeadPosition();
+	while( pos1 )
+	{
+		TRACE("%d=%d+%d*%.3lf\n", m_lstTriples->GetAt(pos1).right_move,
+			m_lstTriples->GetAt(pos1).left_move,
+			m_lstTriples->GetAt(pos1).rotate,
+			m_lstTriples->GetAt(pos1).L);
+		m_lstTriples->GetNext(pos1);
+	}
+#endif
+
+	//ВНИМАНИЕ: эта ф-ция должна быть обязательно
+	//вызвана в конце заполнения объекта типа CEqualDegrees
+	POSITION pos = m_lstPairs->GetHeadPosition();
+	while( pos )
+	{
+		ARRAY *pAr = &m_lstPairs->GetAt(pos);
+		sort( pAr->begin(), pAr->end() );
+		unique( pAr->begin(), pAr->end() );
+
+//		int sm1 = pAr->size() - 1;
+//		for( int i = 0; i < sm1; i++ )
+//		{
+//			//поиск в векторе равных значений и удаление лишних из них
+//			while( pAr->at(i) == pAr->at(i+1) )
+//			{
+//				ARRAY::iterator it = pAr->begin();
+//				it += i;//it указывает на (i+1)-й элемент
+//				pAr->erase(it);
+//			}
+//		}
+		
 		m_lstPairs->GetNext(pos);
 	}
 	ARRAY vecNotSol;// дополнительный вектор номеров степеней свободы,
@@ -179,10 +339,14 @@ void CEqualDegrees::Prepare()
 		bool IsInTriples = false;
 		while( pos )
 		{
-			int tmp = m_lstTriples->GetAt(pos).right_move;// DEBUG
+			#ifdef _DEBUG
+			int tmp = m_lstTriples->GetAt(pos).right_move;
+			#endif
 			if( m_lstTriples->GetAt(pos).right_move < 0 )
 			{
-				int tmp2 = m_lstTriples->GetAt(pos).left_move;// DEBUG
+				#ifdef _DEBUG
+				int tmp2 = m_lstTriples->GetAt(pos).left_move;
+				#endif
 				if( m_lstTriples->GetAt(pos).left_move == i )
 				{
 					//если эта степень является левым прогибом
@@ -212,6 +376,7 @@ void CEqualDegrees::Prepare()
 
 	sort( m_SolVect.begin(), m_SolVect.end() );
 ///////////////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\nTriples after prepare:\n");
 	POSITION pos2 = m_lstTriples->GetHeadPosition();
 	while( pos2 )
@@ -222,6 +387,7 @@ void CEqualDegrees::Prepare()
 			m_lstTriples->GetAt(pos2).L);
 		m_lstTriples->GetNext(pos2);
 	}
+#endif
 ///////////////////////////////////////////////////////
 	//создание конденсирующих матриц 
 	int n = m_SolVect.size();
@@ -232,7 +398,8 @@ void CEqualDegrees::Prepare()
 		int i = m_SolVect[r];
 		ARRAY::iterator it = find( vecNotSol.begin(), vecNotSol.end(), i );
 		if( it != vecNotSol.end() )	vecNotSolCol.push_back( r );
-		m_Cond[i][r] += 1.0;
+		//m_Cond[i][r] += 1.0;
+		m_Cond.GetAt( i, r ) += 1.0;
 	}
 	
 //	n = vecNotSol.size();
@@ -260,7 +427,8 @@ void CEqualDegrees::Prepare()
 			for( int i = 0; i < n; i++ )
 			{
 				for( int j = 1; j < s; j++ )
-					m_Cond[m_lstPairs->GetAt(pos).at(j)][i] = 0.0;
+					//m_Cond[m_lstPairs->GetAt(pos).at(j)][i] = 0.0;
+					m_Cond.GetAt( m_lstPairs->GetAt(pos).at(j), i ) = 0.0;
 			}
 		}
 		else
@@ -271,10 +439,12 @@ void CEqualDegrees::Prepare()
 				//вычисляем величину элемента суммированных строк
 				double val = 0.0;
 				for( int j = 0; j < s; j++ )
-					val += m_Cond[m_lstPairs->GetAt(pos).at(j)][i];
+					//val += m_Cond[m_lstPairs->GetAt(pos).at(j)][i];
+					val += m_Cond.GetAt( m_lstPairs->GetAt(pos).at(j), i );
 				//заносим эту величину в строки
 				for( j = 0; j < s; j++ )
-					m_Cond[m_lstPairs->GetAt(pos).at(j)][i] = val;
+					//m_Cond[m_lstPairs->GetAt(pos).at(j)][i] = val;
+					m_Cond.GetAt( m_lstPairs->GetAt(pos).at(j), i ) = val;
 			}
 		}
 		m_lstPairs->GetNext(pos);
@@ -299,7 +469,8 @@ void CEqualDegrees::Prepare()
 			{
 				it = find( vecNotSolCol.begin(), vecNotSolCol.end(), j );
 				if( it != vecNotSolCol.end() )	continue;
-				NewCond[r][c] = m_Cond[i][j];
+				//NewCond[r][c] = m_Cond[i][j];
+				NewCond[r][c] = m_Cond.GetAt( i, j );
 				c++;
 			}
 			r++;
@@ -308,17 +479,22 @@ void CEqualDegrees::Prepare()
 	}
 
 	////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\n\nCondMatr:\n");
 	for( r = 0; r < m_Cond.SizeY; r++ )
 	{
 		TRACE1("\n%d>>> ", r);
 		for( int c = 0; c < m_Cond.SizeX; c++ )
 		{
-			TRACE1("%.5lf ", m_Cond[r][c] );
+			//TRACE1("%.5lf ", m_Cond[r][c] );
+			TRACE1("%.5lf ", m_Cond.GetAt( r, c ) );
 		}
 	}
+#endif
 	////////////////////////////////////////////
+	m_CondT = !m_Cond;
 }
+*/
 
 int CEqualDegrees::CountDegrees( int deg )
 {
@@ -372,8 +548,9 @@ void CEqualDegrees::AddTriple( int right, int left, int rot, double length )
 		if( left >= 0 )
 		{
 			if( rot >= 0 )
-				ASSERT( left< rot );
-			if( (right >= 0)&&(left > right) )
+				ASSERT( left < rot );
+			//if( left > right )
+			if( right < 0 )
 			{
 				int tmp = left;
 				left = right;
@@ -381,6 +558,26 @@ void CEqualDegrees::AddTriple( int right, int left, int rot, double length )
 				length *= -1;
 			}
 		}
+		POSITION pos = m_lstTriples->GetHeadPosition();
+		while( pos )
+		{
+			if( m_lstTriples->GetNext(pos).right_move == right )
+			{
+				if( left < 0 )
+					return;
+				pos = m_lstTriples->GetHeadPosition();
+				while( pos )
+				{
+					if( m_lstTriples->GetNext(pos).right_move == left )
+						return;
+				}
+				int tmp = left;
+				left = right;
+				right = tmp;
+				length *= -1;
+			}
+		}
+		
 		Triple tmp;
 		tmp.left_move = left;
 		tmp.right_move = right;
@@ -392,6 +589,11 @@ void CEqualDegrees::AddTriple( int right, int left, int rot, double length )
 
 void CEqualDegrees::ModifyMatrMass( CMatr &M, CMatr C )
 {
+//	данную ф-цию предполагалось использовать для метода
+//	конденсации матрицы масс, но этот метод не сделан,
+//	поэтому эта ф-ция - пустышка, т.е. ни откуда не вызывается.
+	ASSERT(FALSE);
+
 	if( !m_lstPairs || !m_lstTriples )
 	{
 		AfxMessageBox("Ошибка выделения пямяти. Закройте, пожалуйста, приложение.");
@@ -501,10 +703,11 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 		return;
 	}
 
-	m = !m_Cond*m*m_Cond;
+	m = m_CondT*m*m_Cond;
 	return;
 
 ///////////////////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\nPairs before modify:\n");
 	POSITION pos2 = m_lstPairs->GetHeadPosition();
 	while( pos2 )
@@ -516,7 +719,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 		}
 		m_lstPairs->GetNext(pos2);
 	}
-
+#endif
 	//учёт "поворотно-прогибных" степеней свободы
 	POSITION pos = m_lstTriples->GetHeadPosition();
 	while( pos )
@@ -527,6 +730,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 	}//учёт поворотно-изгибных
 
 ////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\n\nBefore modify pairs:\n");
 	for( int r = 0; r < m.SizeY; r++ )
 	{
@@ -536,6 +740,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 			TRACE1("%.5lf ", m[r][c] );
 		}
 	}
+#endif
 ////////////////////////////////////////////
 
 	//учёт равных степеней свободы
@@ -574,6 +779,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 					m[m_lstPairs->GetAt(pos).at(j)][i] = val;
 			}
 ////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\n\nBefore rows adding:\n");
 	for( int r = 0; r < m.SizeY; r++ )
 	{
@@ -583,6 +789,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 			TRACE1("%.5lf ", m[r][c] );
 		}
 	}
+#endif
 ////////////////////////////////////////////
 
 			//складываем столбцы
@@ -633,6 +840,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 
 	m = new_matr;
 
+#ifdef _DEBUG
 	TRACE0("\nPairs after modify:\n");
 	pos2 = m_lstPairs->GetHeadPosition();
 	while( pos2 )
@@ -644,7 +852,7 @@ void CEqualDegrees::ModifyMatr(CMatr & m)
 		}
 		m_lstPairs->GetNext(pos2);
 	}
-
+#endif
 }
 
 void CEqualDegrees::GetSolVect(ARRAY & sv)
@@ -665,6 +873,10 @@ void CEqualDegrees::DeModifyVector(CMatr & v)
 //(до модификации матрицы) с учётом ранее введенных
 //"жёстких" степеней свободы.
 //вектор должен хранится в столбце !!!
+	//???
+	v = m_Cond*v;
+	return;
+	//???
 	CMatr NewVect(m_size,1);
 
 	int n = m_SolVect.size();
@@ -707,8 +919,6 @@ void CEqualDegrees::DeModifyVector(CMatr & v)
 	v = NewVect;
 }
 
-
-
 void CEqualDegrees::InsertTripleInMatr( Triple tr )
 {
 	if( !m_lstPairs || !m_lstTriples )
@@ -716,7 +926,7 @@ void CEqualDegrees::InsertTripleInMatr( Triple tr )
 		AfxMessageBox("Ошибка выделения пямяти. Закройте, пожалуйста, приложение.");
 		return;
 	}
-	if( tr.right_move < 0 )	return;
+	ASSERT( tr.right_move >= 0 );
 	if( tr.left_move >= 0 )
 	{
 		//ищем: есть ли данный Triple.left_move где нибудь
@@ -725,34 +935,37 @@ void CEqualDegrees::InsertTripleInMatr( Triple tr )
 		POSITION pos = m_lstTriples->GetHeadPosition();
 		while( pos )
 		{
-			if( tr.left_move == m_lstTriples->GetAt(pos).right_move )
+			Triple *pTr = &m_lstTriples->GetNext(pos);
+			if( tr.left_move == pTr->right_move )
 			{
 				is = true;
 				Triple temp;
 				temp.right_move = tr.right_move;
-				temp.left_move = m_lstTriples->GetAt(pos).left_move;
-				temp.rotate = m_lstTriples->GetAt(pos).rotate;
-				temp.L = m_lstTriples->GetAt(pos).L;
+				temp.left_move = pTr->left_move;
+				temp.rotate = pTr->rotate;
+				temp.L = pTr->L;
 
 				InsertTripleInMatr( temp );
 			}
-			m_lstTriples->GetNext(pos);
 		}
 		if( !is )
 		{
 			//если нигде не нашли, то добавляем tr.right_move
 			//в tr.left_move.
-			m_Cond[tr.right_move][tr.left_move] += 1.0;
+			ARRAY::iterator beg = m_SolVect.begin(), fin = m_SolVect.end();
+			ARRAY::iterator it = find( beg, fin, tr.left_move );
+			ASSERT( it != fin );
+			m_Cond( tr.right_move, distance( beg, it ) ) += 1.0;
 		}//!is
 	}
 
 	//добавляем tr.right_move в "поворотную" строку
 	if( tr.rotate >= 0 )
 	{
-		int column;
-		ARRAY::iterator it;
-		it = find( m_SolVect.begin(), m_SolVect.end(), tr.rotate );
-		if( it != m_SolVect.end() )
+		int column = -1;
+		ARRAY::iterator beg = m_SolVect.begin(), finSV = m_SolVect.end();
+		ARRAY::iterator it = find( beg, finSV, tr.rotate );
+		if( it != finSV )
 		{
 			//если есть, то это используемая степень свободы
 			column = tr.rotate;
@@ -763,19 +976,22 @@ void CEqualDegrees::InsertTripleInMatr( Triple tr )
 			POSITION pos = m_lstPairs->GetHeadPosition();
 			while( pos )
 			{
-				ARRAY::iterator it;
-				it = find( m_lstPairs->GetAt(pos).begin(),
-						m_lstPairs->GetAt(pos).end(),
-						tr.rotate );
-				if( it != m_lstPairs->GetAt(pos).end() )
+				ARRAY *pAr = &m_lstPairs->GetNext(pos);
+				ARRAY::iterator fin = pAr->end();
+				it = find( pAr->begin(), fin, tr.rotate );
+				if( it != fin )
 				{
-					column = m_lstPairs->GetAt(pos).at(0);
+					column = pAr->at(0);
+					break;
 				}
-				m_lstPairs->GetNext(pos);
 			}
 		}
-
-		m_Cond[tr.right_move][column] += tr.L;
+		if( column >= 0 )
+		{
+			it = find( beg, finSV, column );
+			ASSERT( it != finSV );
+			m_Cond( tr.right_move, distance( beg, it ) ) += tr.L;
+		}
 	}
 }
 
@@ -837,8 +1053,8 @@ void CEqualDegrees::ModifyVect(CMatr & v)
 		return;
 	}
 
-	TrimVect(v);
-	v = !m_Cond*v;
+	//TrimVect(v);
+	v = m_CondT*v;
 	return;
 
 	//учёт "поворотно-прогибных" степеней свободы
@@ -910,6 +1126,10 @@ void CEqualDegrees::DeModifyMatrix( CMatr &matr )
 	//расширение матрицы m до первоначальных размеров
 	//(до модификации матрицы) с учётом ранее введенных
 	//"жёстких" степеней свободы.
+	//???
+	matr = m_Cond*matr;
+	return;
+	//???
 	CMatr NewMatr( m_size, matr.SizeX );
 
 	int n = m_SolVect.size();
@@ -935,6 +1155,7 @@ void CEqualDegrees::DeModifyMatrix( CMatr &matr )
 		m_lstPairs->GetNext(pos);
 	}
 
+#ifdef _DEBUG
 	TRACE0("\nTriples:\n");
 	pos = m_lstTriples->GetHeadPosition();
 	while( pos )
@@ -945,7 +1166,7 @@ void CEqualDegrees::DeModifyMatrix( CMatr &matr )
 			m_lstTriples->GetAt(pos).L);
 		m_lstTriples->GetNext(pos);
 	}
-
+#endif
 	pos = m_lstTriples->GetHeadPosition();
 	while( pos )
 	{
@@ -964,6 +1185,7 @@ void CEqualDegrees::DeModifyMatrix( CMatr &matr )
 		m_lstTriples->GetNext(pos);
 	}
 
+#ifdef _DEBUG
 	TRACE0("\nNewMatr:\n");
 	for( int r = 0; r < m_size; r++ )
 	{
@@ -973,8 +1195,8 @@ void CEqualDegrees::DeModifyMatrix( CMatr &matr )
 		}
 		TRACE0("\n");
 	}
+#endif
 	matr = NewMatr;
-
 }
 
 int CEqualDegrees::GetModifiedSize()
@@ -1049,6 +1271,7 @@ void CEqualDegrees::TrimMatr( CMatr &M, ARRAY &vec )
 
 void CEqualDegrees::TrimCondMatr( ARRAY &vec )
 {
+	AfxMessageBox("Triming !!!");
 	if( !m_lstPairs || !m_lstTriples )
 	{
 		AfxMessageBox("Ошибка выделения пямяти. Закройте, пожалуйста, приложение.");
@@ -1064,12 +1287,14 @@ void CEqualDegrees::TrimCondMatr( ARRAY &vec )
 		c = 0;
 		for( int j = 0; j < m_Cond.SizeX; j++ )
 		{
-			NewM[r][c] = m_Cond[i][j];
+			//NewM[r][c] = m_Cond[i][j];
+			NewM[r][c] = m_Cond.GetAt( i, j );
 			c++;
 		}
 		r++;
 	}
 	m_Cond = NewM;
+	m_CondT = !m_Cond;
 }
 
 void CEqualDegrees::TrimAllMatr( CMatr &M, CMatr &D, CMatr &C )
@@ -1105,7 +1330,7 @@ void CEqualDegrees::TrimAllMatr( CMatr &M, CMatr &D, CMatr &C )
 	TrimMatr( C, vecNotSol );
 }
 
-void CEqualDegrees::ModifyMatrMDC( CMatr &M, CMatr &D, CMatr &C, bool condence )
+void CEqualDegrees::ModifyMatrMDC( CMatr &M, CMatr &D, CMatr &C )
 {
 	ASSERT( (M.SizeX == m_size)&&(M.SizeY == m_size) );
 	ASSERT( (D.SizeX == m_size)&&(D.SizeY == m_size) );
@@ -1116,28 +1341,10 @@ void CEqualDegrees::ModifyMatrMDC( CMatr &M, CMatr &D, CMatr &C, bool condence )
 		return;
 	}
 
-	TrimAllMatr( M, D, C );// подготовить м-цы
-	if( condence )
-	{
-		ModifyMatrMass( M, C );
-//		ModifyMatrMass( C, C );
-	}
-	else
-	{
-		M = !m_Cond*M*m_Cond;
-//		C = !m_Cond*C*m_Cond;
-	}
-	D = !m_Cond*D*m_Cond;
-	C = !m_Cond*C*m_Cond;	
-}
-
-void CEqualDegrees::ModifyMatrMC( CMatr &M, CMatr &C )
-{
-	ASSERT( (M.SizeX == m_size)&&(M.SizeY == m_size) );
-	ASSERT( (C.SizeX == m_size)&&(C.SizeY == m_size) );
- 
-	M = !m_Cond*M*m_Cond;
+	//TrimAllMatr( M, D, C );// подготовить м-цы
 	//ModifyMatrMass( M, C );
-	C = !m_Cond*C*m_Cond;
+	M = m_CondT*M*m_Cond;
+	D = m_CondT*D*m_Cond;
+	C = m_CondT*C*m_Cond;	
 }
 

@@ -24,9 +24,9 @@ CSpectrDlg::CSpectrDlg(CFreqParam *pparam, CListKnot *plistknot, CKnot *pknot, C
 	
 	//{{AFX_DATA_INIT(CSpectrDlg)
 	m_Free = 0;
-	m_W0 = _T("");
-	m_W1 = _T("");
-	m_dW = _T("");
+	m_W0 = 0.0;
+	m_W1 = 0.0;
+	m_dW = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -58,9 +58,9 @@ BOOL CSpectrDlg::OnInitDialog()
 	
 	// TODO: Add extra initialization here
 	InvalidateKnot();
-	m_W0=pParamOut->strwBeg;
-	m_W1=pParamOut->strwEnd;
-	m_dW=pParamOut->strwStep;
+	m_W0 =pParamOut->m_wBeg;
+	m_W1 = pParamOut->m_wEnd;
+	m_dW = pParamOut->m_wStep;
 
 	UpdateData(false);
 
@@ -111,9 +111,9 @@ void CSpectrDlg::OnOK()
 	if (m_Free==1) pParamOut->nFree1=pParamOut->pKnot1->nYRez;
 	if (m_Free==2) pParamOut->nFree1=pParamOut->pKnot1->nARez[0];
 
-	pParamOut->strwBeg=m_W0;
-	pParamOut->strwEnd=m_W1;
-	pParamOut->strwStep=m_dW;
+	pParamOut->m_wBeg = m_W0;
+	pParamOut->m_wEnd = m_W1;
+	pParamOut->m_wStep = m_dW;
 	
 	CDialog::OnOK();
 }
@@ -122,36 +122,5 @@ BOOL CSpectrDlg::VerifyInfo()
 {
 	UpdateData();
 
-	CExpression e;
-	int ret;
-	CString str1;
-
-	ret=e.IsNum(m_W0);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Начальная частота не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_W1);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Конечная частота не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_dW);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Шаг частоты не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
 	return true;
 }

@@ -73,13 +73,13 @@ CCoordD CCoordD::operator /(double num)
 
 double CCoordD::GetAng()
 {
-	double M_PI=acos(-1);
-	double M_PI_2=M_PI/2.0;
+//	double M_PI=acos(-1);
+//	double M_PI_2=M_PI/2.0;
 	if (x>0.0)               return atan(y/x);
-    if ((x<0.0)&&(y>=0.0))   return (M_PI+atan(y/x));
-    if ((x<0.0)&&(y<0.0))    return (-M_PI+atan(y/x));
-    if ((x==0.0)&&(y>0.0))   return (M_PI_2);
-    if ((x==0.0)&&(y<0.0))   return (-M_PI_2);
+    if ((x<0.0)&&(y>=0.0))   return (CNSys2DApp::M_PI+atan(y/x));
+    if ((x<0.0)&&(y<0.0))    return (-CNSys2DApp::M_PI+atan(y/x));
+    if ((x==0.0)&&(y>0.0))   return (CNSys2DApp::M_PI_2);
+    if ((x==0.0)&&(y<0.0))   return (-CNSys2DApp::M_PI_2);
 
     return 0.0;
 }

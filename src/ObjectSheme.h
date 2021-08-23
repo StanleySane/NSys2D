@@ -12,14 +12,23 @@
 #include "coordd.h"
 #include "ParamView.h"
 
+class CShemeDoc;
+class CSheme;
+
 class CObjectSheme  
 {
 public:
-	virtual void Serialize(CArchive & ar);
-	POINT ShemeToScreen(CCoordD &coord, CParamView *pParamView);
+	virtual void Serialize( CArchive &ar, int sv );
+	static POINT ShemeToScreen(CCoordD &coord, CParamView *pParamView);
 	virtual void Draw(CDC *dc, CParamView* pParamView)=0;
-	CObjectSheme();
+	virtual void DrawGL( CShemeDoc*, int ) = 0;
+
+	CObjectSheme( CSheme *p = NULL );
 	virtual ~CObjectSheme();
+	CObjectSheme( const CObjectSheme& );
+	CObjectSheme& operator=( const CObjectSheme& );
+
+	CSheme *m_pSheme;//указатель на схему, к которой прикреплён объект
 
 };
 

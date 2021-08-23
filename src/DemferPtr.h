@@ -15,6 +15,7 @@
 class CDemf;
 class KnotPtr;
 class AlgolMatr;
+class CElem;
 
 class DemferPtr
 {
@@ -45,8 +46,12 @@ public:
 	{	Destruct();	}
 
 	//ф-ции-члены
-	CDemf* GetElem() const;
+	CElem* GetElem() const;
 	bool Create( KnotPtr*, KnotPtr* );
+	bool Attach( CElem* );
+	bool Detach();
+	int GetRefCount();
+
 	double GetLength() const;
 	AlgolMatr GetMatrM() const;
 	AlgolMatr GetMatrD() const;

@@ -11,47 +11,57 @@
 
 #include "Elem.h"
 
+class CShemeDoc;
+class CSheme;
+
 class CDemf : public CElem  
 {
+	void InitBy( const CDemf& );
 private:
 	double a_X1;
 	double a_X3;
 	double a_X5;
 	double a_XS;
-	double a_XX;
-	CString str_X1;
-	CString str_X3;
-	CString str_X5;
-	CString str_XS;
-	CString str_XX;
+//	CString str_X1;
+//	CString str_X3;
+//	CString str_X5;
+//	CString str_XS;
+//	CString str_XX;
 public:
-//	CString GetStrXS();
-	virtual void Serialize(CArchive & ar);
-	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
-	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
-
-	void GetMatrM( CMatr& ) const;
-	void GetMatrD( CMatr& ) const;
-	void GetMatrC( CMatr& ) const;
-//	double GetDemfXX();
-	double GetDemfX(int i) const;
-//	CString GetStrXX();
-	//получить строку для диалога в нужную строку (i)
-	CString GetStrX(int i);
-//	double SetDemfXX(CString str);
-//	double SetDemfX1(CString str);
-//	double GetDemfX5();
-//	double GetDemfX3();
-//	CString GetStrX5();
-//	CString GetStrX3();
-	double SetDemfX(CString str, int i);
-//	double SetDemfX3(CString str);
+	CShemeExpr m_XX;
 	int type;
+//	CString GetStrXS();
+	virtual void Serialize( CArchive &ar, int _sv );
+	int SetMatrmP( CMatr &, CMatr &, CMatr &, CMatr *, int, double, std::string *pMsg = NULL );
+	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg = NULL );
+
+	void SetVarState( double x, double v, double a, double t );
+
+	void GetMatrM( CMatr&, std::string *pMsg = NULL );
+	void GetMatrD( CMatr&, std::string *pMsg = NULL );
+	void GetMatrC( CMatr&, std::string *pMsg = NULL );
+
+	bool SetDemfX1( double );
+	bool SetDemfX3( double );
+	bool SetDemfX5( double );
+	bool SetDemfXS( double );
+	bool SetDemfXX( const CString& );
+
+	double GetDemfX(int i);
+	double GetDemfXX( double x, double v, double a, double t, std::string &ec );
+	//получить строку для диалога в нужную строку (i)
+//	CString GetStrX(int i);
+
 	int GoDlg(CListKnot *pListKnot, bool full = true );
-	bool SetCommonProperties( CElem* elem );
+	bool SetCommonProperties( const CElem* elem );
 	void Draw(CDC *pDC, CParamView *pParamView);
-	CDemf(CKnot *kn1, CKnot *kn2);
+	void DrawGL( CShemeDoc*, int );
+	CString GetName() const;
+
+	CDemf( CKnot *kn1, CKnot *kn2, CSheme *p = NULL );
 	virtual ~CDemf();
+	CDemf( const CDemf& );
+	CDemf& operator=( const CDemf& );
 
 };
 

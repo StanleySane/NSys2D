@@ -11,12 +11,14 @@
 
 #include "knot.h"
 
+class CSheme;
+
 class CComplexSpectr  
 {
 public:
-	void Serialize(CArchive& ar);
+	void Serialize( CArchive &ar, int sv );
 	BOOL operator == (CComplexSpectr &cs);
-	CComplexSpectr();
+	CComplexSpectr( CSheme *p = NULL );
 	virtual ~CComplexSpectr();
 	CKnot *pKn1,*pKn2;
 	int Free1, Free2;//0...2

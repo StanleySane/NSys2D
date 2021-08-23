@@ -24,8 +24,8 @@ public:
 	//{{AFX_DATA(CKnotDlg)
 	enum { IDD = IDD_DIALOGCOORD };
 	CComboBox_FixedType	m_FixedType;
-	CString	m_EditX;
-	CString	m_EditY;
+	double	m_EditX;
+	double	m_EditY;
 	//}}AFX_DATA
 
 

@@ -26,6 +26,7 @@ class SpringPtr;
 class DemferPtr;
 class MassPtr;
 class KnotPtr;
+class ShemePtr;
 
 class Variables
 {
@@ -66,6 +67,7 @@ public:
 	DemferPtr* GetDemfer( const std::string& );
 	MassPtr* GetMass( const std::string& );
 	KnotPtr* GetKnot( const std::string& );
+	ShemePtr* GetSheme( const std::string& );
 
 	void GetVarValue( const std::string&, TypeID, Value& ) const;
 	void AddVar( const std::string&, TypeID );

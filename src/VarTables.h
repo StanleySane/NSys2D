@@ -21,6 +21,7 @@
 #include"DemferPtr.h"
 #include"MassPtr.h"
 #include"KnotPtr.h"
+#include"ShemePtr.h"
 
 class Value;
 
@@ -44,6 +45,7 @@ public:
 	VarDemf m_vDemfer;
 	VarMass m_vMass;
 	VarKnot m_vKnot;
+	VarSheme m_vSheme;
 
 	VarTables& operator = ( const VarTables &vt )
 	{
@@ -68,6 +70,7 @@ public:
 	DemferPtr* GetDemfer( const std::string& );
 	MassPtr* GetMass( const std::string& );
 	KnotPtr* GetKnot( const std::string& );
+	ShemePtr* GetSheme( const std::string& );
 
 	void GetVarValue( const std::string&, TypeID, Value& ) const;
 	void AddVar( const std::string&, TypeID );

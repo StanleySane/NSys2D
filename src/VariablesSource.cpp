@@ -159,6 +159,12 @@ KnotPtr* Variables::GetKnot( const std::string &name )
 	return m_pVars->GetKnot( name );
 }
 
+ShemePtr* Variables::GetSheme( const std::string &name )
+{
+	ASSERT(m_pVars);
+	return m_pVars->GetSheme( name );
+}
+
 void Variables::Clear()
 {
 	ASSERT(m_pVars);

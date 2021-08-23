@@ -31,6 +31,7 @@ public:
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
 	virtual BOOL OnScroll(UINT nScrollCode, UINT nPos, BOOL bDoScroll = TRUE);
 	virtual void Serialize(CArchive& ar);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	protected:
 	virtual void OnInitialUpdate(); // called first time after construct
 	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
@@ -56,6 +57,8 @@ public:
 	POINT ShemeToScreen(CCoordD &coord, BOOL scroll=FALSE);
 	int StateNew,DrawOnce,KnotOnly,DrawAll,LineNear;
 	BOOL InitialUpdate;
+	CToolTipCtrl m_ToolTip;
+	bool m_bEnableToolTips;
 	CCoordD coordLast;
 	CCoordD coordEnd;
 	CCoordD coordStart;
@@ -131,6 +134,11 @@ protected:
 	afx_msg void OnUpdateFilePrint(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateFilePrintSetup(CCmdUI* pCmdUI);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg BOOL OnToolTip( UINT id, NMHDR *pTTTStruct, LRESULT *pResult );
+	afx_msg void OnToolTips();
+	afx_msg void OnUpdateToolTips(CCmdUI* pCmdUI);
+	afx_msg void OnGroupClickKnots();
+	afx_msg void OnGroupClickElems();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

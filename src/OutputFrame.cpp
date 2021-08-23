@@ -38,7 +38,9 @@ int COutputFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
 	if (CMDIChildWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
-	
+
+	//ModifyStyle( (DWORD)(WS_SYSMENU|WS_MINIMIZEBOX|WS_MAXIMIZEBOX), (DWORD)0 );
+
 	// TODO: Add your specialized creation code here
 	if (!m_wndToolBar.Create(this) ||
 		!m_wndToolBar.LoadToolBar(IDR_OUTPUT))

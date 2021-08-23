@@ -5,6 +5,8 @@
 #include "NSys2D.h"
 #include "GroupEditDlg.h"
 
+#include "StdAfxMy.h"
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

@@ -21,7 +21,9 @@ public:
 	enum { IDD = IDD_EV_METHODS };
 	int		m_Method;
 	int		m_HardMethod;
-	BOOL	m_bCondenceMass;
+	BOOL	m_bIntegrTest;
+	int		m_InvertMethod;
+	BOOL	m_bValidateExpr;
 	//}}AFX_DATA
 
 

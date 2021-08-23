@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "NSys2D.h"
 #include "GraphTimeDlg.h"
-#include "expression.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,9 +20,9 @@ CGraphTimeDlg::CGraphTimeDlg(CParamTime *pparam, CWnd* pParent /*=NULL*/)
 {
 	pParam=pparam;
 	//{{AFX_DATA_INIT(CGraphTimeDlg)
-	m_TimeBeg = _T("");
-	m_TimeEnd = _T("");
-	m_TimeStep = _T("");
+	m_TimeBeg = 0.0;
+	m_TimeEnd = 0.0;
+	m_TimeStep = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -52,14 +51,9 @@ void CGraphTimeDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 	
-	pParam->strT0=m_TimeBeg;
-	pParam->strT1=m_TimeEnd;
-	pParam->strdT=m_TimeStep;
-
-	CExpression e;
-	e.IsNum(m_TimeBeg,&(pParam->T0));
-	e.IsNum(m_TimeEnd,&(pParam->T1));
-	e.IsNum(m_TimeStep,&(pParam->dT));
+	pParam->T0 = m_TimeBeg;
+	pParam->T1 = m_TimeEnd;
+	pParam->dT = m_TimeStep;
 
 	CDialog::OnOK();
 }
@@ -68,35 +62,7 @@ BOOL CGraphTimeDlg::VerifyInfo()
 {
 	UpdateData();
 
-	double Beg, End, Step;
-	CExpression e;
-	int ret=e.IsNum(m_TimeBeg,&Beg);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Ошибка в выражении 'от'"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_TimeEnd,&End);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Ошибка в выражении 'до'"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_TimeStep,&Step);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Ошибка в выражении 'шаг'"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
+	double Beg = m_TimeBeg, End = m_TimeEnd, Step = m_TimeStep;
 	if (Beg>=End)
 	{
 		MessageBox("Значение 'от' больше чем 'до'","Ошибка"
@@ -130,9 +96,10 @@ BOOL CGraphTimeDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	// TODO: Add extra initialization here
-	m_TimeBeg =pParam->strT0;
-	m_TimeEnd =pParam->strT1;
-	m_TimeStep=pParam->strdT;
+	m_TimeBeg =pParam->T0;
+	m_TimeEnd =pParam->T1;
+	m_TimeStep=pParam->dT;
+
 	UpdateData(false);
 
 	return TRUE;  // return TRUE unless you set the focus to a control

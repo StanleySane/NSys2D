@@ -19,9 +19,11 @@ CEVMDialog::CEVMDialog(CWnd* pParent /*=NULL*/)
 	: CDialog(CEVMDialog::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CEVMDialog)
-	m_Method = 0;
+	m_Method = 2;
 	m_HardMethod = 0;
-	m_bCondenceMass = FALSE;
+	m_bIntegrTest = FALSE;
+	m_InvertMethod = -1;
+	m_bValidateExpr = FALSE;
 	//}}AFX_DATA_INIT
 }
 
@@ -32,7 +34,9 @@ void CEVMDialog::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CEVMDialog)
 	DDX_Radio(pDX, IDC_RADIO_JACOBY, m_Method);
 	DDX_Radio(pDX, IDC_RADIO_HARDMETHOD_0, m_HardMethod);
-	DDX_Check(pDX, IDC_CHECK_CONDMASS, m_bCondenceMass);
+	DDX_Check(pDX, IDC_CHECK_INTEGR_TEST, m_bIntegrTest);
+	DDX_Radio(pDX, IDC_RADIO_INVERT_0, m_InvertMethod);
+	DDX_Check(pDX, IDC_CHECK_VALIDATE_EXPR, m_bValidateExpr);
 	//}}AFX_DATA_MAP
 }
 

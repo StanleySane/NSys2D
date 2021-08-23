@@ -43,6 +43,7 @@ public:
 	typedef enum
 	{
 		FID_WRONG = 0,
+		FID_SIGN,
 		FID_SIN,
 		FID_COS,
 		FID_TAN,
@@ -225,6 +226,7 @@ public:
 		}
 	public:
 		static Value FunSin( const FuncParamList&, errorsT&, ScriptObject* );
+		static Value FunSign( const FuncParamList&, errorsT&, ScriptObject* );
 		static Value FunCos( const FuncParamList&, errorsT&, ScriptObject* );
 		static Value FunTan( const FuncParamList&, errorsT&, ScriptObject* );
 		static Value FunSqrt( const FuncParamList&, errorsT&, ScriptObject* );

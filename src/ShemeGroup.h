@@ -9,7 +9,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include"stdafx.h"
+#include "StdAfxMy.h"
+
 class CElem;
 class CKnot;
 

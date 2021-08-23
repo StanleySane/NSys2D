@@ -219,10 +219,32 @@ bool Expression::IsVarName() const
 /////////////////////////////////////////////////////////////////////////////////
 //		внутренние ф-ции
 /////////////////////////////////////////////////////////////////////////////////
+inline Value Expression::InternalFunc::FunSign( const FuncParamList &pl, errorsT &er, ScriptObject *p )
+{
+	ASSERT( pl.size() == 1 );
+	FuncParamList::const_iterator it = pl.begin();
+	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
+	Value x = (*it)->GetValue(TYPE_DOUBLE);
+	er = (*it)->GetRunErrorCode();
+	if( er == NOERR )
+	{
+		double tmp = x.GetDouble();
+		if( tmp > 0.0 )
+			x.SetDouble( 1.0 );
+		else
+		{
+			if( tmp < 0.0 )
+				x.SetDouble( -1.0 );
+			else
+				x.SetDouble( 0.0 );
+		}
+	}
+	return x;
+}
 inline Value Expression::InternalFunc::FunSin( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -235,7 +257,7 @@ inline Value Expression::InternalFunc::FunSin( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunCos( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -248,7 +270,7 @@ inline Value Expression::InternalFunc::FunCos( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunTan( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -261,7 +283,7 @@ inline Value Expression::InternalFunc::FunTan( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunSqrt( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -280,7 +302,7 @@ inline Value Expression::InternalFunc::FunSqrt( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunLog( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -293,7 +315,7 @@ inline Value Expression::InternalFunc::FunLog( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunAsin( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -312,7 +334,7 @@ inline Value Expression::InternalFunc::FunAsin( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunAcos( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -331,7 +353,7 @@ inline Value Expression::InternalFunc::FunAcos( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunExp( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -344,7 +366,7 @@ inline Value Expression::InternalFunc::FunExp( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunFloor( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -357,7 +379,7 @@ inline Value Expression::InternalFunc::FunFloor( const FuncParamList &pl, errors
 inline Value Expression::InternalFunc::FunCeil( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -370,7 +392,7 @@ inline Value Expression::InternalFunc::FunCeil( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunFabs( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -383,7 +405,7 @@ inline Value Expression::InternalFunc::FunFabs( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunAbs( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_INT);
 	er = (*it)->GetRunErrorCode();
@@ -396,7 +418,7 @@ inline Value Expression::InternalFunc::FunAbs( const FuncParamList &pl, errorsT 
 inline Value Expression::InternalFunc::FunAtan( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -409,7 +431,7 @@ inline Value Expression::InternalFunc::FunAtan( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunFmod( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 2 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -433,7 +455,7 @@ inline Value Expression::InternalFunc::FunFmod( const FuncParamList &pl, errorsT
 inline Value Expression::InternalFunc::FunPower( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 2 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -459,7 +481,7 @@ inline Value Expression::InternalFunc::FunRound( const FuncParamList &pl, errors
 	//round(x,prec)
 	int s = pl.size();
 	ASSERT( (s == 1)||(s == 2) );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_DOUBLE);
 	er = (*it)->GetRunErrorCode();
@@ -494,7 +516,7 @@ inline Value Expression::InternalFunc::FunRound( const FuncParamList &pl, errors
 Value Expression::InternalFunc::FunRandom( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_INT);
 	er = (*it)->GetRunErrorCode();
@@ -507,7 +529,7 @@ Value Expression::InternalFunc::FunRandom( const FuncParamList &pl, errorsT &er,
 Value Expression::InternalFunc::FunAtoi( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_STRING);
 	er = (*it)->GetRunErrorCode();
@@ -520,7 +542,7 @@ Value Expression::InternalFunc::FunAtoi( const FuncParamList &pl, errorsT &er, S
 Value Expression::InternalFunc::FunAtof( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_STRING);
 	er = (*it)->GetRunErrorCode();
@@ -533,7 +555,7 @@ Value Expression::InternalFunc::FunAtof( const FuncParamList &pl, errorsT &er, S
 Value Expression::InternalFunc::FunTranspose( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_MATR);
 	er = (*it)->GetRunErrorCode();
@@ -560,7 +582,7 @@ Value Expression::InternalFunc::FunTranspose( const FuncParamList &pl, errorsT &
 Value Expression::InternalFunc::FunRows( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_MATR);
 	er = (*it)->GetRunErrorCode();
@@ -577,7 +599,7 @@ Value Expression::InternalFunc::FunRows( const FuncParamList &pl, errorsT &er, S
 Value Expression::InternalFunc::FunCols( const FuncParamList &pl, errorsT &er, ScriptObject *p )
 {
 	ASSERT( pl.size() == 1 );
-	FuncParamList::iterator it = pl.begin();
+	FuncParamList::const_iterator it = pl.begin();
 	ASSERT( (*it)->GetCompileErrorCode() == NOERR );
 	Value x = (*it)->GetValue(TYPE_MATR);
 	er = (*it)->GetRunErrorCode();
@@ -597,6 +619,9 @@ Value Expression::InternalFunc::GetValue( InternalFuncID id, const FuncParamList
 	Value res;
 	switch( id )
 	{
+	case FID_SIGN:
+		res = Expression::InternalFunc::FunSign( pl, er, p );
+		break;
 	case FID_SIN:
 		res = Expression::InternalFunc::FunSin( pl, er, p );
 		break;
@@ -700,6 +725,7 @@ Expression::InternalFuncMap Expression::InitFuncTable()
 {
 	InternalFuncMap fm;
 
+	fm.insert( InternalFuncMap::value_type( "sign",InternalFunc(FID_SIGN,FPN_ONE) ) );
 	fm.insert( InternalFuncMap::value_type( "sin",InternalFunc(FID_SIN,FPN_ONE) ) );
 	fm.insert( InternalFuncMap::value_type( "cos",InternalFunc(FID_COS,FPN_ONE) ) );
 	fm.insert( InternalFuncMap::value_type( "tan",InternalFunc(FID_TAN,FPN_ONE) ) );

@@ -22,10 +22,6 @@ class CHardRodDlg : public CDialog
 public:
 	void InvalidateKnot(BOOL bSave=FALSE);
 	CListKnot *pListKnot;
-//	int Type2;
-//	int Type1;
-	CString strJ;
-	CString strE;
 	CHardRod *pHardRod;
 	BOOL VerifyInfo();
 	CHardRodDlg(CListKnot *plistkn, CHardRod *pHrod=NULL,

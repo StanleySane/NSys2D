@@ -5,10 +5,19 @@
 #include "stdafx.h"
 #include "NSys2D.h"
 #include "Knot.h"
-//#include "KnotDlg.h"
 
+#include "StdAfxMy.h"
+
+#include "ShemeDoc.h"
+#include "MovieView.h"
+#include "ShemeVarsTable.h"
+#include "Sheme.h"
 #include "KnotPropertySheet.h"
+
 #include<algorithm>
+#include<cmath>
+
+using namespace std;
 	
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -20,15 +29,22 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CKnot::CKnot()
+CKnot::CKnot( const CKnot &knot ):CObjectSheme(knot)
 {
-	SetCoord("0","0");
+	InitBy(knot);
+}
+
+CKnot::CKnot( CSheme *p )
+:CObjectSheme(p), SpPx(p), SpPy(p), SpUx(p), SpUy(p)
+{
+	SetCoord( 0.0, 0.0 );
 	Init();
 }
 
-CKnot::CKnot(CString strx, CString stry)
+CKnot::CKnot( double x, double y, CSheme *p )
+:CObjectSheme(p), SpPx(p), SpPy(p), SpUx(p), SpUy(p)
 {
-	SetCoord(strx,stry);
+	SetCoord( x, y );
 	Init();
 }
 
@@ -36,28 +52,415 @@ CKnot::~CKnot()
 {
 }
 
+double CKnot::GetCoordX( double multmove/*=0*/)
+{
+	return coord.x+multmove*MoveX;
+}
+
+double CKnot::GetCoordY( double multmove/*=0*/)
+{
+	return coord.y+multmove*MoveY;
+}
+
 CCoordD CKnot::GetCoord(double multmove/*=0*/)
 {
 	return CCoordD(coord.x+multmove*MoveX, coord.y+multmove*MoveY);
 }
 
-int CKnot::SetCoord(CString strx, CString stry)
+int CKnot::SetCoord( double x, double y )
 {
-	CExpression e;
-	CCoordD c;
-	int ret1,ret2;
+	coord.x = x;
+	coord.y = y;
+	return 1;
+}
 
-	ret1=e.IsNum(strx,&c.x);
-	ret2=e.IsNum(stry,&c.y);
-
-	if ((!ret1)&&(!ret2))
+void CKnot::SetVarState( double x, double v, double a, double t )
+{
+//ф-ция заполняет переменные таблицы значениями данного узла:
+// x - перемещение, v - скорость, a - ускорение, t - время
+	if( m_pSheme )
 	{
-		coord=c;
-		str_X=strx;
-		str_Y=stry;
-		return 1;
+		m_pSheme->m_VarsTable.SetVarValue("x",x);
+		m_pSheme->m_VarsTable.SetVarValue("v",v);
+		m_pSheme->m_VarsTable.SetVarValue("t",t);
+		m_pSheme->m_VarsTable.SetVarValue("a",a);
+		m_pSheme->m_VarsTable.SetVarValue("w",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("cx",coord.x);
+		m_pSheme->m_VarsTable.SetVarValue("cy",coord.y);
+		m_pSheme->m_VarsTable.SetVarValue("cx1",coord.x);
+		m_pSheme->m_VarsTable.SetVarValue("cy1",coord.y);
+		m_pSheme->m_VarsTable.SetVarValue("cx2",coord.x);
+		m_pSheme->m_VarsTable.SetVarValue("cy2",coord.y);
 	}
-	return 0;
+}
+
+void CKnot::DrawGL( CShemeDoc *pDoc, int Time )
+{
+	ASSERT( pDoc->m_pMovieView );
+
+	if( (FixedType == 0)||(!pDoc->m_pMovieView->m_bShowKnots) )
+		return;
+
+	glColor3f( 0.0f, 0.0f, 0.0f );
+
+	double x, y;
+	if( Time < 0 )
+	{
+		x = coord.x;
+		y = coord.y;
+	}
+	else
+	{
+		if( nXRez >= 0 )
+			x = pDoc->m_pMovieView->m_Res( nXRez + 1, Time );
+		else
+		{
+			x = coord.x;
+		}
+		if( nYRez >= 0 )
+			y = pDoc->m_pMovieView->m_Res( nYRez + 1, Time );
+		else
+		{
+			y = coord.y;
+		}
+		/*
+		if( nARez[0] >= 0 )
+		{
+			fi = pDoc->m_pMovieView->m_Res( nARez[0] + 1, Time );
+			fi *= 180.0/CNSys2DApp::M_PI;
+		}
+		*/
+	}
+	glPushMatrix();
+	glTranslatef( x, y, 0.0f );
+	GLdouble H = pDoc->m_pMovieView->m_Width/20.0;//характерный размер
+	switch( FixedType )
+	{
+	case 1: 
+		{
+			//запрещён Y
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = 1.3*H3;
+
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				glVertex2d( 0.0f, 0.0f );
+				glVertex2d( 0.0f, -H );
+				glVertex2d( -H2, -H );
+				glVertex2d( H2, -H );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = i*H3 - H2;
+					glVertex2d( tmp1 + H3, -H );
+					glVertex2d( tmp1, -H - H4 );
+				}
+			glEnd();
+
+			if( pDoc->m_pMovieView->m_pQuad != NULL )
+			{
+				GLdouble rad = H/7.0;//радиус шарнира
+				GLdouble tmp = rad/2.0;
+				gluQuadricDrawStyle( pDoc->m_pMovieView->m_pQuad, GLU_FILL );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, tmp, 10, 2 );
+				glPushMatrix();
+				glTranslated( 0.0f, -H, 0.0f );
+				glColor3f( 0.0f, 0.0f, 0.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, tmp, 10, 2 );
+				glPopMatrix();
+			}
+		}	
+		break;
+	case 2: 
+		//запрещён X
+		{
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = 1.3*H3;
+
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				glVertex2d( 0.0f, 0.0f );
+				glVertex2d( H, 0.0f );
+				glVertex2d( H, -H2 );
+				glVertex2d( H, H2 );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = -i*H3 + H2;
+					glVertex2d( H, tmp1 - H3 );
+					glVertex2d( H + H4, tmp1 );
+				}
+			glEnd();
+
+			if( pDoc->m_pMovieView->m_pQuad != NULL )
+			{
+				GLdouble rad = H/7.0;//радиус шарнира
+				GLdouble tmp = rad/2.0;
+				gluQuadricDrawStyle( pDoc->m_pMovieView->m_pQuad, GLU_FILL );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, tmp, 10, 2 );
+				glPushMatrix();
+				glTranslated( H, 0.0f, 0.0f );
+				glColor3f( 0.0f, 0.0f, 0.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, tmp, 10, 2 );
+				glPopMatrix();
+			}
+		}
+		break;
+	case 3: 
+		//запрещены X,Y разрешён только FI
+		{
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = H/4.0, H5 = 1.3*H3;
+
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				glVertex2d( 0.0f, 0.0f );
+				glVertex2d( -H4, -H );
+				glVertex2d( 0.0f, 0.0f );
+				glVertex2d( H4, -H );
+				//горизонтальная
+				glVertex2d( -H2, -H );
+				glVertex2d( H2, -H );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = i*H3 - H2;
+					glVertex2d( tmp1 + H3, -H );
+					glVertex2d( tmp1, -H - H5 );
+				}
+			glEnd();
+
+			if( pDoc->m_pMovieView->m_pQuad != NULL )
+			{
+				GLdouble rad = H/7.0;//радиус шарнира
+				gluQuadricDrawStyle( pDoc->m_pMovieView->m_pQuad, GLU_FILL );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad/2.0, 10, 2 );
+			}
+		}
+		break;
+	case 4:
+		//заделка - все перемещения запрещены
+		{
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = 1.3*H3;
+			GLdouble ang;
+			if( FriendCoord.GetNorm() > 0.0 )
+			{
+				ang = (FriendCoord - CCoordD(x,y)).GetAng() - CNSys2DApp::M_PI_2;
+				ang *= 180.0/CNSys2DApp::M_PI;
+			}
+			else	ang = GLdouble(90.0);
+			glPushMatrix();
+			glRotated( ang, 0.0f, 0.0f, 1.0f );
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				//горизонтальная
+				glVertex2d( -H2, 0.0f );
+				glVertex2d( H2, 0.0f );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = i*H3 - H2;
+					glVertex2d( tmp1 + H3, 0.0f );
+					glVertex2d( tmp1, -H4 );
+				}
+			glEnd();
+			glPopMatrix();
+		}
+		break;
+	case 5:
+		//запрещён только поворот
+		{
+			GLdouble h = H/7.0, h2 = 3.0*h;
+			GLdouble tmp1 = h + h2, tmp2 = -h - h2;
+
+			glLineWidth(1);
+			//левый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, h );
+				glVertex2d( -h, tmp1 );
+				glVertex2d( tmp2, h );
+			glEnd();
+			//правый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, h );
+				glVertex2d( h, tmp1 );
+				glVertex2d( tmp1, h );
+			glEnd();
+			//левый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, -h );
+				glVertex2d( -h, tmp2 );
+				glVertex2d( tmp2, -h );
+			glEnd();
+			//правый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, -h );
+				glVertex2d( h, tmp2 );
+				glVertex2d( tmp1, -h );
+			glEnd();
+		}
+		break;
+	case 6:
+		//запрещены Y,FI разрешён только X
+		{
+			GLdouble h = H/7.0, h2 = 3.0*h;
+			GLdouble tmp1 = h + h2, tmp2 = -h - h2;
+
+			glLineWidth(1);
+			//левый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, h );
+				glVertex2d( -h, tmp1 );
+				glVertex2d( tmp2, h );
+			glEnd();
+			//правый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, h );
+				glVertex2d( h, tmp1 );
+				glVertex2d( tmp1, h );
+			glEnd();
+			//левый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, -h );
+				glVertex2d( -h, tmp2 );
+				glVertex2d( tmp2, -h );
+			glEnd();
+			//правый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, -h );
+				glVertex2d( h, tmp2 );
+				glVertex2d( tmp1, -h );
+			glEnd();
+
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = 1.3*H3;
+
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				glVertex2d( 0.0f, -h );
+				glVertex2d( 0.0f, -H );
+				glVertex2d( -H2, -H );
+				glVertex2d( H2, -H );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = i*H3 - H2;
+					glVertex2d( tmp1 + H3, -H );
+					glVertex2d( tmp1, -H - H4 );
+				}
+			glEnd();
+
+			if( pDoc->m_pMovieView->m_pQuad != NULL )
+			{
+				GLdouble rad = H/7.0;//радиус шарнира
+				gluQuadricDrawStyle( pDoc->m_pMovieView->m_pQuad, GLU_FILL );
+				glPushMatrix();
+				glTranslated( 0.0f, -H, 0.0f );
+				glColor3f( 0.0f, 0.0f, 0.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad/2.0, 10, 2 );
+				glPopMatrix();
+			}
+		}
+		break;
+	case 7:
+		//запрещены X,FI разрешён только Y
+		{
+			GLdouble h = H/7.0, h2 = 3.0*h;
+			GLdouble tmp1 = h + h2, tmp2 = -h - h2;
+
+			glLineWidth(1);
+			//левый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, h );
+				glVertex2d( -h, tmp1 );
+				glVertex2d( tmp2, h );
+			glEnd();
+			//правый верхний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, h );
+				glVertex2d( h, tmp1 );
+				glVertex2d( tmp1, h );
+			glEnd();
+			//левый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( -h, -h );
+				glVertex2d( -h, tmp2 );
+				glVertex2d( tmp2, -h );
+			glEnd();
+			//правый нижний:
+			glBegin(GL_LINE_LOOP);
+				glVertex2d( h, -h );
+				glVertex2d( h, tmp2 );
+				glVertex2d( tmp1, -h );
+			glEnd();
+
+			int N = 6;//число штрихов
+			GLdouble H2 = H/2.0, H3 = H/GLdouble(N), H4 = 1.3*H3;
+
+			glLineWidth( 2 );
+			glBegin(GL_LINES);
+				glVertex2d( h, 0.0f );
+				glVertex2d( H, 0.0f );
+				glVertex2d( H, -H2 );
+				glVertex2d( H, H2 );
+			glEnd();
+
+			glLineWidth( 1 );
+			glBegin(GL_LINES);
+				for( int i = 0; i < N; i++ )
+				{
+					GLdouble tmp1 = -i*H3 + H2;
+					glVertex2d( H, tmp1 - H3 );
+					glVertex2d( H + H4, tmp1 );
+				}
+			glEnd();
+
+			if( pDoc->m_pMovieView->m_pQuad != NULL )
+			{
+				GLdouble rad = H/7.0;//радиус шарнира
+				gluQuadricDrawStyle( pDoc->m_pMovieView->m_pQuad, GLU_FILL );
+				glPushMatrix();
+				glTranslated( H, 0.0f, 0.0f );
+				glColor3f( 0.0f, 0.0f, 0.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad, 10, 2 );
+				glColor3f( 1.0f, 1.0f, 1.0f );
+				gluDisk( pDoc->m_pMovieView->m_pQuad, 0.0f, rad/2.0, 10, 2 );
+				glPopMatrix();
+			}
+		}
+		break;
+	default:
+		ASSERT(FALSE);
+	}
+	glPopMatrix();
 }
 
 void CKnot::Draw(CDC * pDC, CParamView* pParamView)
@@ -179,14 +582,91 @@ CString CKnot::GetName(UINT num/*=0*/)
 	return str;
 }
 
-CString CKnot::GetStrX()
+CString CKnot::GetFullName()
 {
-	return str_X;
-}
-
-CString CKnot::GetStrY()
-{
-	return str_Y;
+	CString name = GetName();
+	CString str;
+	str.Format(" Ux=%s,Uy=%s,Ua=%s,Ux'=%s,Uy'=%s,Ua'=%s", 
+		m_Ux.GetExpr().c_str(), m_Uy.GetExpr().c_str(), m_Ua.GetExpr().c_str(),
+		m_Uxp.GetExpr().c_str(), m_Uyp.GetExpr().c_str(), m_Uap.GetExpr().c_str() );
+	name += str;
+	if( PxEnable )
+	{
+		str.Empty();
+		switch( TypePx )
+		{
+		case 0:
+			str.Format(" Px=%.16g*sin(%.16g*t+%.16g)", Ax, Wx, Fix );
+			break;
+		case 1:
+			str.Format(" Px=%s", m_Px.GetExpr().c_str() );
+			break;
+		case 2:
+			str = _T(" Px-случайное");
+			break;
+		default:
+			ASSERT(FALSE);
+		}
+		name += str;
+	}
+	if( PyEnable )
+	{
+		str.Empty();
+		switch( TypePy )
+		{
+		case 0:
+			str.Format(" Py=%.16g*sin(%.16g*t+%.16g)", Ay, Wy, Fiy );
+			break;
+		case 1:
+			str.Format(" Py=%s", m_Py.GetExpr().c_str() );
+			break;
+		case 2:
+			str = _T(" Py-случайное");
+			break;
+		default:
+			ASSERT(FALSE);
+		}
+		name += str;
+	}
+	if( UxEnable )
+	{
+		str.Empty();
+		switch( TypeUx )
+		{
+		case 0:
+			str.Format(" uUx=%.16g*sin(%.16g*t+%.16g)", uAx, uWx, uFix );
+			break;
+		case 1:
+			str.Format(" uUx=%s", m_uUx.GetExpr().c_str() );
+			break;
+		case 2:
+			str = _T(" uUx-случайное");
+			break;
+		default:
+			ASSERT(FALSE);
+		}
+		name += str;
+	}
+	if( UyEnable )
+	{
+		str.Empty();
+		switch( TypeUy )
+		{
+		case 0:
+			str.Format(" uUy=%.16g*sin(%.16g*t+%.16g)", uAy, uWy, uFiy );
+			break;
+		case 1:
+			str.Format(" uUy=%s", m_uUy.GetExpr().c_str() );
+			break;
+		case 2:
+			str = _T(" uUy-случайное");
+			break;
+		default:
+			ASSERT(FALSE);
+		}
+		name += str;
+	}
+	return name;
 }
 
 CPoint CKnot::GetScreenCoord(CParamView* pParamView)
@@ -220,6 +700,7 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 	switch (FixedType)
 	{
 	case 1: 
+			//запрещён Y
 			dc->MoveTo(point.x,point.y);
 			dc->LineTo(point.x,point.y+12);
 			
@@ -242,6 +723,7 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 			
 			break;
 	case 2: 
+			//запрещён X
 			dc->MoveTo(point.x,point.y);
 			dc->LineTo(point.x+12,point.y);
 			
@@ -264,6 +746,7 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 			
 			break;
 	case 3: 
+			//запрещены X,Y разрешён только FI
 			dc->MoveTo(point.x-10,point.y+12);
 			dc->LineTo(point.x+10,point.y+12);
 
@@ -286,8 +769,9 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 
 			break;
 	case 4:
+		//заделка - все перемещения запрещены
 		{
-			double ang=-acos(-1)/2.0;
+			double ang=-CNSys2DApp::M_PI_2;
 			if (FriendCoord.GetNorm()>0)
 			{
 				CPoint p=ShemeToScreen(FriendCoord,pParamView);
@@ -305,29 +789,134 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 				dc->SelectObject(&pen2);
 			}*/
 
-			dc->MoveTo(int(point.x+10*sin(ang)),int(point.y-10*cos(ang)));
-			dc->LineTo(int(point.x-10*sin(ang)),int(point.y+10*cos(ang)));
+			double sa = sin(ang), ca = cos(ang);
+			dc->MoveTo( int(point.x+10*sa), int(point.y-10*ca));
+			dc->LineTo( int(point.x-10*sa), int(point.y+10*ca));
 
 			dc->SelectObject(&pen1);
 			
 			for(i=0;i<7;i++)
 			{
 				CPoint p=CPoint(-8+3*i,0);
-				CPoint p2=CPoint(int(-p.y*sin(ang)+p.x*cos(ang)),int(p.y*cos(ang)+p.x*sin(ang)) );
+				CPoint p2=CPoint(int(-p.y*sa+p.x*ca),int(p.y*ca+p.x*sa) );
 				dc->MoveTo(point.x-p2.y,point.y+p2.x);
 				p=CPoint(-8+3*i-3,4);
-				p2=CPoint(int(-p.y*sin(ang)+p.x*cos(ang)),int(p.y*cos(ang)+p.x*sin(ang)) );
+				p2=CPoint(int(-p.y*sa+p.x*ca),int(p.y*ca+p.x*sa) );
 				dc->LineTo(point.x-p2.y,point.y+p2.x);
 			}
 		}
 		break;
 	case 5:
-			dc->MoveTo(point.x-5,point.y+3);
-			dc->LineTo(point.x+3,point.y-5);
+		{
+			//запрещён только поворот
+			dc->SelectObject( &pen1 );
+
+			int tmp = 3*rad, rad2 = rad;
+			CPoint pl[3] = { CPoint( point.x-rad2, point.y-rad2 ),
+							CPoint( point.x-rad2, point.y-tmp ),
+							CPoint( point.x-tmp, point.y-rad2 ) };
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y-rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y-tmp );
+			pl[2] = CPoint( point.x+tmp, point.y-rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x-rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x-rad2, point.y+tmp );
+			pl[2] = CPoint( point.x-tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y+tmp );
+			pl[2] = CPoint( point.x+tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+		}
+		break;
+	case 6:
+			//запрещены Y,FI разрешён только X
+		{
+			dc->MoveTo(point.x-8,point.y+12);
+			dc->LineTo(point.x+8,point.y+12);
+
+			CPen pen4( PS_SOLID|PS_GEOMETRIC, 3, RGB(0,0,0) );
+			dc->SelectObject( &pen4 );
+
+			dc->MoveTo(point.x,point.y);
+			dc->LineTo(point.x,point.y+12);			
+
+			dc->SelectObject(&pen1);
 			
-			dc->MoveTo(point.x-3,point.y+5);
-			dc->LineTo(point.x+5,point.y-3);
-			break;
+			for(i=0;i<6;i++)
+			{
+				dc->MoveTo(point.x-7+3*i,point.y+12);
+				dc->LineTo(point.x-7+3*i-3,point.y+16);
+			}
+			
+			int tmp = 3*rad, rad2 = rad;
+			CPoint pl[3] = { CPoint( point.x-rad2, point.y-rad2 ),
+							CPoint( point.x-rad2, point.y-tmp ),
+							CPoint( point.x-tmp, point.y-rad2 ) };
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y-rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y-tmp );
+			pl[2] = CPoint( point.x+tmp, point.y-rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x-rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x-rad2, point.y+tmp );
+			pl[2] = CPoint( point.x-tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y+tmp );
+			pl[2] = CPoint( point.x+tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+
+			dc->Ellipse(point.x-rad,point.y+12-rad,	
+				point.x+rad,point.y+12+rad);
+
+		}
+		break;
+	case 7:
+			//запрещены X,FI разрешён только Y
+		{
+			dc->MoveTo(point.x+12,point.y-8);
+			dc->LineTo(point.x+12,point.y+8);
+
+			CPen pen4( PS_SOLID|PS_GEOMETRIC, 3, RGB(0,0,0) );
+			dc->SelectObject( &pen4 );
+			
+			dc->MoveTo(point.x,point.y);
+			dc->LineTo(point.x+12,point.y);			
+
+			dc->SelectObject(&pen1);
+			
+			for(i=0;i<6;i++)
+			{
+				dc->MoveTo(point.x+12,point.y-7+3*i);
+				dc->LineTo(point.x+16,point.y-7+3*i-3);
+			}
+			
+			int tmp = 3*rad, rad2 = rad;
+			CPoint pl[3] = { CPoint( point.x-rad2, point.y-rad2 ),
+							CPoint( point.x-rad2, point.y-tmp ),
+							CPoint( point.x-tmp, point.y-rad2 ) };
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y-rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y-tmp );
+			pl[2] = CPoint( point.x+tmp, point.y-rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x-rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x-rad2, point.y+tmp );
+			pl[2] = CPoint( point.x-tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+			pl[0] = CPoint( point.x+rad2, point.y+rad2 );
+			pl[1] = CPoint( point.x+rad2, point.y+tmp );
+			pl[2] = CPoint( point.x+tmp, point.y+rad2 );
+			dc->Polygon( pl, 3 );
+
+			dc->Ellipse(point.x+12-rad,point.y-rad,
+				point.x+12+rad,point.y+rad);
+
+			//dc->Ellipse(point.x-rad,point.y-rad,point.x+rad,point.y+rad);
+		}
+		break;
 	default:
 		ASSERT(FALSE);
 	}
@@ -335,39 +924,30 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 	dc->SelectObject(pOldpen);
 }
 
-void CKnot::operator =(CKnot & knot)
+void CKnot::InitBy( const CKnot &knot )
 {
+//	m_pSheme = knot.m_pSheme;
+
 	coord=knot.coord;
-	FixedType=knot.FixedType;
 	Num=knot.Num;
 	OldMode=0;
 	SelectMode=0;
-	str_X=knot.str_X;
-	str_Y=knot.str_Y;
 
-	str_Ux=knot.str_Ux;
-	str_Uy=knot.str_Uy;
-	str_Ua=knot.str_Ua;
-	str_Uxp=knot.str_Uxp;
-	str_Uyp=knot.str_Uyp;
-	str_Uap=knot.str_Uap;
+	FixedType=knot.FixedType;
 
-	Ux=knot.Ux;
-	Uy=knot.Uy;
-	Ua=knot.Ua;
-	Uxp=knot.Uxp;
-	Uyp=knot.Uyp;
-	Uap=knot.Uap;
+	m_Ux.InitBy( knot.m_Ux );
+	m_Uy.InitBy( knot.m_Uy );
+	m_Ua.InitBy( knot.m_Ua );
+	m_Uxp.InitBy( knot.m_Uxp );
+	m_Uyp.InitBy( knot.m_Uyp );
+	m_Uap.InitBy( knot.m_Uap );
 
 	//Силовое Возмущение
 	Ax=knot.Ax;
 	Wx=knot.Wx;
 	Fix=knot.Fix;
 	TypePx=knot.TypePx;
-	str_Ax=knot.str_Ax;
-	str_Wx=knot.str_Wx;
-	str_Fix=knot.str_Fix;
-	str_Px=knot.str_Px;
+	m_Px.InitBy( knot.m_Px );
 	PxEnable=knot.PxEnable;
 	SpPx=knot.SpPx;
 
@@ -375,10 +955,7 @@ void CKnot::operator =(CKnot & knot)
 	Wy=knot.Wy;
 	Fiy=knot.Fiy;
 	TypePy=knot.TypePy;
-	str_Ay=knot.str_Ay;
-	str_Wy=knot.str_Wy;
-	str_Fiy=knot.str_Fiy;
-	str_Py=knot.str_Py;
+	m_Py.InitBy( knot.m_Py );
 	PyEnable=knot.PyEnable;
 	SpPy=knot.SpPy;
 
@@ -387,10 +964,7 @@ void CKnot::operator =(CKnot & knot)
 	uWx=knot.uWx;
 	uFix=knot.uFix;
 	TypeUx=knot.TypeUx;
-	str_uAx=knot.str_uAx;
-	str_uWx=knot.str_uWx;
-	str_uFix=knot.str_uFix;
-	str_uUx=knot.str_uUx;
+	m_uUx.InitBy( knot.m_uUx );
 	UxEnable=knot.UxEnable;
 	SpUx=knot.SpUx;
 
@@ -398,78 +972,19 @@ void CKnot::operator =(CKnot & knot)
 	uWy=knot.uWy;
 	uFiy=knot.uFiy;
 	TypeUy=knot.TypeUy;
-	str_uAy=knot.str_uAy;
-	str_uWy=knot.str_uWy;
-	str_uFiy=knot.str_uFiy;
-	str_uUy=knot.str_uUy;
+	m_uUy.InitBy( knot.m_uUy );
 	UyEnable=knot.UyEnable;
 	SpUy=knot.SpUy;
 }
 
-void CKnot::SetFixedKnotMDC(CMatr & mM, CMatr & mD, CMatr & mC)
+CKnot& CKnot::operator =( const CKnot &knot )
 {
-/*	double FixedValue=0, FixedValue2=0;//10E25;
-
-	int n=FirstFree,i;
-	if (n<0) return;*/
-/*	switch (FixedType)
-	{
-	case 2:
-	case 3:
-	case 4:
-			for (i=0;i<mC.SizeY;i++)
-			{
-				mC[i][n]=FixedValue;
-				mC[n][i]=FixedValue;
-			}
-			if (FixedType==2) break;
-	case 1:
-			for (i=0;i<mC.SizeY;i++)
-			{
-				mC[i][n+1]=FixedValue;
-				mC[n+1][i]=FixedValue;
-			}
-			if (FixedType!=4) break;
-
-			for (int j=0; j<mC.SizeY;j++)
-				for (i=0;i<(fi_General+fi_n);i++)
-				{
-					mC[j][n+i+2]=FixedValue;
-					mC[n+i+2][j]=FixedValue;
-				}
-			break;
-	}*/
-	//матрица масс
-/*	switch (FixedType)
-	{
-	case 2:
-	case 3:
-	case 4:
-			for (i=0;i<mM.SizeY;i++)
-			{
-				mM[i][n]=(i==n?FixedValue2:FixedValue);
-				mM[n][i]=(i==n?FixedValue2:FixedValue);
-			}
-			if (FixedType==2) break;
-	case 1:
-			for (i=0;i<mC.SizeY;i++)
-			{
-				mM[i][n+1]=(i==(n+1)?FixedValue2:FixedValue);
-				mM[n+1][i]=(i==(n+1)?FixedValue2:FixedValue);
-			}
-			if (FixedType!=4) break;
-
-			for (int j=0; j<mM.SizeY;j++)
-				for (i=0;i<(NumFree-2);i++)
-				{
-					mM[j][n+i+2]=(j==(n+i+2)?FixedValue2:FixedValue);
-					mM[n+i+2][j]=(j==(n+i+2)?FixedValue2:FixedValue);
-				}
-			break;
-	}*/
+	if( this != &knot )
+		InitBy(knot);
+	return *this;
 }
 
-double CKnot::GetUx(double Tt, int p/*=0*/)
+double CKnot::GetUx( double x, double v, double a, double Tt, std::string *pMsg, int p/*=0*/)
 {
 	if (UxEnable)
 	{
@@ -482,33 +997,49 @@ double CKnot::GetUx(double Tt, int p/*=0*/)
 			case 2:		return -uAx*uWx*uWx*sin(uWx*Tt+uFix); 
 			}
 		}
-		if (TypeUx==1)
+		if( TypeUx == 1 )
 		{
-			CString str;
-			str.Format("Ошибка в выражении для кинематического\n возмущения в узле № %d",Num);
 			double val, val1, val2;
-			double h=(Tt!=0.0?0.001*Tt:0.001);
+			double h = (Tt!=0.0?0.001*Tt:0.001);
 
-			CExpression e;
-			CIDValuesMap idv;
-
-			idv.SetAt(_T("t"),Tt+h);
-			if (e.IsNum(str_uUx,&val2,&idv))
+			SetVarState( x, v, a, Tt+h );
+			val2 = m_uUx.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				ShemeExprErr err = m_uUx.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUx.GetFullErrorMsg(err);
+					return -1;
+				}
 			}
-			idv.SetAt(_T("t"),Tt-h);
-			if (e.IsNum(str_uUx,&val1,&idv))
+			if( m_pSheme )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				m_pSheme->m_VarsTable.SetVarValue("t",Tt-h);
 			}
-			idv.SetAt(_T("t"),Tt);
-			if (e.IsNum(str_uUx,&val,&idv))
+			val1 = m_uUx.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				ShemeExprErr err = m_uUx.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUx.GetFullErrorMsg(err);
+					return -1;
+				}
+			}
+			if( m_pSheme )
+			{
+				m_pSheme->m_VarsTable.SetVarValue("t",Tt);
+			}
+			val = m_uUx.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+			{
+				ShemeExprErr err = m_uUx.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUx.GetFullErrorMsg(err);
+					return -1;
+				}
 			}
 
 			switch (p)
@@ -523,9 +1054,9 @@ double CKnot::GetUx(double Tt, int p/*=0*/)
 			double val, val1, val2;
 			double h=/*SpUx.dt;//*/(Tt!=0.0?0.001*Tt:0.001);
 
-			val2=SpUx.GetValue(Tt+h);
-			val1=SpUx.GetValue(Tt-h);
-			val=SpUx.GetValue(Tt);
+			val2 = SpUx.GetValue(Tt+h);
+			val1 = SpUx.GetValue(Tt-h);
+			val = SpUx.GetValue(Tt);
 
 			switch (p)
 			{
@@ -537,17 +1068,45 @@ double CKnot::GetUx(double Tt, int p/*=0*/)
 	}
 	else
 	{
-		switch (p)
+		if( p == 2 )
+			return 0.0;
+		SetVarState( x, v, a, Tt );
+		switch(p)
 		{
-		case 0:		return Ux; 
-		case 1:		return Uxp;
-		case 2:		return 0;
+		case 0:
+			{
+				double val = m_Ux.GetValue(); 
+				if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+				{
+					ShemeExprErr err = m_Ux.GetRunErrorCode();
+					if( err != SEE_NOERR )
+					{
+						(*pMsg) = m_Ux.GetFullErrorMsg(err);
+						return -1;
+					}
+				}
+				return val;
+			}
+		case 1:
+			{
+				double val = m_Uxp.GetValue();
+				if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+				{
+					ShemeExprErr err = m_Uxp.GetRunErrorCode();
+					if( err != SEE_NOERR )
+					{
+						(*pMsg) = m_Uxp.GetFullErrorMsg(err);
+						return -1;
+					}
+				}
+				return val;
+			}
 		}
 	}
-	return 0;
+	return 0.0;
 }
 
-double CKnot::GetUy(double Tt, int p/*=0*/)
+double CKnot::GetUy( double x, double v, double a, double Tt, std::string *pMsg, int p/*=0*/)
 {
 	if (UyEnable)
 	{
@@ -562,31 +1121,47 @@ double CKnot::GetUy(double Tt, int p/*=0*/)
 		}
 		if (TypeUy==1)
 		{
-			CString str;
-			str.Format("Ошибка в выражении для кинематического\n возмущения в узле № %d",Num);
 			double val, val1, val2;
 			double h=(Tt!=0.0?0.001*Tt:0.001);
 
-			CExpression e;
-			CIDValuesMap idv;
-
-			idv.SetAt(_T("t"),Tt+h);
-			if (e.IsNum(str_uUy,&val2,&idv))
+			SetVarState( x, v, a, Tt+h );
+			val2 = m_uUy.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				ShemeExprErr err = m_uUy.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUy.GetFullErrorMsg(err);
+					return -1;
+				}
 			}
-			idv.SetAt(_T("t"),Tt-h);
-			if (e.IsNum(str_uUy,&val1,&idv))
+			if( m_pSheme )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				m_pSheme->m_VarsTable.SetVarValue("t",Tt-h);
 			}
-			idv.SetAt(_T("t"),Tt);
-			if (e.IsNum(str_uUy,&val,&idv))
+			val1 = m_uUy.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 			{
-				AfxMessageBox(str); 
-				return -1;
+				ShemeExprErr err = m_uUy.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUy.GetFullErrorMsg(err);
+					return -1;
+				}
+			}
+			if( m_pSheme )
+			{
+				m_pSheme->m_VarsTable.SetVarValue("t",Tt);
+			}
+			val = m_uUy.GetValue();
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+			{
+				ShemeExprErr err = m_uUy.GetRunErrorCode();
+				if( err != SEE_NOERR )
+				{
+					(*pMsg) = m_uUy.GetFullErrorMsg(err);
+					return -1;
+				}
 			}
 
 			switch (p)
@@ -615,181 +1190,255 @@ double CKnot::GetUy(double Tt, int p/*=0*/)
 	}
 	else
 	{
-		switch (p)
+		if( p == 2 )
+			return 0.0;
+		SetVarState( x, v, a, Tt );
+		switch(p)
 		{
-		case 0:		return Uy; 
-		case 1:		return Uyp;
-		case 2:		return 0;
+		case 0:
+			{
+				double val = m_Uy.GetValue(); 
+				if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+				{
+					ShemeExprErr err = m_Uy.GetRunErrorCode();
+					if( err != SEE_NOERR )
+					{
+						(*pMsg) = m_Uy.GetFullErrorMsg(err);
+						return -1;
+					}
+				}
+				return val;
+			}
+		case 1:
+			{
+				double val = m_Uyp.GetValue(); 
+				if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+				{
+					ShemeExprErr err = m_Uyp.GetRunErrorCode();
+					if( err != SEE_NOERR )
+					{
+						(*pMsg) = m_Uyp.GetFullErrorMsg(err);
+						return -1;
+					}
+				}
+				return val;
+			}
 		}
 	}
-	return 0;
+	return 0.0;
 }
 
-double CKnot::GetUa(int p/*=0*/)
+double CKnot::GetUa( double x, double v, double a, double t, std::string *pMsg, int p/*=0*/)
 {
-	if (p)	return Uap;
-	else	return Ua;
-}
-
-CString CKnot::GetStrUx(int p/*=0*/)
-{
-	if (p)	return str_Uxp;
-	else	return str_Ux;
-}
-
-CString CKnot::GetStrUy(int p/*=0*/)
-{
-	if (p)	return str_Uyp;
-	else	return str_Uy;
-}
-
-CString CKnot::GetStrUa(int p/*=0*/)
-{
-	if (p)	return str_Uap;
-	else	return str_Ua;
-}
-
-double CKnot::SetStrUx(CString str, int p/*=0*/)
-{
-	CExpression e;
-	double val;
-
-	if (!e.IsNum(str,&val))
+	if( p == 2 )
+		return 0.0;
+	SetVarState( x, v, a, t );
+	double val = 0.0;
+	if( p == 0 )
 	{
-		if (p) 
+		val = m_Ua.GetValue();
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 		{
-			str_Uxp=str;
-			Uxp=val;
+			ShemeExprErr err = m_Ua.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_Ua.GetFullErrorMsg(err);
+				return -1;
+			}
 		}
-		else 
-		{
-			str_Ux=str;
-			Ux=val;
-		}
-		return val;
 	}
-	return -1;
-}
-
-double CKnot::SetStrUy(CString str, int p/*=0*/)
-{
-	CExpression e;
-	double val;
-
-	if (!e.IsNum(str,&val))
+	else
 	{
-		if (p) 
+		val = m_Uap.GetValue();
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
 		{
-			str_Uyp=str;
-			Uyp=val;
+			ShemeExprErr err = m_Uap.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_Uap.GetFullErrorMsg(err);
+				return -1;
+			}
 		}
-		else 
-		{
-			str_Uy=str;
-			Uy=val;
-		}
-		return val;
 	}
-	return -1;
+	return val;
 }
 
-double CKnot::SetStrUa(CString str, int p/*=0*/)
+void CKnot::Serialize( CArchive &ar, int _sv )
 {
-	CExpression e;
-	double val;
-
-	if (!e.IsNum(str,&val))
-	{
-		if (p) 
-		{
-			str_Uap=str;
-			Uap=val;
-		}
-		else 
-		{
-			str_Ua=str;
-			Ua=val;
-		}
-		return val;
-	}
-	return -1;
-}
-
-void CKnot::Serialize(CArchive & ar)
-{
+	ShemeVersion sv = static_cast<ShemeVersion>(_sv);
 	if (ar.IsStoring())
 	{	// storing code
-		ar << GetStrX();
-		ar << GetStrY();
+		CString str;
+		if( sv <= VER_EQ30 )
+		{
+			str.Format("%.16g", GetCoordX() );
+			ar << str;
+			str.Format("%.16g", GetCoordY() );
+			ar << str;
+		}
+		else
+		{
+			ar << GetCoordX() << GetCoordY();
+		}
 		ar << FixedType;
 		ar << ConnectType;
 		//пишем начальные условия (перемещения)
-		ar << GetStrUx();
-		ar << GetStrUy();
-		ar << GetStrUa();
+		m_Ux.Serialize(ar);
+		m_Uy.Serialize(ar);
+		m_Ua.Serialize(ar);
 		//пишем начальные условия (скорости)
-		ar << GetStrUx(1);
-		ar << GetStrUy(1);
-		ar << GetStrUa(1);
+		m_Uxp.Serialize(ar);
+		m_Uyp.Serialize(ar);
+		m_Uap.Serialize(ar);
 
 		//Силовое Возмущение
 		ar << Ax << Wx << Fix << TypePx;
 		ar << Ay << Wy << Fiy << TypePy;
-		ar << str_Ax << str_Wx << str_Fix << str_Px << PxEnable;
-		ar << str_Ay << str_Wy << str_Fiy << str_Py << PyEnable;
-		SpPx.Serialize(ar);
-		SpPy.Serialize(ar);
+		if( sv <= VER_EQ30 )
+		{
+			str.Format("%.16g", Ax );
+			ar << str;
+			str.Format("%.16g", Wx );
+			ar << str;
+			str.Format("%.16g", Fix );
+			ar << str;
+		}
+		m_Px.Serialize(ar);
+		ar << PxEnable;
+		if( sv <= VER_EQ30 )
+		{
+			str.Format("%.16g", Ay );
+			ar << str;
+			str.Format("%.16g", Wy );
+			ar << str;
+			str.Format("%.16g", Fiy );
+			ar << str;
+		}
+		m_Py.Serialize(ar);
+		ar << PyEnable;
+
+		SpPx.Serialize( ar, _sv );
+		SpPy.Serialize( ar, _sv );
 
 		//Кинематическое возмущение
 		ar << uAx << uWx << uFix << TypeUx;
 		ar << uAy << uWy << uFiy << TypeUy;
-		ar << str_uAx << str_uWx << str_uFix << str_uUx << UxEnable;
-		ar << str_uAy << str_uWy << str_uFiy << str_uUy << UyEnable;
-		SpUx.Serialize(ar);
-		SpUy.Serialize(ar);
+		if( sv <= VER_EQ30 )
+		{
+			str.Format("%.16g", uAx );
+			ar << str;
+			str.Format("%.16g", uWx );
+			ar << str;
+			str.Format("%.16g", uFix );
+			ar << str;
+		}
+		m_uUx.Serialize(ar);
+		ar << UxEnable;
+		if( sv <= VER_EQ30 )
+		{
+			str.Format("%.16g", uAy );
+			ar << str;
+			str.Format("%.16g", uWy );
+			ar << str;
+			str.Format("%.16g", uFiy );
+			ar << str;
+		}
+		m_uUy.Serialize(ar);
+		ar << UyEnable;
+
+		SpUx.Serialize( ar, _sv );
+		SpUy.Serialize( ar, _sv );
 		//Параметры вывода графиков
-		ParamTime.Serialize(ar);
+		ParamTime.Serialize( ar, _sv );
 	}
 	else
 	{	// loading code
-		CString strknx,strkny;
-		ar >> strknx >> strkny;
-		SetCoord(strknx, strkny);
+		if( sv <= VER_EQ30 )
+		{
+			CShemeVarsTable *pVT = (m_pSheme)?(&m_pSheme->m_VarsTable):(NULL);
+			CShemeExpr se( pVT );
+			CString x, y;
+			ar >> x >> y;
+			se.Reset( x );
+			double X = se.GetValue();
+			ASSERT( se.GetCompileErrorCode() == SEE_NOERR );
+			se.Reset( y );
+			double Y = se.GetValue();
+			ASSERT( se.GetCompileErrorCode() == SEE_NOERR );
+			SetCoord( X, Y );
+		}
+		else
+		{
+			double x, y;
+			ar >> x >> y;
+			SetCoord( x, y );
+		}
 
 		Num=0;
 		ar >> FixedType;
 		ar >> ConnectType;
 
-		CString Ux,Uy,Ua;
 		//читаем начальные условия (перемещения)
-		ar >> Ux >> Uy >> Ua;
-		SetStrUx(Ux);	
-		SetStrUy(Uy);	
-		SetStrUa(Ua);
+		m_Ux.Serialize(ar);
+		m_Uy.Serialize(ar);
+		m_Ua.Serialize(ar);
 		//читаем начальные условия (скорости)
-		ar >> Ux >> Uy >> Ua;
-		SetStrUx(Ux,1);	
-		SetStrUy(Uy,1);	
-		SetStrUa(Ua,1);
+		m_Uxp.Serialize(ar);
+		m_Uyp.Serialize(ar);
+		m_Uap.Serialize(ar);
 
 		//Силовое Возмущение
 		ar >> Ax >> Wx >> Fix >> TypePx;
 		ar >> Ay >> Wy >> Fiy >> TypePy;
-		ar >> str_Ax >> str_Wx >> str_Fix >> str_Px >> PxEnable;
-		ar >> str_Ay >> str_Wy >> str_Fiy >> str_Py >> PyEnable;
-		SpPx.Serialize(ar);
-		SpPy.Serialize(ar);
+		if( sv <= VER_EQ30 )
+		{
+			CString str;
+			ar >> str;//str_Ax
+			ar >> str;//str_Wx
+			ar >> str;//str_Fix;
+		}
+		m_Px.Serialize(ar);
+		ar >> PxEnable;
+		if( sv <= VER_EQ30 )
+		{
+			CString str;
+			ar >> str;//str_Ay
+			ar >> str;//str_Wy
+			ar >> str;//str_Fiy;
+		}
+		m_Py.Serialize(ar);
+		ar >> PyEnable;
+
+		SpPx.Serialize( ar, _sv );
+		SpPy.Serialize( ar, _sv );
 
 		//Кинематическое возмущение
 		ar >> uAx >> uWx >> uFix >> TypeUx;
 		ar >> uAy >> uWy >> uFiy >> TypeUy;
-		ar >> str_uAx >> str_uWx >> str_uFix >> str_uUx >> UxEnable;
-		ar >> str_uAy >> str_uWy >> str_uFiy >> str_uUy >> UyEnable;
-		SpUx.Serialize(ar);
-		SpUy.Serialize(ar);
+		if( sv <= VER_EQ30 )
+		{
+			CString str;
+			ar >> str;//str_uAx
+			ar >> str;//str_uWx
+			ar >> str;//str_uFix;
+		}
+		m_uUx.Serialize(ar);
+		ar >> UxEnable;
+		if( sv <= VER_EQ30 )
+		{
+			CString str;
+			ar >> str;//str_uAy
+			ar >> str;//str_uWy
+			ar >> str;//str_uFiy;
+		}
+		m_uUy.Serialize(ar);
+		ar >> UyEnable;
+
+		SpUx.Serialize( ar, _sv );
+		SpUy.Serialize( ar, _sv );
 
 		//Параметры вывода графиков
-		ParamTime.Serialize(ar);
+		ParamTime.Serialize( ar, _sv );
 	}
 }
 
@@ -803,50 +1452,106 @@ int CKnot::SetFixedKnot()
 	case 3: {nXRez=-1; nYRez=-1; break;}
 	case 4: {nXRez=-1; nYRez=-1; for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
 	case 5:	{for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
+	case 6:	{nYRez=-1; for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
+	case 7:	{nXRez=-1; for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
 	};
 	return 0;
 }
 
-int CKnot::SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt, CMatr & mUM, CMatr & mUD, CMatr & mUC)
+int CKnot::SetMatrmP( CMatr &mP, CMatr &RezY1, CMatr &RezY2, CMatr *pRezY3, int i, double Tt, CMatr &mUM, CMatr &mUD, CMatr &mUC, std::string *pMsg )
 {
-	if (nXRez>=0)	mP[nXRez][0]+=GetPx(RezY1[nXRez][i], RezY2[nXRez][i], Tt);
-	if (nYRez>=0)	mP[nYRez][0]+=GetPy(RezY1[nYRez][i], RezY2[nYRez][i], Tt);
+	double x = 0.0, y = 0.0, Vx = 0.0, Vy = 0.0, Ax = 0.0, Ay = 0.0;//перемещения, скорости, ускорения.
+	if( nXRez >= 0 )
+	{
+		x = RezY1[nXRez][i];
+		Vx = RezY2[nXRez][i];
+		Ax = (pRezY3)?(pRezY3->GetAt(nXRez,i)):(0.0);
+		mP[nXRez][0] += GetPx( x, Vx, Ax, Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+	}
+	if( nYRez >= 0 )
+	{
+		y = RezY1[nYRez][i];
+		Vy = RezY2[nYRez][i];
+		Ay = (pRezY3)?(pRezY3->GetAt(nYRez,i)):(0.0);
+		mP[nYRez][0] += GetPy( y, Vy, Ay, Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+	}
 
 	if ( (UxEnable)&&(nXRez>=0) )
 	{
-		for (int i=0;i<mP.SizeY;i++)
-/*			mP[i][0]+=	GetUx(Tt,0)*mUC[i][nXRez]+
-						GetUx(Tt,1)*mUD[i][nXRez]+
-						GetUx(Tt,2)*mUM[i][nXRez];*/
-			mP[i][0]-=	GetUx(Tt,0)*mUC[i][nXU]+
-						GetUx(Tt,1)*mUD[i][nXU];/*+
-						GetUx(Tt,2)*mUM[i][nXU];*/
+		for( int j = 0; j < mP.SizeY; j++ )
+		{
+			mP[j][0] -=	GetUx( x, Vx, Ax, Tt, pMsg, 0)*mUC[j][nXU]+
+						GetUx( x, Vx, Ax, Tt, pMsg, 1)*mUD[j][nXU];
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+				return -1;
+		}
 	}
 	if ( (UyEnable)&&(nYRez>=0) )
 	{
-		for (int i=0;i<mP.SizeY;i++)
-/*			mP[i][0]+=	-GetUy(Tt,0)*mUC[i][nYRez]+
-						GetUy(Tt,1)*mUD[i][nYRez];*/
-			mP[i][0]-=	GetUy(Tt,0)*mUC[i][nYU]+
-						GetUy(Tt,1)*mUD[i][nYU];/*+
-						GetUy(Tt,2)*mUM[i][nYU];*/
+		for( int j = 0; j < mP.SizeY; j++ )
+		{
+			mP[j][0] -=	GetUy( y, Vy, Ay, Tt, pMsg, 0)*mUC[j][nYU]+
+						GetUy( y, Vy, Ay, Tt, pMsg, 1)*mUD[j][nYU];
+			if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+				return -1;
+		}
 	}
+	return 0;
+}
+
+int CKnot::SetMatrmP( CMatr & mP, CMatr &RezY1, CMatr &RezY2, CMatr *pRezY3, int i, double Tt, std::string *pMsg )
+{
+	if ( (UxEnable)&&(nXRez>=0) )
+	{
+		mP[nXRez][0] = GetUx( RezY1[nXRez][i], RezY2[nXRez][i], (pRezY3)?(pRezY3->GetAt(nXRez,i)):(0.0), Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+	}
+
+	if ( (UyEnable)&&(nYRez>=0) )
+	{
+		mP[nYRez][0] = GetUy( RezY1[nYRez][i], RezY2[nYRez][i], (pRezY3)?(pRezY3->GetAt(nYRez,i)):(0.0), Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+	}
+	
 	return 0;
 }
 
 void CKnot::Init()
 {
-	SetStrUx("0");	SetStrUx("0",1);
-	SetStrUy("0");	SetStrUy("0",1);
-	SetStrUa("0");	SetStrUa("0",1);
+	Ax = Wx = Fix = Ay = Wy = Fiy = uAx = uWx = uFix = uAy = uWy = uFiy = 0.0;
+	CShemeVarsTable *pVT = (m_pSheme)?(&m_pSheme->m_VarsTable):(NULL);
+	string Zero("0");
+
+	m_Ux.Reset( Zero, pVT );
+	m_Uy.Reset( Zero, pVT );
+	m_Ua.Reset( Zero, pVT );
+	m_Uxp.Reset( Zero, pVT );
+	m_Uyp.Reset( Zero, pVT );
+	m_Uap.Reset( Zero, pVT );
 
 	//Силовое возмущение
-	str_Ax=_T("0");	str_Wx=_T("0"); str_Fix=_T("0"); str_Px=_T("0"); TypePx=0; PxEnable=false;
-	str_Ay=_T("0");	str_Wy=_T("0"); str_Fiy=_T("0"); str_Py=_T("0"); TypePy=0; PyEnable=false;
+	m_Px.Reset( Zero, pVT );
+	TypePx=0;
+	PxEnable=false;
+	m_Py.Reset( Zero, pVT );
+	TypePy=0;
+	PyEnable=false;
 
 	//Кинематическое возмущение
-	str_uAx=_T("0");	str_uWx=_T("0"); str_uFix=_T("0"); str_uUx=_T("0"); TypeUx=0; UxEnable=false;
-	str_uAy=_T("0");	str_uWy=_T("0"); str_uFiy=_T("0"); str_uUy=_T("0"); TypeUy=0; UyEnable=false;
+	m_uUx.Reset( Zero, pVT );
+	TypeUx = 0;
+	nXU = 0;
+	UxEnable=false;
+	m_uUy.Reset( Zero, pVT );
+	TypeUy = 0;
+	nYU = 0;
+	UyEnable=false;
 
 	SelectMode=OldMode=0;
 	FixedType=0;
@@ -859,53 +1564,53 @@ void CKnot::Init()
 	for (int i=0;i<CntAngle;i++) {	nARez[i]=-1;	MoveA[i]=0;	}
 }
 
-int CKnot::SetMatrmP(CMatr & mP, double Tt)
+double CKnot::GetPx(double x, double x1, double a, double Tt, std::string *pMsg )
 {
-	if ( (UxEnable)&&(nXRez>=0) )
-		mP[nXRez][0]=GetUx(Tt);
-
-	if ( (UyEnable)&&(nYRez>=0) )
-			mP[nYRez][0]=GetUy(Tt);
-	
-	return 0;
-}
-
-
-double CKnot::GetPx(double x, double x1, double Tt)
-{
-	if (!PxEnable) return 0;
-	if (TypePx==0) return Ax*sin(Wx*Tt+Fix);
-	if (TypePx==1)
+	if( !PxEnable ) return 0.0;
+	if( TypePx == 0 ) return Ax*sin(Wx*Tt+Fix);
+	if( TypePx == 1 )
 	{
-		CExpression e;
-		CIDValuesMap idv;
-		idv.SetAt(_T("t"),Tt);
-		double val=0;
-		idv.SetAt(_T("x") ,x);
-		idv.SetAt(_T("x1"),x1);
-		if (e.IsNum(str_Px,&val,&idv))	return 0;
+		double val = 0.0;
+		SetVarState( x, x1, a, Tt );
+		val = m_Px.GetValue();
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+		{
+			ShemeExprErr err = m_Px.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_Px.GetFullErrorMsg(err);
+				return 0.0;
+			}
+		}
 		return val;
 	}
-	if (TypePx==2)	return SpPx.GetValue(Tt);
-	return 0;
+	if( TypePx == 2 )	return SpPx.GetValue(Tt);
+	ASSERT(FALSE);
+	return 0.0;
 }
 
-double CKnot::GetPy(double x, double x1, double Tt)
+double CKnot::GetPy(double x, double x1, double a, double Tt, std::string *pMsg )
 {
 	if (!PyEnable) return 0;
 	if (TypePy==0) return Ay*sin(Wy*Tt+Fiy);
 	if (TypePy==1)
 	{
-		CExpression e;
-		CIDValuesMap idv;
-		idv.SetAt(_T("t"),Tt);
-		double val=0;
-		idv.SetAt(_T("x") ,x);
-		idv.SetAt(_T("x1"),x1);
-		if (e.IsNum(str_Py,&val,&idv))	return 0;
+		double val = 0.0;
+		SetVarState( x, x1, a, Tt );
+		val = m_Py.GetValue();
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+		{
+			ShemeExprErr err = m_Py.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_Py.GetFullErrorMsg(err);
+				return 0.0;
+			}
+		}
 		return val;
 	}
 	if (TypePy==2)	return SpPy.GetValue(Tt);
+	ASSERT(FALSE);
 	return 0;
 }
 
@@ -1054,44 +1759,43 @@ void CKnot::DrawPower(CDC * pDC, POINT & point, CParamView * pParamView)
 	pDC->SelectObject(pOldpen);
 }
 
-int CKnot::SetKinematicPos(CMatr & matr_RezY1, CMatr & matr_RezY2, int i, double Tt)
+int CKnot::SetKinematicPos( CMatr &Y1, CMatr &Y2, CMatr *pY3, int i, double Tt, std::string *pMsg )
 {
-	if (UxEnable) 
+	if( UxEnable )
 	{
-		matr_RezY1[nXRez][i]=GetUx(Tt);
-		matr_RezY2[nXRez][i]=GetUx(Tt,1);
+		double x = Y1[nXRez][i], v = Y2[nXRez][i], a = (pY3)?(pY3->GetAt(nXRez,i)):(0.0);
+		Y1[nXRez][i] = GetUx( x, v, a, Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+		Y2[nXRez][i] = GetUx( x, v, a, Tt, pMsg, 1 );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
 	}
-	if (UyEnable) 
+	if( UyEnable )
 	{
-		matr_RezY1[nYRez][i]=GetUy(Tt);
-		matr_RezY2[nYRez][i]=GetUy(Tt,1);
+		double y = Y1[nYRez][i], v = Y2[nYRez][i], a = (pY3)?(pY3->GetAt(nYRez,i)):(0.0);
+		Y1[nYRez][i] = GetUy( y, v, a, Tt, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
+		Y2[nYRez][i] = GetUy( y, v, a, Tt, pMsg, 1 );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return -1;
 	}
 	return 0;
 }
 
 void CKnot::SetCommonProperties( CKnot *pKnot )
 {
-	str_Ux = pKnot->str_Ux;
-	str_Uy = pKnot->str_Uy;
-	str_Ua = pKnot->str_Ua;
-	str_Uxp = pKnot->str_Uxp;
-	str_Uyp = pKnot->str_Uyp;
-	str_Uap = pKnot->str_Uap;
-	Ux = pKnot->Ux;
-	Uy = pKnot->Uy;
-	Ua = pKnot->Ua;
-	Uxp = pKnot->Uxp;
-	Uyp = pKnot->Uyp;
-	Uap = pKnot->Uap;
+	m_Ux.InitBy( pKnot->m_Ux );
+	m_Uy.InitBy( pKnot->m_Uy );
+	m_Ua.InitBy( pKnot->m_Ua );
+	m_Uxp.InitBy( pKnot->m_Uxp );
+	m_Uyp.InitBy( pKnot->m_Uyp );
+	m_Uap.InitBy( pKnot->m_Uap );
 
-	str_Ax = pKnot->str_Ax;
-	str_Wx = pKnot->str_Wx;
-	str_Fix = pKnot->str_Fix;
-	str_Px = pKnot->str_Px;
-	str_Ay = str_Ay;
-	str_Wy = pKnot->str_Wy;
-	str_Fiy = pKnot->str_Fiy;
-	str_Py = pKnot->str_Py;
+	m_Px.InitBy( pKnot->m_Px );
+	m_Py.InitBy( pKnot->m_Py );
+
 	Ax = pKnot->Ax;
 	Wx = pKnot->Wx;
 	Fix = pKnot->Fix;
@@ -1099,6 +1803,7 @@ void CKnot::SetCommonProperties( CKnot *pKnot )
 	Wy = pKnot->Wy;
 	Fiy = Fiy;
 
+	/*
 	SpPx.TypeSpectr = pKnot->SpPx.TypeSpectr;
 	SpPx.TypeInit = pKnot->SpPx.TypeInit;
 	SpPy.TypeSpectr = pKnot->SpPy.TypeSpectr;
@@ -1118,6 +1823,11 @@ void CKnot::SetCommonProperties( CKnot *pKnot )
 		SpUy.strEdit[i] = pKnot->SpUy.strEdit[i];
 		SpUy.param[i] = pKnot->SpUy.param[i];
 	}
+	*/
+	SpPx = pKnot->SpPx;
+	SpPy = pKnot->SpPy;
+	SpUx = pKnot->SpUx;
+	SpUy = pKnot->SpUy;
 	//Произвольное, гармоническое или случайное возмущение
 	TypePx = pKnot->TypePx;
 	TypePy = pKnot->TypePy;
@@ -1126,14 +1836,9 @@ void CKnot::SetCommonProperties( CKnot *pKnot )
 	PyEnable = pKnot->PyEnable;
 
 	//КИНЕМАТИЧЕСКОЕ ВОЗМУЩЕНИЕ (амплитуда, частота, фаза, произвольное возмущение)
-	str_uAx = pKnot->str_uAx;
-	str_uWx = pKnot->str_uWx;
-	str_uFix = pKnot->str_uFix;
-	str_uUx = pKnot->str_uUx;
-	str_uAy = pKnot->str_uAy;
-	str_uWy = pKnot->str_uWy;
-	str_uFiy = pKnot->str_uFiy;
-	str_uUy = pKnot->str_uUy;
+	m_uUx.InitBy( pKnot->m_uUx );
+	m_uUy.InitBy( pKnot->m_uUy );
+
 	uAx = pKnot->uAx;
 	uWx = pKnot->uWx;
 	uFix = pKnot->uFix;

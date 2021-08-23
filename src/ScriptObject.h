@@ -23,7 +23,7 @@
 #include<list>
 #include<vector>
 
-class COutputView;
+class CScriptDoc;
 ///////////////////////////////////////////////////////////////
 // support for FOR loops 
 class ForLevel
@@ -386,7 +386,7 @@ public:
 	void GetOutput( std::string& );
 	static bool FatalCrash();
 	
-	void Set( COutputView* );
+	void Set( CScriptDoc* );
 	///////////////////////////////////////////////////
 	errorsT SetParam( int, const Value& );
 	errorsT GetParam( int, Value& );
@@ -421,6 +421,7 @@ private:
 	//ф-ции
 	errorsT Fun_PrintAllReservedWords( const ValList&, Value* );
 	errorsT Fun_PrintCode( const ValList&, Value* );
+	errorsT Fun_Help( const ValList&, Value* );
 	errorsT Fun_SetAt( const ValList&, Value* );
 	errorsT Fun_GetAt( const ValList&, Value* );
 	errorsT Fun_Resize( const ValList&, Value* );
@@ -449,6 +450,21 @@ private:
 	errorsT Fun_GetElemMatrC( const ValList&, Value* );
 	errorsT Fun_LoadIdentity( const ValList&, Value* );
 	errorsT Fun_Invert( const ValList&, Value* );
+	errorsT Fun_OpenSheme( const ValList&, Value* );
+	errorsT Fun_CloseSheme( const ValList&, Value* );
+	errorsT Fun_SaveSheme( const ValList&, Value* );
+	errorsT Fun_SaveShemeAs( const ValList&, Value* );
+	errorsT Fun_GetEigen( const ValList&, Value* );
+	errorsT Fun_Integrate( const ValList&, Value* );
+	errorsT Fun_GetResY1( const ValList&, Value* );
+	errorsT Fun_GetResY2( const ValList&, Value* );
+	errorsT Fun_GetResY3( const ValList&, Value* );
+	errorsT Fun_GetMatrMDC( const ValList&, Value* );
+	errorsT Fun_GetElem( const ValList&, Value* );
+	errorsT Fun_DelElem( const ValList&, Value* );
+	errorsT Fun_GetKnot( const ValList&, Value* );
+	errorsT Fun_Delete( const ValList&, Value* );
+	errorsT Fun_AddElement( const ValList&, Value* );
 
 public:
 	//инициализация таблиц
@@ -464,7 +480,7 @@ public:
 
 private:
 	//указатель на окно, куда выводится информация:
-	COutputView *m_pView;
+	CScriptDoc *m_pDoc;
 	//строка с результатом вывода на экран
 	std::string m_strOutput;
 	//к переменной лучше напрямую не обращаться,
@@ -600,6 +616,8 @@ private:
 	bool is_sp_tab(char c);
 	bool isdelim(char c);
 	SBtokensT look_up( std::string &s );
+
+	static TypeID GetScriptElemType( int );
 
 };//class ScriptObject
 ////////////////////////////////////////////////////////////////

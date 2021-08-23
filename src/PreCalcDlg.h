@@ -19,9 +19,9 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CPreCalcDlg)
 	enum { IDD = IDD_DIALOGPRECALC };
-	CString	m_EditStep;
-	CString	m_EditTime;
 	int		m_Method;
+	double	m_EditTime;
+	double	m_EditStep;
 	//}}AFX_DATA
 
 

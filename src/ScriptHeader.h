@@ -11,7 +11,7 @@
 
 #include<string>
 
-class COutputView;
+class CScriptDoc;
 class ScriptObject;
 class CScript  
 {
@@ -30,7 +30,7 @@ public:
 	bool Run();
 	void GetOutput( std::string& );
 	bool FatalCrash();
-	void Set( COutputView* );
+	void Set( CScriptDoc* );
 };
 
 #endif // !defined(AFX_SCRIPTHEADER_H__72D04B42_48A7_11D6_B89D_FE2BA355A53D__INCLUDED_)

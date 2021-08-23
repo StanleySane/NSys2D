@@ -7,7 +7,9 @@
 #include "ShemeDoc.h"
 
 #include<fstream>
+#include<cmath>
 #include "Sheme.h"
+#include "GraphProp.h"
 
 using namespace std;
 
@@ -42,12 +44,10 @@ CGraphicView::CGraphicView()
 	TypeX=TypeY=0;
 
 	AutoSizing=true;
-	Graph2Enable=false;
 
-//	RegionMaxY[0]=RegionMaxY[1]=0;
-//	RegionMinY[0]=RegionMinY[1]=0;
 	RegionPoint[0]=RegionPoint[1]=CPoint(-50,-50);
 
+	m_bMainGraphEnable = true;
 }
 
 CGraphicView::~CGraphicView()
@@ -69,10 +69,10 @@ BEGIN_MESSAGE_MAP(CGraphicView, CView)
 	ON_UPDATE_COMMAND_UI(ID_GETCOORD, OnUpdateGetcoord)
 	ON_COMMAND(ID_SAVEREZ, OnSaverez)
 	ON_UPDATE_COMMAND_UI(ID_SAVEREZ, OnUpdateSaverez)
-	ON_UPDATE_COMMAND_UI(ID_GRAPH2, OnUpdateGraph2)
-	ON_COMMAND(ID_GRAPH2, OnGraph2)
-	ON_COMMAND(ID_LOADGRAPH2, OnLoadgraph2)
 	ON_COMMAND(ID_CALCMAT, OnCalcmat)
+	ON_COMMAND(ID_GRAPH_PROP, OnGraphProp)
+	ON_COMMAND(ID_MAIN_GRAPH, OnMainGraph)
+	ON_UPDATE_COMMAND_UI(ID_MAIN_GRAPH, OnUpdateMainGraph)
 	//}}AFX_MSG_MAP
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
@@ -118,7 +118,8 @@ void CGraphicView::OnDraw(CDC* pDC)
 		RectOnly=false;
 		if (AutoSizing) return;
 
-		CPen pen(PS_DOT|PS_GEOMETRIC,1,RGB(0,0,0));
+		//CPen pen(PS_DOT|PS_GEOMETRIC,1,RGB(0,0,0));
+		CPen pen(PS_DOT|PS_COSMETIC,1,RGB(0,0,0));
 		CPen *pOld=(CPen*)pDC->SelectObject(&pen);
 		int oldpop2=pDC->SetROP2(R2_XORPEN);
 
@@ -188,18 +189,22 @@ void CGraphicView::OnDraw(CDC* pDC)
 	}
 	if ((!pRowX)||(!pRowY)||(SizeX==0))
 	{
+		CFont *pOldFont = pDC->SelectObject( &(pDoc->ParamView.m_fntFree) );
+		COLORREF clrOld = pDC->SetTextColor( pDoc->ParamView.m_clrFree );
 		//Вывод заголовка
-		DrawTitle(pDC, clrect);
+		DrawTitle( pDC, clrect, pDoc->ParamView.m_fntFree, pDoc->ParamView.m_clrFree );
 		//Рисование рамки
 		DrawOutLine(pDC, clrect);
-		CFont font;
-		font.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
+		//CFont font;
+		//font.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
 		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
 		pDC->SetTextAlign(TA_LEFT|TA_TOP);	
-		CFont *pOldFont=pDC->SelectObject(&font);
+
 		pDC->TextOut(field.left+5,field.top+15,_T("Нет результатов расчета"));
 		pDC->TextOut(field.left+5,field.top+40,_T("для этой степени свободы"));
+
 		pDC->SelectObject(pOldFont);
+		pDC->SetTextColor(clrOld);
 		return;
 	}
 
@@ -223,13 +228,11 @@ void CGraphicView::OnDraw(CDC* pDC)
 	CPen pen2(PS_SOLID|PS_GEOMETRIC,1,pDC->IsPrinting()?RGB(0,0,0):RGB(240,0,0));//220
 	//Оси
 	CPen pen3(PS_SOLID|PS_GEOMETRIC,2,RGB(0,0,0));
-	//Второй график
-	CPen pen5(PS_SOLID|PS_GEOMETRIC,1,pDC->IsPrinting()?RGB(0,0,0):RGB(0,0,240));//220
 	
 	CPen *pOld=(CPen*)pDC->SelectObject(&pen1);
 
 //Вывод заголовка
-	DrawTitle(pDC, clrect);
+	DrawTitle( pDC, clrect, pDoc->ParamView.m_fntFree, pDoc->ParamView.m_clrFree );
 
 //Рисование сетки
 	//Установка шрифтов
@@ -341,35 +344,43 @@ void CGraphicView::OnDraw(CDC* pDC)
 	//rgn.SetRectRgn(&rect);
 	//LPtoDP(rgn);
 
-	//pDC->SelectClipRgn(&rgn, RGN_COPY);
-	//график
-		if (Graph2Enable)
+	//рисуем второстепенные графики
+	GraphList::iterator fin = m_Graphs.end();
+	for( GraphList::iterator it = m_Graphs.begin(); it != fin; ++it )
+	{
+		CGraphData *pGr = &(*it);
+		if( pGr->m_bEnable )
 		{
-			pDC->SelectObject(&pen5);
-			p=ShemeToScreen(CCoordD(Graph2[0][0], Graph2[1][0]));
-			pDC->MoveTo(p);
-			for (int t=1;t<Graph2.SizeX;t++)
+			CPen pen5( PS_SOLID|PS_GEOMETRIC, 1, pGr->m_Clr );
+			pDC->SelectObject( &pen5 );
+			p = ShemeToScreen( CCoordD(pGr->m_Data(0,0),pGr->m_Data(1,0)*pGr->m_Scale) );
+			pDC->MoveTo( p );
+			for( int t = 1; t < pGr->m_Data.SizeX; t++ )
 			{
-				p=ShemeToScreen(CCoordD(Graph2[0][t], Graph2[1][t]));
-				if (p.x<-32000) p.x=-32000;
-				if (p.x> 32000) p.x= 32000;
-				if (p.y<-32000) p.y=-32000;
-				if (p.y> 32000) p.y= 32000;
+				p = ShemeToScreen( CCoordD(pGr->m_Data(0,t),pGr->m_Data(1,t)*pGr->m_Scale) );
+				if( p.x < -32000)	p.x = -32000;
+				if( p.x > 32000)	p.x = 32000;
+				if( p.y < -32000)	p.y = -32000;
+				if( p.y > 32000)	p.y = 32000;
 				pDC->LineTo(p);
 			}
 		}
+	}
 	
-	pDC->SelectObject(&pen2);
-	p=ShemeToScreen(CCoordD(pRowX[0],pRowY[0]));
-	pDC->MoveTo(p);
-	for (int t=1;t<SizeX;t++)
+	if( m_bMainGraphEnable )
 	{
-		p=ShemeToScreen(CCoordD(pRowX[t],pRowY[t]));
-		if (p.x<-32000) p.x=-32000;
-		if (p.x> 32000) p.x= 32000;
-		if (p.y<-32000) p.y=-32000;
-		if (p.y> 32000) p.y= 32000;
-		pDC->LineTo(p);
+		pDC->SelectObject(&pen2);
+		p = ShemeToScreen( CCoordD(pRowX[0],pRowY[0]));
+		pDC->MoveTo(p);
+		for (int t=1;t<SizeX;t++)
+		{
+			p=ShemeToScreen(CCoordD(pRowX[t],pRowY[t]));
+			if (p.x<-32000) p.x=-32000;
+			if (p.x> 32000) p.x= 32000;
+			if (p.y<-32000) p.y=-32000;
+			if (p.y> 32000) p.y= 32000;
+			pDC->LineTo(p);
+		}
 	}
 	pDC->SelectClipRgn(0);
 
@@ -428,31 +439,49 @@ void CGraphicView::OnLButtonDown(UINT nFlags, CPoint point)
 				if (existcoord) first=false;
 			}
 		}
-		if (Graph2Enable)
+		GraphList::iterator fin = m_Graphs.end();
+		for( GraphList::iterator it = m_Graphs.begin(); it != fin; ++it )
 		{
-			for (int i=0;i<Graph2.SizeX;i++)
+			CGraphData *pGr = &(*it);
+			if( pGr->m_bEnable )
 			{
-				double x1=Graph2[0][i];
-				double y1=Graph2[1][i];
-				
-				if ( (fabs(x1-c.x)<dx) && (fabs(y1-c.y)<dy) )
+				for( int i = 0; i < pGr->m_Data.SizeX; i++ )
 				{
-					if ((first)||(maxY<y1)) 
-					{ maxY=y1; existcoord=true; }
-					if ((first)||(minY>y1)) 
-					{ minY=y1; existcoord=true; }
-					if ((first)||(maxX<x1)) 
-					{ maxX=x1; existcoord=true; }
-					if ((first)||(minX>x1)) 
-					{ minX=x1; existcoord=true; }
-					if (existcoord) first=false;
+					double x1 = pGr->m_Data(0,i);
+					double y1 = pGr->m_Data(1,i)*pGr->m_Scale;
+					
+					if( (fabs(x1-c.x) < dx)&&(fabs(y1-c.y) < dy) )
+					{
+						if( (first)||(maxY<y1) )
+						{ 
+							maxY = y1;
+							existcoord = true; 
+						}
+						if( (first)||(minY>y1) )
+						{ 
+							minY = y1;
+							existcoord = true; 
+						}
+						if( (first)||(maxX<x1) )
+						{ 
+							maxX = x1;
+							existcoord = true; 
+						}
+						if( (first)||(minX>x1) )
+						{ 
+							minX = x1; 
+							existcoord = true; 
+						}
+						if( existcoord )
+							first = false;
+					}
 				}
 			}
 		}
 		if (existcoord)
 		{		
 			CString str;
-			str.Format("max Y = %.5lg\nmin Y = %.5lg\nmax X = %.5lg\nmin X = %.5lg",
+			str.Format("max Y = %.16g\nmin Y = %.16g\nmax X = %.16g\nmin X = %.16g",
 				maxY, minY, maxX, minX);
 
 			//Вывод сообщения
@@ -595,15 +624,20 @@ inline void CGraphicView::DrawOutLine(CDC * pDC, CRect &clrect)
 }
 
 //Вывод заголовка
-inline void CGraphicView::DrawTitle(CDC * pDC, CRect &clrect)
+inline void CGraphicView::DrawTitle( CDC *pDC, CRect &clrect, CFont &fnt, COLORREF &clr )
 {
-	CFont font1;
-	font1.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
+	//CFont font1;
+	//font1.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
 	pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
 	pDC->SetTextAlign(TA_CENTER|TA_BASELINE);	
-	CFont *pOldFont=pDC->SelectObject(&font1);
-	pDC->TextOut(clrect.Width()/2,2*field.top/3,str_title);
+	//CFont *pOldFont=pDC->SelectObject(&font1);
+	CFont *pOldFont = pDC->SelectObject( &fnt );
+	COLORREF clrOld = pDC->SetTextColor( clr );
+
+	pDC->TextOut( clrect.Width()/2, 2*field.top/3, str_title );
+
 	pDC->SelectObject(pOldFont);
+	pDC->SetTextColor(clrOld);
 }
 
 double CGraphicView::GetStandartStep(double _stp)
@@ -777,73 +811,6 @@ void CGraphicView::OnUpdateSaverez(CCmdUI* pCmdUI)
 	pCmdUI->Enable((pRowX)&&(pRowY));		
 }
 
-void CGraphicView::OnUpdateGraph2(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->SetCheck((Graph2Enable)&&(Graph2.SizeX));			
-	pCmdUI->Enable((Graph2.SizeX));			
-}
-
-void CGraphicView::OnGraph2() 
-{
-	// TODO: Add your command handler code here
-	Graph2Enable=!Graph2Enable;
-	Invalidate(true);
-}
-
-void CGraphicView::OnLoadgraph2() 
-{
-	CShemeDoc* pDoc = (CShemeDoc*)GetDocument();
-	ASSERT_VALID(pDoc);
-	// TODO: Add your command handler code here
-
-	CString filter=("Файлы данных (*.rez)");
-	filter+=(TCHAR)NULL;
-	filter+="*.rez";
-	filter+=(TCHAR)NULL;
-	filter+=("Все файлы (*.*)");
-	filter+=(TCHAR)NULL;
-	filter+="*.*";
-	filter+=(TCHAR)NULL;
-	filter+=(TCHAR)NULL;
-
-	CFileDialog dlg(true);
-	CString ext("rez");
-	dlg.m_ofn.lpstrDefExt=ext;
-
-	TCHAR title[]="Чтение данных";
-	dlg.m_ofn.lpstrTitle=title;
-
-	dlg.m_ofn.lpstrFilter=filter;
-	dlg.m_ofn.nFilterIndex=1;
-
-	if (dlg.DoModal()==IDOK)
-	{
-		fstream fin(dlg.GetPathName(), ios::in);
-		if (!fin) return;
-		//Считаем размер данных
-		double tmp; 
-		int cnt=0;
-		while (!fin.eof())
-		{
-			fin >> tmp >> tmp;
-			cnt++;
-		}
-		if (cnt<2) return;
-		Graph2.ReSize(2,cnt-1);
-		fin.close();
-		//читаем данные
-		fin.open(dlg.GetPathName(), ios::in);
-		//fin.rdbuf()->seekpos(0,ios::in);
-		for (int i=0;i<Graph2.SizeX;i++)
-			fin >> Graph2[0][i] >> Graph2[1][i]; 
-
-		Graph2Enable=true;
-		Invalidate(true);
-	}	
-}
-
-
 BOOL CGraphicView::OnPreparePrinting(CPrintInfo* pInfo) 
 {
 	// TODO: call DoPreparePrinting to invoke the Print dialog box
@@ -907,4 +874,82 @@ void CGraphicView::OnCalcmat()
 	else
 		str.Format("Математическое ожидание =%.10lg\nДисперсия               =%.10lg\nСреднеквадр. отклонение =%.10lg",matt,disp,sqrt(disp));
 	MessageBox(str,"Статистики");
+}
+
+/////////////////////////////////////////////////////////////////////
+//	CGraphData class members
+/////////////////////////////////////////////////////////////////////
+CGraphData::CGraphData()
+{
+	m_bEnable = true;
+	m_Clr = RGB(255,0,0);
+	m_Scale = 1.0;
+}
+
+CGraphData::~CGraphData()
+{}
+
+void CGraphData::InitBy( const CGraphData &obj )
+{
+	m_bEnable = obj.m_bEnable;
+	m_Clr = obj.m_Clr;
+	m_Scale = obj.m_Scale;
+	m_strCaption = obj.m_strCaption;
+	m_strFileName = obj.m_strFileName;
+	m_Data = obj.m_Data;
+}
+
+CGraphData::CGraphData( const CGraphData &obj )
+{
+	InitBy(obj);
+}
+
+CGraphData& CGraphData::operator=( const CGraphData &obj )
+{
+	if( this != (&obj) )
+		InitBy(obj);
+	return *this;
+}
+
+bool CGraphData::operator==( const CGraphData &obj ) const
+{
+	return true;
+}
+
+bool CGraphData::operator<( const CGraphData &obj ) const
+{
+	return true;
+}
+
+bool CGraphData::operator>( const CGraphData &obj ) const
+{
+	return true;
+}
+
+bool CGraphData::operator!=( const CGraphData &obj ) const
+{
+	return true;
+}
+
+/////////////////////////////////////////////////////////////////////
+
+void CGraphicView::OnGraphProp() 
+{
+	// TODO: Add your command handler code here
+	CGraphProp dlg(this);
+	dlg.DoModal();
+	Invalidate();
+}
+
+void CGraphicView::OnMainGraph() 
+{
+	// TODO: Add your command handler code here
+	m_bMainGraphEnable = !m_bMainGraphEnable;
+	Invalidate();
+}
+
+void CGraphicView::OnUpdateMainGraph(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->SetCheck( m_bMainGraphEnable );
 }

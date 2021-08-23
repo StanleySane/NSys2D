@@ -7,8 +7,11 @@
 #include "Matr.h"
 #include "AlgolMatr.h"
 
+#include "StdAfxMy.h"
+
 #include <fstream>
 #include <cmath>
+#include <iterator>
 #include <iomanip>
 
 using namespace std;
@@ -19,6 +22,8 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
+
+double CMatr::m_UnValid = 0.0;
 void Balance( AlgolMatr &a, AlgolMatr &d, int &low, int &hi, int base = 2 );
 void BalBack( int low, int hi, AlgolMatr d, AlgolMatr &z );
 
@@ -41,10 +46,9 @@ bool SymDet( AlgolMatr &a, AlgolMatr &p, DETERMINANT &det );
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CMatr::CMatr()
+CMatr::CMatr():m_Data(NULL)
 {
-	Data=0;
-	SizeX=SizeY=0;
+	SizeX = SizeY = 0;
 }
 
 CMatr::~CMatr()
@@ -52,75 +56,163 @@ CMatr::~CMatr()
 	Clear();
 }
 
-CMatr::CMatr(int ny, int nx)
+CMatr::CMatr( int r, int c ):m_Data(NULL)
 {
-	Data=0;
-	SizeX=SizeY=0;
+	SizeX = SizeY = 0;
 
-	ReSize(ny,nx);
+	ReSize( r, c );
+}
+
+void CMatr::InitBy( const CMatr &matr )
+{
+//	Clear();
+	if( matr.m_Data && ReSize( matr.Rows(), matr.Cols() ) )
+	{
+		memcpy( m_Data, matr.m_Data, Rows()*Cols()*sizeof(double) );
+		/*
+		for( int r = 0; r < SizeY; r++ )
+		{
+			for( int c = 0; c < SizeX; c++ )
+			{
+				Data[r][c] = matr[r][c];
+			}
+		}
+		*/
+	}
+}
+
+CMatr& CMatr::operator =( const CMatr &matr )
+{
+	if( this != (&matr) )
+		InitBy(matr);
+	return *this;
+}
+
+CMatr::CMatr( const CMatr &matr ):m_Data(NULL)
+{
+	SizeX = SizeY = 0;
+	InitBy(matr);
 }
 
 double* CMatr::operator [](int n)
 {
-	ASSERT(Data);
-	ASSERT(n<SizeY);
+//ВНИМАНИЕ !!! Не следует использовать эту ф-цию !!!
+//Она оставлена для поддержки уже существующих кодов.
+	ASSERT( m_Data );
+	ASSERT( n < SizeY );
+	double *pnt = m_Data;
+	advance( pnt, n*Cols() );
+	return pnt;
+//	return Data[n];
+}
 
-	return Data[n];
+bool CMatr::IsValidPos( int r, int c ) const
+{
+	if( (r<0)||(r>=SizeY)||(c>=SizeX)||(c<0) )
+		return false;
+	return true;
+}
+
+int CMatr::GetIndex( int r, int c ) const
+{
+	if( !IsValidPos( r, c ) )	return -1;
+	return r*SizeX + c;
+}
+
+double& CMatr::GetAt( int r, int c )
+{
+	int ind = GetIndex( r, c );
+	ASSERT( ind >= 0 );
+	if( ind < 0 )	return m_UnValid;
+	return m_Data[ind];
+//	ASSERT( Data );
+//	ASSERT( (r >= 0)&&(c >= 0)&&(r < SizeY)&&(c < SizeX) );
+//	return Data[r][c];
+}
+
+const double& CMatr::GetAt( int r, int c ) const
+{
+	int ind = GetIndex( r, c );
+	ASSERT( ind >= 0 );
+	if( ind < 0 )	return m_UnValid;
+	return m_Data[ind];
+//	ASSERT( Data );
+//	ASSERT( (r >= 0)&&(c >= 0)&&(r < SizeY)&&(c < SizeX) );
+//	return Data[r][c];
+}
+
+double& CMatr::operator()( int r, int c )
+{
+	return GetAt( r, c );
+}
+
+const double& CMatr::operator()( int r, int c ) const
+{
+	return GetAt( r, c );
 }
 
 CMatr CMatr::operator !()
 {
-	CMatr Matr(SizeX,SizeY);
+	CMatr Matr( SizeX, SizeY );
 	
 	for (int i=0;i<SizeX;i++)	
 		for (int j=0;j<SizeY;j++)
-			Matr[i][j]=Data[j][i];
+			Matr.GetAt(i,j) = GetAt(j,i);
 	return Matr;
 }
 
-int CMatr::IsEmpty()
+bool CMatr::IsEmpty()
 {
-	if (Data) return 0;
-	return 1;
+	return (m_Data == NULL);
 }
 
 void CMatr::Clear()
 {
-	if (Data)
+	if( m_Data != NULL )
 	{
-		for (int i=0;i<SizeY;i++)
-		{
-			delete [] Data[i];
-			Data[i] = NULL;
-		}
-		delete [] Data;
-		Data = NULL;
-		SizeX = SizeY = 0;
-	}
-}
-
-void CMatr::ReSize(int ny, int nx)
-{
-	ASSERT(nx>0);
-	ASSERT(ny>0);
-	if( (SizeX != nx)||(SizeY != ny) )
-	{
-		Clear();
-
-		SizeX = nx;
-		SizeY = ny;
-	
+//		for (int i=0;i<SizeY;i++)
+//		{
+//			delete [] Data[i];
+//			Data[i] = NULL;
+//		}
 		try
 		{
-			Data = new double*[SizeY];
+			delete [] m_Data;
+		}
+		catch(...)
+		{
+			CString mes("Произошла критическая ошибка освобождения памяти!\n");
+			mes += _T("Закройте приложение.\n");
+			mes += _T("При систематическом появлении данного сообщения обратитесь к разработчикам.");
+			AfxMessageBox(mes);
+		}
+		m_Data = NULL;
+	}
+	SizeX = SizeY = 0;
+}
+
+bool CMatr::ReSize( int r, int c )
+{
+	ASSERT( (c > 0)&&(r > 0) );
+	if( (c <= 0)||(r <= 0) )
+		return false;
+	if( (SizeX != c)||(SizeY != r) )
+	{
+		Clear();
+		SizeX = c;
+		SizeY = r;
+		try
+		{
+			m_Data = new double[r*c];
 		}
 		catch( bad_alloc& )
 		{
-			Data = NULL;
+			m_Data = NULL;
 			SizeX = SizeY = 0;
-			return;
+			return false;
 		}
-		for (int i=0;i<SizeY;i++)
+		/*
+		for( int i=0;i<SizeY;i++)
 		{
 			try
 			{
@@ -133,26 +225,18 @@ void CMatr::ReSize(int ny, int nx)
 				return;
 			}
 		}
+		*/
 	}
 	ClearData();
+	return true;
 }
 
 void CMatr::ClearData()
 {
-	for (int i=0;i<SizeY;i++)
-		for (int j=0;j<SizeX;j++)
-			Data[i][j]=0;
-}
-
-CMatr::CMatr(CMatr & matr)
-{
-	Data=0;
-	SizeX=SizeY=0;
-
-	ReSize(matr.SizeY,matr.SizeX);
-	for (int i=0;i<SizeY;i++)
-		for (int j=0;j<SizeX;j++)
-			Data[i][j]=matr[i][j];
+	memset( m_Data, 0, Rows()*Cols()*sizeof(double) );
+//	for (int i=0;i<SizeY;i++)
+//		for (int j=0;j<SizeX;j++)
+//			Data[i][j]=0;
 }
 
 CMatr CMatr::operator *(CMatr & matr)
@@ -163,22 +247,11 @@ CMatr CMatr::operator *(CMatr & matr)
 	for (int i=0;i<SizeY;i++)
 		for (int j=0;j<matr.SizeX;j++)
 		{
-			Matr.Data[i][j]=0;
+			Matr.GetAt(i,j) = 0.0;
 			for (int k=0;k<SizeX;k++)
-				Matr.Data[i][j]+=Data[i][k]*matr.Data[k][j];
+				Matr.GetAt(i,j) += GetAt(i,k)*matr.GetAt(k,j);
 		}
 	return Matr;
-}
-
-CMatr &CMatr::operator =(CMatr & matr)
-{
-	Clear();
-	ReSize(matr.SizeY,matr.SizeX);
-	for (int i=0;i<SizeY;i++)
-		for (int j=0;j<SizeX;j++)
-			Data[i][j]=matr[i][j];
-
-	return *this;
 }
 
 void CMatr::SaveToFile(char * name)
@@ -197,7 +270,7 @@ void CMatr::SaveToFile(char * name)
 			OutMatr.setf(ios::right);
 			OutMatr.unsetf(ios::skipws);
 			//ios::adjustfield=ios::right;
-			double n=Data[i][j];
+			double n = GetAt(i,j);
 			OutMatr << (fabs(n)<10E-10?0:n) << "  ";
 		}
 		OutMatr << endl;
@@ -206,9 +279,16 @@ void CMatr::SaveToFile(char * name)
 
 void CMatr::CopyDownToUp()
 {
-	for (int i=0; i<SizeY;i++)
-		for (int j=0;j<(i+1);j++)
-			Data[j][i]=Data[i][j];
+	for( int r = 0; r < SizeY; r++ )
+	{
+//		int r1 = r-1;
+		for( int c = 0; c < r; c++ )
+		{
+			//Data[j][i]=Data[i][j];
+			double tmp = GetAt( r, c );
+			GetAt( c, r ) = tmp;
+		}
+	}
 }
 
 CMatr CMatr::GetInvert( int &flag, int iMethod )
@@ -220,8 +300,8 @@ CMatr CMatr::GetInvert( int &flag, int iMethod )
 		CMatr mC(SizeY,SizeX), mU(SizeY,SizeX), mR(SizeY,SizeX);
 		mR.SetIdentity();
 
-		mC=*this;
-		flag=mC.SolveSystem(mR,mU);
+		mC = *this;
+		flag = mC.SolveSystem(mR,mU);
 	
 		return mU;
 	}
@@ -291,36 +371,42 @@ int CMatr::SolveSystem(CMatr & mR, CMatr & mU)
 	{
 	  for(int j=SizeY-1;j>i;j--)
 	  {
-		 if (fabs(Data[j][i]) > 1.0e-20)
+		 if (fabs(GetAt(j,i)) > 1.0e-20)
 		 {
-			 if (fabs(Data[j-1][i]) <1.0e-10)
+			 if (fabs(GetAt(j-1,i)) <1.0e-10)
 			 {
 				 for(int k=i;k<SizeX;k++)
-					 Data[j-1][k]+=Data[j][k];
+					 //Data[j-1][k]+=Data[j][k];
+					 GetAt(j-1,k) += GetAt(j,k);
 				 for(k=0;k<mR.SizeX;k++)
-					 mR[j-1][k]+=mR[j][k];
+					 //mR[j-1][k]+=mR[j][k];
+					 mR(j-1,k) += mR(j,k);
 			 }
-			 Num=Data[j][i]/Data[j-1][i];
+			 Num = GetAt(j,i)/GetAt(j-1,i);
 			 for(int k=i+1;k<SizeX;k++)
-				  Data[j][k]-=Num*Data[j-1][k];
+				  //Data[j][k]-=Num*Data[j-1][k];
+				  GetAt(j,k) -= Num*GetAt(j-1,k);
 			 for(k=0;k<mR.SizeX;k++)
-				  mR[j][k]-=Num*mR[j-1][k];
-			 Data[j][i]=0;
+				  //mR[j][k]-=Num*mR[j-1][k];
+				  mR(j,k) -= Num*mR(j-1,k);
+			 GetAt(j,i) = 0.0;
 		 }
 	  }
 	}
 	for (int d=0;d<SizeY;d++)
-		if (Data[d][d]==0) return 0;//ВАУ!!! Крутая проверочка double на равенство нулю !!?
+		//if (Data[d][d]==0) return 0;
+		if( fabs(GetAt(d,d)) <= 1e-300 ) 
+			return 0;
 
 	for (int t=0;t<mR.SizeX;t++)
 	{
 		for (int i=SizeY-1;i>=0;i--)
 		{
-			mU[i][t]=mR[i][t];
+			mU(i,t) = mR(i,t);
 			for (int j=SizeY-1;j>i;j--)
-				mU[i][t]-=mU[j][t]*Data[i][j];
+				mU(i,t) -= mU(j,t)*GetAt(i,j);
 
-			mU[i][t]/=Data[i][i];
+			mU(i,t) /= GetAt(i,i);
 		}
 	}
 	return 1;
@@ -328,27 +414,30 @@ int CMatr::SolveSystem(CMatr & mR, CMatr & mU)
 
 void CMatr::SetIdentity()
 {
-	ASSERT(SizeX==SizeY);
+	ASSERT( SizeX == SizeY );
 
-	for (int i=0;i<SizeY;i++)
+	int i;
+	/*
+	for ( i=0;i<SizeY;i++)
 		for (int j=0;j<SizeX;j++)
 			Data[i][j]=0;
-
-	for (i=0;i<SizeY;i++)
-			Data[i][i]=1;
+			*/
+	ClearData();
+	for( i = 0; i < SizeY; i++ )
+			GetAt(i,i) = 1.0;
 }
 
 
-CMatr CMatr::MultOnCol(CMatr & matr, int col)
+CMatr CMatr::MultOnCol( CMatr &matr, int col )
 {
-	ASSERT(SizeX==matr.SizeY);
+	ASSERT( SizeX == matr.SizeY );
 
-	CMatr RezMatr(SizeY,1);
+	CMatr RezMatr( SizeY, 1 );
 
-	for (int i=0;i<SizeY;i++)
-		for (int j=0;j<SizeX;j++)
-			RezMatr[i][0]+=Data[i][j]*matr[j][col];
-
+	for( int i = 0; i < SizeY; i++ )
+		for( int j = 0; j < SizeX; j++ )
+			//RezMatr[i][0]+=Data[i][j]*matr[j][col];
+			RezMatr.GetAt(i,0) += GetAt(i,j)*matr.GetAt(j,col);
 	return RezMatr;
 }
 
@@ -361,19 +450,17 @@ CMatr CMatr::operator +(CMatr & matr)
 
 	for (int i=0;i<SizeY;i++)
 		for (int j=0;j<SizeX;j++)
-			RezM[i][j]=Data[i][j]+matr[i][j];
-
+			RezM.GetAt(i,j) = GetAt(i,j) + matr(i,j);
 	return RezM;
 }
 
-CMatr CMatr::operator *(double num)
+CMatr CMatr::operator*( double num )
 {
 	CMatr RezM(SizeY,SizeX);
 
 	for (int i=0;i<SizeX;i++)
 		for (int j=0;j<SizeY;j++)
-			RezM[j][i]=Data[j][i]*num;
-
+			RezM.GetAt(j,i) = GetAt(j,i)*num;
 	return RezM;
 }
 
@@ -386,301 +473,65 @@ CMatr CMatr::operator -(CMatr & matr)
 
 	for (int i=0;i<SizeY;i++)
 		for (int j=0;j<SizeX;j++)
-			RezM[i][j]=Data[i][j]-matr[i][j];
-
+			RezM(i,j) = GetAt(i,j) - matr(i,j);
 	return RezM;
 }
 
-void CMatr::CopyVectTo(CMatr & matr, int num)
+void CMatr::CopyVectTo( const CMatr &matr, int num )
 {
-	ASSERT(SizeY==matr.SizeY);
-	ASSERT(num<SizeX);
+	ASSERT( SizeY == matr.SizeY );
+	ASSERT( num < SizeX );
 
-	for (int i=0;i<SizeY;i++)
-		Data[i][num]=matr[i][0];
+	for( int r = 0; r < SizeY; r++ )
+		GetAt( r, num ) = matr.GetAt( r, 0 );
+		//Data[i][num]=matr[i][0];
 }
 
-double* CMatr::GetRow(int i)
+double* CMatr::GetRow( int i )
 {
+//ВНИМАНИЕ !!! Следует очень осторожно использовать эту ф-цию
+//т.к. не проверяется случай выхода за пределы возвращаемого ею указателя.
 	//ASSERT(i<SizeY);
-	if (i>=SizeY) return 0;
-
-	return Data[i];
+	if( (i >= SizeY)||(i < 0)||(m_Data == NULL) )
+		return NULL;
+	double *pnt = m_Data;
+	advance( pnt, i*Cols() );
+	return pnt;
 }
 
-/*
-// Приведение Матрицы A к трёхдиагональной форме
-// методом элементарных преобразований
-CMatr& CMatr::TreeDiagForm()
+int CMatr::Eigen( CMatr *T )
 {
-	ASSERT(SizeY==SizeY);
-
-    int i, j, q;
-    double tmp;
-
-    double * v = new double[SizeY];
-
-    // Первый ход - приведение исходной матрицы
-    // к верхней почти треугольной форме
-    for (q = 1; q < SizeX-1; q++)
-    {
-       // Поиск максимального поддиагонального элемента q-1 столбца
-       int MaxElIndex = q;
-       for (i = q+1; i < SizeY; i++)
-         if (fabs (Data[i][q-1]) > fabs (Data[MaxElIndex][q-1]))
-	   MaxElIndex = i;
-       //----------------------------------------------------------
-
-
-       // Переставляем строки матрицы (q и MaxElIndex), если надо
-       if (MaxElIndex != q)
-       {
-           double tmp;
-		   for (int i=0;i<SizeX;i++)
-		   {
-				tmp = Data[MaxElIndex][i];
-				Data[MaxElIndex][i] = Data[q][i];
-                Data[q][i] = tmp;
-		   }
-       }//---------------------------------------------------------
-       // A -> P * A
-
-       // Проверка возможности продолжения дальнейших вычислений
-       if (Data[q][q-1] == 0)
-       {
-          AfxMessageBox("Матрица вырождена");
-          delete v;
-		  return *this;
-       }//------------------------------------------------------
-
-       // Вектор v на q-ом шаге
-       tmp = Data[q][q-1];
-       for (i = q+1; i < SizeY; i++)
-          v[i] = Data[i][q-1] / tmp;
-       //----------------------
-
-       // Умножение N(-v) на (P * A)
-       for (i = q+1; i < SizeY; i++)
-         for (j = 0; j < SizeX; j++)
-           Data[i][j] = Data[i][j] - v[i] * Data[q][j];
-       //---------------------------
-       // A -> N(-v) * (P * A)
-
-       // Перестановка столбцов, если нужно
-       if (MaxElIndex != q)
-			 for (int i = 0; i < SizeY; i++)
-			 {
-				tmp = Data[i][MaxElIndex];
-				Data[i][MaxElIndex] = Data[i][q];
-				Data[i][q] = tmp;
-			 }
-       //----------------------------------
-       // A -> (N(-v) * (P * A)) * P
-
-       // Умножение ((N(-v) * (P * A)) * P) на N(v)
-       for (i = 0; i < SizeY; i++)
-         for (j = q+1; j < SizeX; j++)
-           Data[i][q] += v[j] * Data[i][j];
-       //---------------------------
-       // A -> ((N(-v) * (P * A)) * P) * N(v)
-
-    }// конец первого хода
-
-    delete v;
-    return *this;
-}
-
-CMatr CMatr::QRSolvingEigenProblem()
-{
-	ASSERT(SizeX==SizeY);	
-	
-	//CMatr A(SizeY,1);
-    int i, j, k;
-    int n = SizeY;
-    const double eps = pow (2, -24);
-
-    int l = n-1;
-    int NonZeroCount;
-
-    char * Is0 = new char[l];
-
-    memset (Is0, 0, l);
-
-	CMatr C(n,n);
-	CMatr &H=C;
-	CMatr &x=C;
-    
-	
-	//ComplexMatrix * C = new ComplexMatrix (n, n);
-    //ComplexMatrix & H = * C;
-    //ComplexMatrix & x = * C;
-    H = *this;
-
-    CMatr R(n,n);
-	CMatr Q(n,n);
-	//ComplexMatrix R (n, n);
-    //ComplexMatrix Q (n, n);
-
-    double tmp;
-	//complex tmp;
-
-
-    for (i = 0; i < n*100; i++)
-    {
-       // Сдвиг по Рэлею
-       double tau = H[l][l];
-	   //Complex tau = H[l][l];
-
-       // Инициализация R значением H
-       R = H;
-       for (k = 0; k < n; k++) R[k][k] -= tau;
-
-       // Формируем R - правую треугольную матрицу, а также Q
-       Q.SetIdentity();
-	   //Q.MakeDiag (1.0);
-       for (j = 0; j < l; j++)
-       {
-          if (!Is0[j])
-          {
-             // Параметры матрицы поворота
-             double L = sqrt (pow(R[j][j],2) + pow(R[j+1][j],2));
-//             double L = sqrt (qabs(R[j][j]) + qabs(R[j+1][j]));
-             double Cos = R[j][j] / L;
-             double Sin = R[j+1][j] / L;
-//             double Cos = Len (R[j][j]) / L;
-//             double Sin = Len (R[j+1][j]) / L;
-
-			double M_PI=acos(-1);
-
-             tmp = R[j][j];
-//             tmp = complex (R[j][j].r,   R[j][j].i);
-             double ar = (tmp>=0?0:acos(-1));
-//             double ar = arg (tmp);
-             if (ar > M_PI) ar -=  2.0 * M_PI;
-             double f1=cos(- ar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//             complex f1 (0.0, - ar);//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-             tmp = R[j+1][j];
-//             tmp = complex (R[j+1][j].r, R[j+1][j].i);
-             ar = (tmp>=0?0:acos(-1));
-//             ar = arg (tmp);
-             if (ar > M_PI) ar -=  2.0 * M_PI;
-             double f2 = sin(M_PI - ar);//!!!!!!!!!!!!!!!!!!!!!!!!!
-//             complex f2 (0.0, M_PI - ar);//!!!!!!!!!!!!!!!!!!!!!!!!!
-
-             tmp = exp (f1);
-//             tmp = exp (f1);
-             double a = tmp;
-//             Complex a (real (tmp), imag (tmp));
-             a*=Cos;
-
-             tmp = exp (f2);
-             double b=tmp;
-//             Complex b (real (tmp), imag (tmp));
-             b*=-Sin;
-
-             tmp = exp (-f2);
-             double c = tmp;
-//             Complex c (real (tmp), imag (tmp));
-             c*=Sin;
-
-             tmp = exp (-f1);
-             double d = tmp;
-//             Complex d (real (tmp), imag (tmp));
-             d*=Cos;
-
-             // Умножение матриц поворота на H слева - получаем R
-             for (k = j; k < n; k++)
-             {
-                double Rjk = R[j][k];
-                double Rj1k = R[j+1][k];
-//                Complex Rjk = R[j][k];
-//                Complex Rj1k = R[j+1][k];
-
-                R[j][k]   = a * Rjk + b * Rj1k;
-                R[j+1][k] = c * Rjk + d * Rj1k;
-             }
-
-             // Получаем Q
-             Q[j+1][j] = b;
-             Q[j+1][j+1] = d;
-             for (k = 0; k < j+1; k++)
-             {
-                double Qkj = Q[k][j];
-//                Complex Qkj = Q[k][j];
-                Q[k][j] = a * Qkj;
-                Q[k][j+1] = c * Qkj;
-             }
-          }
-       }
-       H = R * Q;
-       for (k = 0; k < n; k++) H[k][k] += tau;
-       NonZeroCount = 0;
-       for (j = 0; j < l; j++)
-         if (fabs(H[j+1][j]) < (fabs (H[j][j]) + fabs (H[j+1][j+1])) * eps)
-         {
-            // нулевой поддиагональный элемент!
-            Is0[j] = 1;
-	 }
-         else
-         {
-            Is0[j] = 0;
-            NonZeroCount++;
-         }
-       if (! NonZeroCount) break;
-    }
-//    cout << i << endl;
-    *this = H;
-
-    for (i = 0; i < n; i++)
-    {
-      for (j = i+1; j < n; j++)
-        x[j][i] = 0.0;
-      x[i][i] = 1.0;
-    }
-
-    for (i = 0; i < n; i++)
-      for (j = i-1; j >= 0; j--)
-      {
-        double s = 0.0;
-//        Complex s = 0.0;
-        for (k = j+1; k <= i; k++)
-          s+=Data[j][k]*x[k][i];
-        x[j][i] = - s / (Data[j][j] - Data[i][i]);
-      }
-
-    return H;
-}*/
-
-int CMatr::Eigen(CMatr * T)
-{
-	int n=SizeY;
-	BOOL mark=false;
-	BOOL left=false;
-	BOOL right=false;
+	int n = SizeY;
+	BOOL mark = false;
+	BOOL left = false;
+	BOOL right = false;
 
 	if (T)
 	{
-		right=true;
+		right = true;
 		T->SetIdentity();
 	}
-	double ep=1E-20;
-	double eps=sqrt(ep);
+	double ep = 1E-20;
+	double eps = sqrt(ep);
 
-	int nless_1=n-1;
+	int nless_1 =n-1;
 	for (int it=0;it<55;it++)
 	{
 		if (mark) return it;
 
 		for (int i=0;i<nless_1;i++)
 		{
-			double aii=Data[i][i];
+			//double aii = Data[i][i];
+			double aii = GetAt(i,i);
 			for (int j=i+1;j<n;j++)
 			{
-				double aij=Data[i][j];
-				double aji=Data[j][i];
+				//double aij=Data[i][j];
+				//double aji=Data[j][i];
+				double aij = GetAt(i,j);
+				double aji = GetAt(j,i);
 
-				if ( (fabs(aij+aji)>eps)||(fabs(aii-Data[j][j])>eps) )
+				//if ( (fabs(aij+aji)>eps)||(fabs(aii-Data[j][j])>eps) )
+				if ( (fabs(aij+aji)>eps)||(fabs(aii-GetAt(j,j))>eps) )
 				{
 					mark=true;
 					for (int k=0;k<nless_1;k++)
@@ -692,15 +543,19 @@ int CMatr::Eigen(CMatr * T)
 							double yh=0;
 							for (int i=0;i<n;i++)
 							{
-								double aik=Data[i][k];
-								double aim=Data[i][m];
+								//double aik=Data[i][k];
+								//double aim=Data[i][m];
+								double aik = GetAt(i,k);
+								double aim = GetAt(i,m);
 								double te=aik*aik;
 								double tee=aim*aim;
 								yh+=te-tee;
 								if ((i!=k)&&(i!=m))
 								{
-									double aki=Data[k][i];
-									double ami=Data[m][i];
+									//double aki=Data[k][i];
+									//double ami=Data[m][i];
+									double aki = GetAt(k,i);
+									double ami = GetAt(m,i);
 									h+=aki*ami-aik*aim;
 									double tep=te+ami*ami;
 									double tem=tee+aki*aki;
@@ -709,9 +564,12 @@ int CMatr::Eigen(CMatr * T)
 								}
 							}
 							h*=2;
-							double d=Data[k][k]-Data[m][m];
-							double akm=Data[k][m];
-							double amk=Data[m][k];
+							//double d=Data[k][k]-Data[m][m];
+							//double akm=Data[k][m];
+							//double amk=Data[m][k];
+							double d = GetAt(k,k) - GetAt(m,m);
+							double akm = GetAt(k,m);
+							double amk = GetAt(m,k);
 							double c=akm+amk;
 							double e=akm-amk;
 							double cx,sx;
@@ -751,30 +609,46 @@ int CMatr::Eigen(CMatr * T)
 								mark=false;
 								for (int i=0;i<n;i++)
 								{
-									double aki=Data[k][i];
-									double ami=Data[m][i];
-									Data[k][i]=c1*aki+s1*ami;
-									Data[m][i]=s2*aki+c2*ami;
-									if (left)
+									//double aki=Data[k][i];
+									//double ami=Data[m][i];
+									//Data[k][i]=c1*aki+s1*ami;
+									//Data[m][i]=s2*aki+c2*ami;
+									double aki = GetAt(k,i);
+									double ami = GetAt(m,i);
+									GetAt(k,i) = c1*aki+s1*ami;
+									GetAt(m,i) = s2*aki+c2*ami;
+									if( left && (T != NULL) )
 									{
-										double tki=(*T)[k][i];
-										double tmi=(*T)[m][i];
-										(*T)[k][i]=c1*tki+s1*tmi;
-										(*T)[m][i]=s2*tki+c2*tmi;
+										//double tki=(*T)[k][i];
+										//double tmi=(*T)[m][i];
+										//(*T)[k][i]=c1*tki+s1*tmi;
+										//(*T)[m][i]=s2*tki+c2*tmi;
+										double tki = T->GetAt(k,i);
+										double tmi = T->GetAt(m,i);
+										T->GetAt(k,i) = c1*tki+s1*tmi;
+										T->GetAt(m,i) = s2*tki+c2*tmi;
 									}
 								}
 								for (i=0;i<n;i++)
 								{
-									double aik=Data[i][k];
-									double aim=Data[i][m];
-									Data[i][k]=c2*aik-s2*aim;
-									Data[i][m]=-s1*aik+c1*aim;
-									if (right)
+									//double aik=Data[i][k];
+									//double aim=Data[i][m];
+									//Data[i][k]=c2*aik-s2*aim;
+									//Data[i][m]=-s1*aik+c1*aim;
+									double aik = GetAt(i,k);
+									double aim = GetAt(i,m);
+									GetAt(i,k) = c2*aik-s2*aim;
+									GetAt(i,m) = -s1*aik+c1*aim;
+									if( right && (T != NULL) )
 									{
-										double tik=(*T)[i][k];
-										double tim=(*T)[i][m];
-										(*T)[i][k]=c2*tik-s2*tim;
-										(*T)[i][m]=-s1*tik+c1*tim;
+										//double tik=(*T)[i][k];
+										//double tim=(*T)[i][m];
+										//(*T)[i][k]=c2*tik-s2*tim;
+										//(*T)[i][m]=-s1*tik+c1*tim;
+										double tik = T->GetAt(i,k);
+										double tim = T->GetAt(i,m);
+										T->GetAt(i,k) = c2*tik-s2*tim;
+										T->GetAt(i,m) = -s1*tik+c1*tim;
 									}
 								}
 							}
@@ -796,24 +670,48 @@ int CMatr::Eigen(CMatr * T)
 
 int CMatr::Eigen_QR(CMatr * T)
 {
+
+	double *e = NULL;
+	try
+	{
+		e = new double[SizeY];
+	}
+	catch( bad_alloc& )
+	{
+		e = NULL;
+		return 1;
+	}
+	double *d = NULL;
+	try
+	{
+		d = new double[SizeX];
+	}
+	catch( bad_alloc& )
+	{
+		d = NULL;
+		delete [] e;
+		e = NULL;
+		return 1;
+	}
+	
 	double tol=1E-10;
 	
 	//Преобразование к трехдиагональному виду
 	CMatr z(SizeY, SizeX);
-	
-	double *e=new double [SizeY];
-	double *d=new double [SizeY];
-	
+
 	for (int i=0;i<SizeY;i++)
-		for (int j=0;j<=i;j++) z[i][j]=Data[i][j];
+		for (int j=0;j<=i;j++)
+			//z[i][j]=Data[i][j];
+			z.GetAt(i,j) = GetAt(i,j);
 
 	for (i=SizeY-1;i>=1;i--)
 	{
 		int l=i-2;
-		double f=z[i][i-1];
+		double f = z.GetAt(i,i-1);
 		double g=0;
 		for (int k=0;k<=l;k++)
-			g+=z[i][k]*z[i][k];
+			//g+=z[i][k]*z[i][k];
+			g += z.GetAt(i,k)*z.GetAt(i,k);
 		double h=g+f*f;
 		if (g<tol)
 		{
@@ -825,24 +723,32 @@ int CMatr::Eigen_QR(CMatr * T)
 		l+=1;
 		g=e[i]=(f>=0?-sqrt(h):sqrt(h));
 		h-=f*g;
-		z[i][i-1]=f-g;
+		//z[i][i-1]=f-g;
+		z.GetAt(i,i-1) = f-g;
 		f=0;
 		for (int j=0;j<=l;j++)
 		{
-			z[j][i]=z[i][j]/h;
+			//z[j][i]=z[i][j]/h;
+			z.GetAt(j,i) = z.GetAt(i,j)/h;
 			g=0;
-			for (int k=0;k<=j;k++)	g+=z[j][k]*z[i][k];
-			for (k=j+1;k<=l;k++)	g+=z[k][j]*z[i][k];
+			for (int k=0;k<=j;k++)
+				//g+=z[j][k]*z[i][k];
+				g += z.GetAt(j,k)*z.GetAt(i,k);
+			for (k=j+1;k<=l;k++)
+				//g+=z[k][j]*z[i][k];
+				g += z.GetAt(k,j)*z.GetAt(i,k);
 			e[j]=g/h;
-			f+=g*z[j][i];
+			//f+=g*z[j][i];
+			f += g*z.GetAt(j,i);
 		}
 		double hh=f/(h+h);
 		for(j=0;j<=l;j++)
 		{
-			f=z[i][j];
+			f = z.GetAt(i,j);
 			g=e[j]=e[j]-hh*f;
 			for (int k=0;k<=j;k++)
-				z[j][k]-=f*e[k]+g*z[i][k];
+				//z[j][k]-=f*e[k]+g*z[i][k];
+				z.GetAt(j,k) -= f*e[k]+g*z.GetAt(i,k);
 		}
 		d[i]=h;
 	}
@@ -854,14 +760,19 @@ int CMatr::Eigen_QR(CMatr * T)
 			for (int j=0;j<=l;j++)
 			{
 				double g=0;
-				for (int k=0;k<=l;k++) g+=z[i][k]*z[k][j];
-				for (k=0;k<=l;k++) z[k][j]-=g*z[k][i];
+				for (int k=0;k<=l;k++)
+					//g+=z[i][k]*z[k][j];
+					g += z.GetAt(i,k)*z.GetAt(k,j);
+				for (k=0;k<=l;k++)
+					//z[k][j]-=g*z[k][i];
+					z.GetAt(k,j) -= g*z.GetAt(k,i);
 			}
-		d[i]=z[i][i];
-		z[i][i]=1;
+		d[i] = z.GetAt(i,i);
+		z.GetAt(i,i) = 1.0;
 		for (int j=0;j<=l;j++)
 		{
-			z[i][j]=z[j][i]=0;
+			//z[i][j]=z[j][i]=0;
+			z.GetAt(i,j) = z.GetAt(j,i) = 0.0;
 		}
 	}
 
@@ -875,26 +786,35 @@ int CMatr::Eigen_QR(CMatr * T)
 
 void CMatr::ConvertToAlgolMatr( AlgolMatr &AM )
 {
+	if( (SizeY == 0)||(SizeX == 0) )
+	{
+		AM.Resize( 0, 0 );
+		return;
+	}
 	AlgolMatr temp( SizeY, 1, SizeX );
 	for( int r = 1; r <= SizeY; r++ )
 	{
 		for( int c = 1; c <= SizeX; c++ )
 		{
-			temp(r,c) = Data[r-1][c-1];
+			//temp( r, c ) = m_Data[r-1][c-1];
+			temp( r, c ) = GetAt( r-1, c-1 );
 		}
 	}
 	AM = temp;
 }
-void CMatr::ConvertToCMatr( AlgolMatr AM )
+void CMatr::ConvertToCMatr( const AlgolMatr &AM )
 {
 	int rows = (int)AM.GetRow(), cols = AM.GetWidth();
 	Clear();
-	ReSize( rows, cols );
-	for( int r = 0; r < SizeY; r++ )
+	if( ReSize( rows, cols ) )
 	{
-		for( int c = 0; c < SizeX; c++ )
+		for( int r = 0; r < SizeY; r++ )
 		{
-			Data[r][c] = AM(r+1,c+1);
+			for( int c = 0; c < SizeX; c++ )
+			{
+				//Data[r][c] = AM(r+1,c+1);
+				GetAt( r, c ) = AM( r+1, c+1 );
+			}
 		}
 	}
 }
@@ -909,10 +829,28 @@ int CMatr::GetEigenVecs( CMatr &M, EV_METHOD EVm )
 	ConvertToAlgolMatr( A );
 
 	int low = 1, hi = n;
-	int *cnt, *inter;
+	int *cnt = NULL, *inter = NULL;
 
-	cnt = new int[n];
-	inter = new int[n];
+	try
+	{
+		cnt = new int[n];
+	}
+	catch( bad_alloc& )
+	{
+		cnt = NULL;
+		return -1;
+	}
+	try
+	{
+		inter = new int[n];
+	}
+	catch( bad_alloc& )
+	{
+		inter = NULL;
+		delete [] cnt;
+		cnt = NULL;
+		return -1;
+	}
 
 	AlgolMatr d(n,1,1);
 
@@ -1000,7 +938,7 @@ int CMatr::GetEigenVecs( CMatr &M, EV_METHOD EVm )
 	ClearData();
 	for( r = 0; r < n; r++ )
 	{
-		Data[r][r] = wr(r+1,1);
+		GetAt(r,r) = wr(r+1,1);
 	}
 	M.ConvertToCMatr( vecs );
 

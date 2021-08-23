@@ -39,7 +39,7 @@ void CMeshElemDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CMeshElemDlg)
 	DDX_Text(pDX, IDC_EDIT_ELEMS_COUNT, m_iElemsCount);
-	DDV_MinMaxInt(pDX, m_iElemsCount, 2, 50);
+	DDV_MinMaxInt(pDX, m_iElemsCount, 2, 100);
 	DDX_Radio(pDX, IDC_RADIO1, m_iWay);
 	DDX_Text(pDX, IDC_EDIT_LEFT_KNOT, m_strLeftKnot);
 	DDV_MaxChars(pDX, m_strLeftKnot, 80);

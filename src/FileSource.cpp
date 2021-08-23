@@ -50,7 +50,12 @@ void File::Close()
 	if( m_pFile )
 	{
 		FilePtrs::iterator it = m_FilePtrMap.find(m_pFile);
-		ASSERT( it != m_FilePtrMap.end() );
+		//ASSERT( it != m_FilePtrMap.end() );
+		if( it == m_FilePtrMap.end() )
+		{
+			m_pFile = NULL;
+			return;
+		}
 		(*it).second--;
 		if( (*it).second == 0 )
 		{
@@ -83,8 +88,10 @@ bool File::OpenTxt( const std::string &name )
 	if( !m_pFile->is_open() )
 	{
 		delete m_pFile;
+		m_pFile = NULL;
 		return false;
 	}
+	m_pFile->precision(15);
 	Pair p = m_FilePtrMap.insert( MakeFilePtr(m_pFile,1) );
 	if( p.second == false )
 	{
@@ -114,8 +121,10 @@ bool File::OpenBin( const std::string &name )
 	if( !m_pFile->is_open() )
 	{
 		delete m_pFile;
+		m_pFile = NULL;
 		return false;
 	}
+	m_pFile->precision(15);
 	Pair p = m_FilePtrMap.insert( MakeFilePtr(m_pFile,1) );
 	if( p.second == false )
 	{

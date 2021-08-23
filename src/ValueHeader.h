@@ -23,7 +23,7 @@ class SpringPtr;
 class DemferPtr;
 class MassPtr;
 class KnotPtr;
-//class ShemePtr;
+class ShemePtr;
 
 class Value
 {
@@ -45,7 +45,7 @@ class Value
 		DemferPtr *m_pDemfer;
 		MassPtr *m_pMass;
 		KnotPtr *m_pKnot;
-//		ShemePtr *m_pSheme;
+		ShemePtr *m_pSheme;
 	};
 	TypeID m_tType;//используемый в данный момент тип
 	///////////////////////////////////////////
@@ -89,6 +89,7 @@ public:
 	void SetDemfer( const DemferPtr& );
 	void SetMass( const MassPtr& );
 	void SetKnot( const KnotPtr& );
+	void SetSheme( const ShemePtr& );
 
 	bool GetBool() const;
 	int GetInt() const;
@@ -104,6 +105,7 @@ public:
 	DemferPtr* GetDemfer() const;
 	MassPtr* GetMass() const;
 	KnotPtr* GetKnot() const;
+	ShemePtr* GetSheme() const;
 
 	bool ConvertTo( TypeID );
 	errorsT Power( int );

@@ -20,6 +20,7 @@
 #define IDD_DIALOGCOORD                 133
 #define IDS_GROUP_SIGNATURE             133
 #define IDD_DIALOGROD                   134
+#define IDS_SIGNATURE_30                134
 #define IDB_BITMAP_1                    135
 #define IDB_BITMAP_2                    136
 #define IDB_BITMAP_3                    137
@@ -77,6 +78,14 @@
 #define IDD_CONVERT_TO                  241
 #define IDR_SCRIPT                      242
 #define IDR_OUTPUT                      248
+#define IDR_MOVIE                       251
+#define IDD_MOVIE_STYLES                254
+#define IDD_TIME_DLG                    255
+#define IDD_SHEME_VARS                  257
+#define IDD_SHEME_VAR_NEW               258
+#define IDD_DESCRIPTION                 259
+#define IDD_GRAPHS_PROPERTIES           260
+#define IDD_GRAPH_EDIT                  261
 #define IDS_GE_WRONG_SYMBOL             301
 #define IDS_GE_WRONG_SYNTAX             302
 #define IDS_GE_UNKNOWN                  303
@@ -123,6 +132,7 @@
 #define IDC_RADIO16                     1056
 #define IDC_LIST1                       1057
 #define IDC_RADIO17                     1057
+#define IDC_VARS_LIST                   1057
 #define IDC_RADIO18                     1058
 #define IDC_RADIO19                     1059
 #define IDC_RADIO20                     1060
@@ -188,6 +198,32 @@
 #define IDC_BUTTON_GROUP_OPEN           1121
 #define IDC_BUTTON_GROUP_SAVE           1122
 #define IDC_EDIT_ZERO_ROT               1123
+#define IDC_EDIT_TIMER_ELAPSE           1124
+#define IDC_EDIT_START_TIME             1125
+#define IDC_CHECK_SHOW_KNOTS            1127
+#define IDC_CHECK_INTEGR_TEST           1128
+#define IDC_ADD_VAR                     1129
+#define IDC_RECALC                      1130
+#define IDC_EDIT_VAR                    1131
+#define IDC_EDIT_NAME                   1132
+#define IDC_EDIT_EXPR                   1133
+#define IDC_DEL_VAR                     1134
+#define IDC_EDIT_DESCRIPTION            1135
+#define IDC_RADIO_INVERT_0              1136
+#define IDC_RADIO_INVERT_1              1137
+#define IDC_CHECK_VALIDATE_EXPR         1138
+#define IDC_GRAPH_LIST                  1144
+#define IDC_GRAPH_EDIT                  1145
+#define IDC_GRAPH_NEW                   1146
+#define IDC_CAPTION                     1147
+#define IDC_GRAPH_FILE_NAME             1148
+#define IDC_EDIT_GRAPH_COLOR            1150
+#define IDC_GRAPH_LOAD                  1151
+#define IDC_GRAPH_SCALE                 1152
+#define IDC_GRAPH_COLOR                 1153
+#define IDC_GRAPH_DEL                   1154
+#define IDC_DETAILS                     1155
+#define IDC_RICH_CALC                   1156
 #define IDC_RADIO_JACOBY                1179
 #define IDC_RADIO_QR_ELM                1180
 #define IDC_RADIO_QR_DIR                1181
@@ -275,15 +311,40 @@
 #define ID_OUTPUT_FILE_SAVE             32869
 #define ID_OUTPUT_BREAK                 32870
 #define ID_FREE_NUMS                    32872
+#define ID_SCRIPT_CLOSE_VIEW            32873
+#define ID_ACCEL32874                   32874
+#define ID_MOVIE                        32875
+#define ID_MOVIE_RUN                    32875
+#define ID_MAKE_MOVIE                   32876
+#define ID_MOVIE_STOP                   32877
+#define ID_MOVIE_PARAMS                 32881
+#define ID_MOVIE_SCALE_INC              32882
+#define ID_MOVIE_SCALE_DEC              32883
+#define ID_MOVIE_NEXT_STEP              32884
+#define ID_MOVIE_PREV_STEP              32885
+#define ID_MOVIE_MOVE_RIGHT             32886
+#define ID_MOVIE_MOVE_LEFT              32887
+#define ID_MOVIE_AUTO_SCALE             32888
+#define ID_MOVIE_MOVE_UP                32889
+#define ID_MOVIE_MOVE_DOWN              32890
+#define ID_MOVIE_PAUSE                  32891
+#define ID_TEMP                         32892
+#define ID_CURRENT_TIME                 10000
+//#define ID_CURRENT_TIME                 32893
+#define ID_SHEME_VARS                   32893
+#define ID_DESCRIPT                     32894
+#define ID_GRAPH_PROP                   32895
+#define ID_MAIN_GRAPH                   32896
+#define ID_TOOL_TIPS                    32897
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        251
-#define _APS_NEXT_COMMAND_VALUE         32873
-#define _APS_NEXT_CONTROL_VALUE         1124
-#define _APS_NEXT_SYMED_VALUE           108
+#define _APS_NEXT_RESOURCE_VALUE        262
+#define _APS_NEXT_COMMAND_VALUE         32898
+#define _APS_NEXT_CONTROL_VALUE         1157
+#define _APS_NEXT_SYMED_VALUE           110
 #endif
 #endif

@@ -20,9 +20,9 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CGraphTimeDlg)
 	enum { IDD = IDD_DIALOG4 };
-	CString	m_TimeBeg;
-	CString	m_TimeEnd;
-	CString	m_TimeStep;
+	double	m_TimeBeg;
+	double	m_TimeEnd;
+	double	m_TimeStep;
 	//}}AFX_DATA
 
 

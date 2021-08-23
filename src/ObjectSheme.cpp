@@ -16,13 +16,25 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CObjectSheme::CObjectSheme()
+CObjectSheme::CObjectSheme( CSheme *p ):m_pSheme(p)
 {
 }
 
 CObjectSheme::~CObjectSheme()
 {
 
+}
+
+CObjectSheme::CObjectSheme( const CObjectSheme &obj )
+{
+	m_pSheme = obj.m_pSheme;
+}
+
+CObjectSheme& CObjectSheme::operator=( const CObjectSheme &obj )
+{
+	if( this != (&obj) )
+		m_pSheme = obj.m_pSheme;
+	return *this;
 }
 
 POINT CObjectSheme::ShemeToScreen(CCoordD & coord, CParamView * pPV)
@@ -33,7 +45,7 @@ POINT CObjectSheme::ShemeToScreen(CCoordD & coord, CParamView * pPV)
 	return point;
 }
 
-void CObjectSheme::Serialize(CArchive & ar)
+void CObjectSheme::Serialize( CArchive &ar, int sv )
 {
 
 }

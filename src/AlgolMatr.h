@@ -9,7 +9,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-//#include"StdAfx.h"
+#include"StdAfxMy.h"
 
 class AlgolMatr  
 {
@@ -84,6 +84,8 @@ private:
 	unsigned m_row;
 	int m_mincol, m_maxcol;
 	DOUBLE_ARRAY m_vect;
+public:
+	bool GetEigen( AlgolMatr&, AlgolMatr&, EV_METHOD );
 };
 
 

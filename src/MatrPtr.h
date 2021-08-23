@@ -50,6 +50,7 @@ public:
 	bool Resize( int, int );
 	bool SetAt( int, int, const Value& );
 	bool GetAt( int, int, Value& );
+	bool GetEigen( AlgolMatr&, AlgolMatr&, int );
 };
 
 typedef std::map<std::string,MatrPtr> VarMatr;

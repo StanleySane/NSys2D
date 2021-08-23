@@ -49,12 +49,43 @@ bool DemferPtr::Construct( KnotPtr *kn1, KnotPtr *kn2 )
 	return true;
 }
 
+bool DemferPtr::Attach( CElem *pEl )
+{
+//ф-ция присоединяет к объекту указатель на элемент.
+//после удачного выполнения этой ф-ции данный объект
+//и присоединённый элемент - одно и то же.
+	ASSERT( (pEl != NULL)&&(pEl->TypeElem == IDC_DEMF) );
+	ASSERT( (pEl->knot1 != NULL)&&(pEl->knot2 != NULL) );
+	Destruct();
+	m_pElem = static_cast<CDemf*>(pEl);
+	Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+	if( p.second == false )
+		++(*p.first).second;
+	KnotPtr::AddRef( pEl->knot1 );
+	KnotPtr::AddRef( pEl->knot2 );
+	return true;
+}
+
+bool DemferPtr::Detach()
+{
+//ф-ция отсоединяет от данного объекта указатель на элемент.
+	if( m_pElem == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 void DemferPtr::Destruct()
 {
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+		{
+			m_pElem = NULL;
+			return;
+		}
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -77,15 +108,20 @@ void DemferPtr::InitBy( const DemferPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			ASSERT( it != m_RefMap.end() );
-			(*it).second++;
+			//ASSERT( it != m_RefMap.end() );
+			if( it == m_RefMap.end() )
+			{
+				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+			}
+			else
+				(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}
 	}
 }
 
-CDemf* DemferPtr::GetElem() const
+CElem* DemferPtr::GetElem() const
 {
 	ASSERT(m_pElem);
 	return m_pElem;
@@ -139,3 +175,12 @@ AlgolMatr DemferPtr::GetMatrC() const
 	return am;
 }
 
+int DemferPtr::GetRefCount()
+{
+	if( m_pElem == NULL )
+		return -1;
+	DemferPtr::Refs::iterator it = DemferPtr::m_RefMap.find(m_pElem);
+	if( it == DemferPtr::m_RefMap.end() )
+		return -1;
+	return (*it).second;
+}

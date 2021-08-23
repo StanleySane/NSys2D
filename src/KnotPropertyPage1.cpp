@@ -11,6 +11,10 @@
 #include "graphicview.h"
 #include "GraphTimeDlg.h"
 #include "ProgressDlg.h"
+#include "Sheme.h"
+#include "Elem.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -27,8 +31,8 @@ IMPLEMENT_DYNCREATE(CKnotPropertyPage2, CPropertyPage)
 CKnotPropertyPage1::CKnotPropertyPage1() : CPropertyPage(CKnotPropertyPage1::IDD)
 {
 	//{{AFX_DATA_INIT(CKnotPropertyPage1)
-	m_EditX = _T("0");
-	m_EditY = _T("0");
+	m_EditX = 0.0;
+	m_EditY = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -42,9 +46,7 @@ void CKnotPropertyPage1::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CKnotPropertyPage1)
 	DDX_Control(pDX, IDC_COMBO1, m_FixedType);
 	DDX_Text(pDX, IDC_EDIT1, m_EditX);
-	DDV_MaxChars(pDX, m_EditX, 100);
 	DDX_Text(pDX, IDC_EDIT2, m_EditY);
-	DDV_MaxChars(pDX, m_EditY, 100);
 	//}}AFX_DATA_MAP
 }
 
@@ -122,17 +124,23 @@ BOOL CKnotPropertyPage1::OnInitDialog()
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
+	m_FixedType.AddString("");
+	m_FixedType.AddString("");
 	m_FixedType.SetCurSel(pKnot->FixedType);
 
 	if( m_bFull )
 	{
-		m_EditX=pKnot->GetStrX();
-		m_EditY=pKnot->GetStrY();
+		//m_EditX = pKnot->GetStrX();
+		//m_EditY = pKnot->GetStrY();
+		m_EditX = pKnot->GetCoordX();
+		m_EditY = pKnot->GetCoordY();
 	}
 	else
 	{
-		m_EditX = _T("");
-		m_EditY = _T("");
+		//m_EditX = _T("");
+		//m_EditY = _T("");
+		GetDlgItem(IDC_EDIT1)->SetWindowText("");
+		GetDlgItem(IDC_EDIT2)->SetWindowText("");
 	}
 
 	GetDlgItem(IDC_EDIT1)->EnableWindow(m_bFull);
@@ -149,13 +157,13 @@ BOOL CKnotPropertyPage2::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 	
 	// TODO: Add extra initialization here
-	m_EditUx=pKnot->GetStrUx();
-	m_EditUy=pKnot->GetStrUy();
-	m_EditUa=pKnot->GetStrUa();
+	m_EditUx = pKnot->m_Ux.GetExpr().c_str();
+	m_EditUy = pKnot->m_Uy.GetExpr().c_str();
+	m_EditUa = pKnot->m_Ua.GetExpr().c_str();
 
-	m_EditUxp=pKnot->GetStrUx(1);
-	m_EditUyp=pKnot->GetStrUy(1);
-	m_EditUap=pKnot->GetStrUa(1);
+	m_EditUxp = pKnot->m_Uxp.GetExpr().c_str();
+	m_EditUyp = pKnot->m_Uyp.GetExpr().c_str();
+	m_EditUap = pKnot->m_Uap.GetExpr().c_str();
 
 	UpdateData(FALSE);
 	
@@ -188,6 +196,14 @@ CKnotPropertyPage3::CKnotPropertyPage3() : CPropertyPage(CKnotPropertyPage3::IDD
 	//{{AFX_DATA_INIT(CKnotPropertyPage3)
 	m_CheckPx = FALSE;
 	m_CheckPy = FALSE;
+	m_EditPx = _T("");
+	m_EditPy = _T("");
+	m_EditAx = 0.0;
+	m_EditWx = 0.0;
+	m_EditFix = 0.0;
+	m_EditAy = 0.0;
+	m_EditWy = 0.0;
+	m_EditFiy = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -211,16 +227,18 @@ void CKnotPropertyPage3::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RADIO1, m_RadPx1);
 	DDX_Control(pDX, IDC_SPECTRPY, m_ButPy);
 	DDX_Control(pDX, IDC_SPECTRPX, m_ButPx);
-	DDX_Control(pDX, IDC_EDIT8, m_EditFiy);
-	DDX_Control(pDX, IDC_EDIT7, m_EditWy);
-	DDX_Control(pDX, IDC_EDIT6, m_EditAy);
-	DDX_Control(pDX, IDC_EDIT10, m_EditPy);
-	DDX_Control(pDX, IDC_EDIT5, m_EditPx);
-	DDX_Control(pDX, IDC_EDIT3, m_EditFix);
-	DDX_Control(pDX, IDC_EDIT2, m_EditWx);
-	DDX_Control(pDX, IDC_EDIT1, m_EditAx);
 	DDX_Check(pDX, IDC_CHECK1, m_CheckPx);
 	DDX_Check(pDX, IDC_CHECK2, m_CheckPy);
+	DDX_Text(pDX, IDC_EDIT5, m_EditPx);
+	DDV_MaxChars(pDX, m_EditPx, 100);
+	DDX_Text(pDX, IDC_EDIT10, m_EditPy);
+	DDV_MaxChars(pDX, m_EditPy, 100);
+	DDX_Text(pDX, IDC_EDIT1, m_EditAx);
+	DDX_Text(pDX, IDC_EDIT2, m_EditWx);
+	DDX_Text(pDX, IDC_EDIT3, m_EditFix);
+	DDX_Text(pDX, IDC_EDIT6, m_EditAy);
+	DDX_Text(pDX, IDC_EDIT7, m_EditWy);
+	DDX_Text(pDX, IDC_EDIT8, m_EditFiy);
 	//}}AFX_DATA_MAP
 }
 
@@ -260,15 +278,15 @@ BOOL CKnotPropertyPage3::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 	
 	// TODO: Add extra initialization here
-	m_EditAx.SetWindowText(pKnot->str_Ax);
-	m_EditWx.SetWindowText(pKnot->str_Wx);
-	m_EditFix.SetWindowText(pKnot->str_Fix);
-	m_EditPx.SetWindowText(pKnot->str_Px);
+	m_EditAx = pKnot->Ax;
+	m_EditWx = pKnot->Wx;
+	m_EditFix = pKnot->Fix;
+	m_EditPx = pKnot->m_Px.GetExpr().c_str();
 
-	m_EditAy.SetWindowText(pKnot->str_Ay);
-	m_EditWy.SetWindowText(pKnot->str_Wy);
-	m_EditFiy.SetWindowText(pKnot->str_Fiy);
-	m_EditPy.SetWindowText(pKnot->str_Py);
+	m_EditAy = pKnot->Ay;
+	m_EditWy = pKnot->Wy;
+	m_EditFiy = pKnot->Fiy;
+	m_EditPy = pKnot->m_Py.GetExpr().c_str();
 
 	m_RadPx1.SetCheck(pKnot->TypePx==0);
 	m_RadPx2.SetCheck(pKnot->TypePx==1);
@@ -293,10 +311,13 @@ void CKnotPropertyPage3::SetState()
 {
 //	UpdateData(true);
 
-	m_EditAx.EnableWindow(m_RadPx1.GetCheck()&&m_CheckPx);
-	m_EditWx.EnableWindow(m_RadPx1.GetCheck()&&m_CheckPx);
-	m_EditFix.EnableWindow(m_RadPx1.GetCheck()&&m_CheckPx);
-	m_EditPx.EnableWindow(m_RadPx2.GetCheck()&&m_CheckPx);
+	BOOL state = m_RadPx1.GetCheck()&&m_CheckPx;
+	GetDlgItem(IDC_EDIT1)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT2)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT3)->EnableWindow(state);
+
+	GetDlgItem(IDC_EDIT5)->EnableWindow(m_RadPx2.GetCheck()&&m_CheckPx);
+
 	m_ButPx.EnableWindow(m_RadPx3.GetCheck()&&m_CheckPx);
 	m_ButCPx.EnableWindow(m_RadPx3.GetCheck()&&m_CheckPx);
 
@@ -306,10 +327,13 @@ void CKnotPropertyPage3::SetState()
 
 	m_CheckViewPx.ShowWindow(m_CheckPx?SW_SHOW:0);
 
-	m_EditAy.EnableWindow(m_RadPy1.GetCheck()&&m_CheckPy);
-	m_EditWy.EnableWindow(m_RadPy1.GetCheck()&&m_CheckPy);
-	m_EditFiy.EnableWindow(m_RadPy1.GetCheck()&&m_CheckPy);
-	m_EditPy.EnableWindow(m_RadPy2.GetCheck()&&m_CheckPy);
+	state = m_RadPy1.GetCheck()&&m_CheckPy;
+	GetDlgItem(IDC_EDIT6)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT7)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT8)->EnableWindow(state);
+
+	GetDlgItem(IDC_EDIT10)->EnableWindow(m_RadPy2.GetCheck()&&m_CheckPy);
+
 	m_ButPy.EnableWindow(m_RadPy3.GetCheck()&&m_CheckPy);
 	m_ButCPy.EnableWindow(m_RadPy3.GetCheck()&&m_CheckPy);
 
@@ -361,7 +385,7 @@ void CKnotPropertyPage3::OnRadio4()
 void CKnotPropertyPage3::OnOK() 
 {
 	// TODO: Add your specialized code here and/or call the base class
-//	if (!VerifyInfo()) return;
+	if (!VerifyInfo()) return;
 	SetData();
 
 	//Вывод графиков если требуется
@@ -374,11 +398,24 @@ void CKnotPropertyPage3::OnOK()
 		int ret=pKnot->BeginIntegr(pKnot->ParamTime.T1);
 		CProgressDlg *pDlg=new CProgressDlg(100,_T("Вычисление Px(t)"));
 		BOOL FlagExit=false;
+		CString tmpstr;
 
+		string strMsg;
 		for (int i=0;i<s;i++)
 		{
-			Dat[0][i]=i*pKnot->ParamTime.dT;
-			Dat[1][i]=pKnot->GetPx(0,0,i*pKnot->ParamTime.dT);
+			double tmpx = i*pKnot->ParamTime.dT;
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bRichCalc )
+			{
+				tmpstr.Format("Вычисление точки %.16g", tmpx );
+				pDlg->SetDetails(tmpstr);
+			}
+			Dat[0][i] = tmpx;
+			Dat[1][i] = pKnot->GetPx(0,0,0,tmpx, &strMsg );
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+			{
+				AfxMessageBox( CString("Ошибка при вычислении выражения: ") + strMsg.c_str() );
+				break;
+			}
 
 			//Обработка сообщений
 			MSG msg;
@@ -442,11 +479,24 @@ void CKnotPropertyPage3::OnOK()
 		int ret=pKnot->BeginIntegr(pKnot->ParamTime.T1);
 		CProgressDlg *pDlg=new CProgressDlg(100,_T("Вычисление Py(t)"));
 		BOOL FlagExit=false;
+		CString tmpstr;
 
+		string strMsg;
 		for (int i=0;i<s;i++)
 		{
-			Dat[0][i]=i*pKnot->ParamTime.dT;
-			Dat[1][i]=pKnot->GetPy(0,0,i*pKnot->ParamTime.dT);
+			double tmpx = i*pKnot->ParamTime.dT;
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bRichCalc )
+			{
+				tmpstr.Format("Вычисление точки %.16g", tmpx );
+				pDlg->SetDetails(tmpstr);
+			}
+			Dat[0][i] = tmpx;
+			Dat[1][i] = pKnot->GetPy(0,0,0,tmpx);
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+			{
+				AfxMessageBox( CString("Ошибка пр вычислении выражения: ") + strMsg.c_str() );
+				break;
+			}
 
 			//Обработка сообщений
 			MSG msg;
@@ -510,128 +560,30 @@ BOOL CKnotPropertyPage3::VerifyInfo()
 {
 	UpdateData();
 
-	CString str1;
-	CExpression e;
-	int ret;
-
-	if (m_RadPx1.GetCheck())
+	if( m_RadPx2.GetCheck() )
 	{
-		double Ax,Wx,Fix;
-		
-		m_EditAx.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Ax))
+		CString mes;
+		ASSERT(pKnot->m_pSheme);
+		if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditPx, mes ) )
 		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Амплитуда Ax не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditWx.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Wx))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Частота Wx не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditFix.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Fix))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Фаза Fix не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-	}
-	if (m_RadPx2.GetCheck())
-	{
-		m_EditPx.GetWindowText(str1);
-		CIDValuesMap idv;
-		idv.SetAt(_T("x"),0.1);
-		idv.SetAt(_T("x1"),0.1);
-		idv.SetAt(_T("t"),0.1);
-		ret=e.IsNum(str1,0,&idv);
-		if (ret)
-		{
-			CString str;
-			str.LoadString(ret);
-			MessageBox(str,"Ошибка в выражении Px"
-				,MB_OK|MB_ICONERROR);
+			mes = _T("Ошибка в выражении Px:\n") + mes;
+			AfxMessageBox( mes );
 			return FALSE;
 		}
 	}
 
-	if (m_RadPy1.GetCheck())
+	if( m_RadPy2.GetCheck() )
 	{
-		CExpression e;
-		int ret;
-		double Ay,Wy,Fiy;
-
-		m_EditAy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Ay))
+		CString mes;
+		ASSERT(pKnot->m_pSheme);
+		if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditPy, mes ) )
 		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Амплитуда Ay не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditWy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Wy))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Частота Wy не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditFiy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Fiy))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Фаза Fiy не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-	}
-	if (m_RadPy2.GetCheck())
-	{
-		m_EditPy.GetWindowText(str1);
-		CIDValuesMap idv;
-		idv.SetAt(_T("x"),0.1);
-		idv.SetAt(_T("x1"),0.1);
-		idv.SetAt(_T("t"),0.1);
-		ret=e.IsNum(str1,0,&idv);
-		if (ret)
-		{
-			CString str;
-			str.LoadString(ret);
-			MessageBox(str,"Ошибка в выражении Py"
-				,MB_OK|MB_ICONERROR);
+			mes = _T("Ошибка в выражении Py:\n") + mes;
+			AfxMessageBox( mes );
 			return FALSE;
 		}
 	}
-	return true;
+	return TRUE;
 }
 
 void CKnotPropertyPage3::OnCheckPx() 
@@ -660,6 +612,14 @@ CKnotPropertyPage4::CKnotPropertyPage4() : CPropertyPage(CKnotPropertyPage4::IDD
 	//{{AFX_DATA_INIT(CKnotPropertyPage4)
 	m_CheckUx = FALSE;
 	m_CheckUy = FALSE;
+	m_EditUy = _T("");
+	m_EditUx = _T("");
+	m_EditAx = 0.0;
+	m_EditWx = 0.0;
+	m_EditFix = 0.0;
+	m_EditAy = 0.0;
+	m_EditWy = 0.0;
+	m_EditFiy = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -679,20 +639,22 @@ void CKnotPropertyPage4::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RADIO5, m_RadUx3);
 	DDX_Control(pDX, IDC_BUTTON2, m_ButUy);
 	DDX_Control(pDX, IDC_BUTTON1, m_ButUx);
-	DDX_Control(pDX, IDC_EDIT10, m_EditUy);
-	DDX_Control(pDX, IDC_EDIT8, m_EditFiy);
-	DDX_Control(pDX, IDC_EDIT7, m_EditWy);
-	DDX_Control(pDX, IDC_EDIT6, m_EditAy);
-	DDX_Control(pDX, IDC_EDIT5, m_EditUx);
-	DDX_Control(pDX, IDC_EDIT3, m_EditFix);
-	DDX_Control(pDX, IDC_EDIT2, m_EditWx);
-	DDX_Control(pDX, IDC_EDIT1, m_EditAx);
 	DDX_Control(pDX, IDC_RADIO4, m_RadUy2);
 	DDX_Control(pDX, IDC_RADIO3, m_RadUy1);
 	DDX_Control(pDX, IDC_RADIO2, m_RadUx2);
 	DDX_Control(pDX, IDC_RADIO1, m_RadUx1);
 	DDX_Check(pDX, IDC_CHECK1, m_CheckUx);
 	DDX_Check(pDX, IDC_CHECK2, m_CheckUy);
+	DDX_Text(pDX, IDC_EDIT10, m_EditUy);
+	DDV_MaxChars(pDX, m_EditUy, 100);
+	DDX_Text(pDX, IDC_EDIT5, m_EditUx);
+	DDV_MaxChars(pDX, m_EditUx, 100);
+	DDX_Text(pDX, IDC_EDIT1, m_EditAx);
+	DDX_Text(pDX, IDC_EDIT2, m_EditWx);
+	DDX_Text(pDX, IDC_EDIT3, m_EditFix);
+	DDX_Text(pDX, IDC_EDIT6, m_EditAy);
+	DDX_Text(pDX, IDC_EDIT7, m_EditWy);
+	DDX_Text(pDX, IDC_EDIT8, m_EditFiy);
 	//}}AFX_DATA_MAP
 }
 
@@ -783,10 +745,12 @@ void CKnotPropertyPage4::SetState()
 {
 //	UpdateData(true);
 
-	m_EditAx.EnableWindow(m_RadUx1.GetCheck()&&m_CheckUx);
-	m_EditWx.EnableWindow(m_RadUx1.GetCheck()&&m_CheckUx);
-	m_EditFix.EnableWindow(m_RadUx1.GetCheck()&&m_CheckUx);
-	m_EditUx.EnableWindow(m_RadUx2.GetCheck()&&m_CheckUx);
+	BOOL state = m_RadUx1.GetCheck()&&m_CheckUx;
+	GetDlgItem(IDC_EDIT1)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT2)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT3)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT5)->EnableWindow(m_RadUx2.GetCheck()&&m_CheckUx);
+
 	m_ButUx.EnableWindow(m_RadUx3.GetCheck()&&m_CheckUx);
 	m_ButCUx.EnableWindow(m_RadUx3.GetCheck()&&m_CheckUx);
 
@@ -796,10 +760,12 @@ void CKnotPropertyPage4::SetState()
 	
 	m_CheckViewUx.ShowWindow(m_CheckUx?SW_SHOW:0);
 
-	m_EditAy.EnableWindow(m_RadUy1.GetCheck()&&m_CheckUy);
-	m_EditWy.EnableWindow(m_RadUy1.GetCheck()&&m_CheckUy);
-	m_EditFiy.EnableWindow(m_RadUy1.GetCheck()&&m_CheckUy);
-	m_EditUy.EnableWindow(m_RadUy2.GetCheck()&&m_CheckUy);
+	state = m_RadUy1.GetCheck()&&m_CheckUy;
+	GetDlgItem(IDC_EDIT6)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT7)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT8)->EnableWindow(state);
+	GetDlgItem(IDC_EDIT10)->EnableWindow(m_RadUy2.GetCheck()&&m_CheckUy);
+
 	m_ButUy.EnableWindow(m_RadUy3.GetCheck()&&m_CheckUy);
 	m_ButCUy.EnableWindow(m_RadUy3.GetCheck()&&m_CheckUy);
 
@@ -817,15 +783,15 @@ BOOL CKnotPropertyPage4::OnInitDialog()
 	CPropertyPage::OnInitDialog();
 	
 	// TODO: Add extra initialization here
-	m_EditAx.SetWindowText(pKnot->str_uAx);
-	m_EditWx.SetWindowText(pKnot->str_uWx);
-	m_EditFix.SetWindowText(pKnot->str_uFix);
-	m_EditUx.SetWindowText(pKnot->str_uUx);
+	m_EditAx = pKnot->uAx;
+	m_EditWx = pKnot->uWx;
+	m_EditFix = pKnot->uFix;
+	m_EditUx = pKnot->m_uUx.GetExpr().c_str();
 
-	m_EditAy.SetWindowText(pKnot->str_uAy);
-	m_EditWy.SetWindowText(pKnot->str_uWy);
-	m_EditFiy.SetWindowText(pKnot->str_uFiy);
-	m_EditUy.SetWindowText(pKnot->str_uUy);
+	m_EditAy = pKnot->uAy;
+	m_EditWy = pKnot->uWy;
+	m_EditFiy = pKnot->uFiy;
+	m_EditUy = pKnot->m_uUy.GetExpr().c_str();
 
 	m_RadUx1.SetCheck(pKnot->TypeUx==0);
 	m_RadUx2.SetCheck(pKnot->TypeUx==1);
@@ -860,11 +826,24 @@ void CKnotPropertyPage4::OnOK()
 		int ret=pKnot->BeginIntegr(pKnot->ParamTime.T1);
 		CProgressDlg *pDlg=new CProgressDlg(100,_T("Вычисление Ux(t)"));
 		BOOL FlagExit=false;
+		CString tmpstr;
 
+		string strMsg;
 		for (int i=0;i<s;i++)
 		{
-			Dat[0][i]=i*pKnot->ParamTime.dT;
-			Dat[1][i]=pKnot->GetUx(i*pKnot->ParamTime.dT);
+			double tmpx = i*pKnot->ParamTime.dT;
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bRichCalc )
+			{
+				tmpstr.Format("Вычисление точки %.16g", tmpx );
+				pDlg->SetDetails(tmpstr);
+			}
+			Dat[0][i] = tmpx;
+			Dat[1][i] = pKnot->GetUx( 0.0, 0.0, 0.0, tmpx, &strMsg );
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+			{
+				AfxMessageBox( CString("Ошибка при вычислении выражения: ") + strMsg.c_str() );
+				break;
+			}
 
 			//Обработка сообщений
 			MSG msg;
@@ -928,11 +907,24 @@ void CKnotPropertyPage4::OnOK()
 		int ret=pKnot->BeginIntegr(pKnot->ParamTime.T1);
 		CProgressDlg *pDlg=new CProgressDlg(100,_T("Вычисление Uy(t)"));
 		BOOL FlagExit=false;
+		CString tmpstr;
 
+		string strMsg;
 		for (int i=0;i<s;i++)
 		{
-			Dat[0][i]=i*pKnot->ParamTime.dT;
-			Dat[1][i]=pKnot->GetUy(i*pKnot->ParamTime.dT);
+			double tmpx = i*pKnot->ParamTime.dT;
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bRichCalc )
+			{
+				tmpstr.Format("Вычисление точки %.16g", tmpx );
+				pDlg->SetDetails(tmpstr);
+			}
+			Dat[0][i] = tmpx;
+			Dat[1][i] = pKnot->GetUy( 0.0, 0.0, 0.0, tmpx, &strMsg );
+			if( pKnot->m_pSheme && pKnot->m_pSheme->m_bValidateExpr && !strMsg.empty() )
+			{
+				AfxMessageBox( CString("Ошибка при вычислении выражения: ") + strMsg.c_str() );
+				break;
+			}
 
 			//Обработка сообщений
 			MSG msg;
@@ -995,120 +987,26 @@ BOOL CKnotPropertyPage4::VerifyInfo()
 {
 	UpdateData();
 
-	CString str1;
-	CExpression e;
-	int ret;
-
-	if (m_RadUx1.GetCheck())
-	{
-		double Ax,Wx,Fix;
-		
-		m_EditAx.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Ax))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Амплитуда Ax не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditWx.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Wx))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Частота Wx не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditFix.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Fix))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Фаза Fix не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-	}
 	if (m_RadUx2.GetCheck())
 	{
-		m_EditUx.GetWindowText(str1);
-		CIDValuesMap idv;
-		idv.SetAt(_T("t"),0.1);
-		ret=e.IsNum(str1,0,&idv);
-		if (ret)
+		CString mes;
+		ASSERT(pKnot->m_pSheme);
+		if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUx, mes ) )
 		{
-			CString str;
-			str.LoadString(ret);
-			MessageBox(str,"Ошибка в выражении Ux"
-				,MB_OK|MB_ICONERROR);
+			mes = _T("Ошибка в выражении Ux:\n") + mes;
+			AfxMessageBox( mes );
 			return FALSE;
 		}
 	}
 
-	if (m_RadUy1.GetCheck())
-	{
-		CExpression e;
-		int ret;
-		double Ay,Wy,Fiy;
-
-		m_EditAy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Ay))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Амплитуда Ay не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditWy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Wy))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Частота Wy не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-
-		m_EditFiy.GetWindowText(str1);
-		if (ret=e.IsNum(str1,&Fiy))
-		{
-			CString mes;
-			mes.LoadString(ret);
-			
-			MessageBox(mes,"Фаза Fiy не число",
-				 MB_OK|MB_ICONERROR );
-			
-			return false;
-		}
-	}
 	if (m_RadUy2.GetCheck())
 	{
-		m_EditUy.GetWindowText(str1);
-		CIDValuesMap idv;
-		idv.SetAt(_T("t"),0.1);
-		ret=e.IsNum(str1,0,&idv);
-		if (ret)
+		CString mes;
+		ASSERT(pKnot->m_pSheme);
+		if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUy, mes ) )
 		{
-			CString str;
-			str.LoadString(ret);
-			MessageBox(str,"Ошибка в выражении Uy"
-				,MB_OK|MB_ICONERROR);
+			mes = _T("Ошибка в выражении Uy:\n") + mes;
+			AfxMessageBox( mes );
 			return FALSE;
 		}
 	}
@@ -1222,104 +1120,53 @@ BOOL CKnotPropertyPage1::VerifyInfo()
 	UpdateData();
 
 	if( !m_bFull )	return true;
-
-	CExpression e;
-	int ret;
-	if (ret=e.IsNum(m_EditX))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата X",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-
-	if (ret=e.IsNum(m_EditY))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата Y",
-			  MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
 	return true;
 }
 
 BOOL CKnotPropertyPage2::VerifyInfo()
 {
 	UpdateData();
+
+	CString mes;
+	ASSERT(pKnot->m_pSheme);
+
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUx, mes ) )
+	{
+		mes = _T("Ошибка в выражении Ux:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUy, mes ) )
+	{
+		mes = _T("Ошибка в выражении Uy:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUa, mes ) )
+	{
+		mes = _T("Ошибка в выражении Ua:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUxp, mes ) )
+	{
+		mes = _T("Ошибка в выражении Uxp:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUyp, mes ) )
+	{
+		mes = _T("Ошибка в выражении Uyp:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
+	if( !pKnot->m_pSheme->m_VarsTable.IsValidExpr( m_EditUap, mes ) )
+	{
+		mes = _T("Ошибка в выражении Uap:\n") + mes;
+		AfxMessageBox( mes );
+		return FALSE;
+	}
 	
-	CExpression e;
-	int ret;
-	if (ret=e.IsNum(m_EditUx))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Ux",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-
-	if (ret=e.IsNum(m_EditUy))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Uy",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-
-	if (ret=e.IsNum(m_EditUa))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Ua",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-	
-	if (ret=e.IsNum(m_EditUxp))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Uxp",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-
-	if (ret=e.IsNum(m_EditUyp))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Uyp",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
-
-	if (ret=e.IsNum(m_EditUap))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Перемещение Uap",
-			 MB_OK|MB_ICONERROR );
-		
-		return false;
-	}
 	return true;
 }
 
@@ -1351,15 +1198,17 @@ void CKnotPropertyPage3::SetData()
 {
 	UpdateData();
 	
-	m_EditAx.GetWindowText(pKnot->str_Ax);
-	m_EditWx.GetWindowText(pKnot->str_Wx);
-	m_EditFix.GetWindowText(pKnot->str_Fix);
-	m_EditPx.GetWindowText(pKnot->str_Px);
+	pKnot->Ax = m_EditAx;
+	pKnot->Wx = m_EditWx;
+	pKnot->Fix = m_EditFix;
+	ShemeExprErr er = pKnot->m_Px.Reset( m_EditPx );
+	ASSERT( er == SEE_NOERR );
 
-	m_EditAy.GetWindowText(pKnot->str_Ay);
-	m_EditWy.GetWindowText(pKnot->str_Wy);
-	m_EditFiy.GetWindowText(pKnot->str_Fiy);
-	m_EditPy.GetWindowText(pKnot->str_Py);
+	pKnot->Ay = m_EditAy;
+	pKnot->Wy = m_EditWy;
+	pKnot->Fiy = m_EditFiy;
+	er = pKnot->m_Py.Reset( m_EditPy );
+	ASSERT( er == SEE_NOERR );
 
 
 	if (m_RadPx1.GetCheck()) pKnot->TypePx=0;
@@ -1370,50 +1219,26 @@ void CKnotPropertyPage3::SetData()
 	if (m_RadPy2.GetCheck()) pKnot->TypePy=1;
 	if (m_RadPy3.GetCheck()) pKnot->TypePy=2;
 
-	pKnot->PxEnable=m_CheckPx;
-	pKnot->PyEnable=m_CheckPy;
+	pKnot->PxEnable = m_CheckPx;
+	pKnot->PyEnable = m_CheckPy;
 
-	CString str1;
-	CExpression e;
-
-	if (m_RadPx1.GetCheck())
-	{
-		m_EditAx.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Ax);
-
-		m_EditWx.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Wx);
-
-		m_EditFix.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Fix);
-	}
-
-	if (m_RadPy1.GetCheck())
-	{
-		m_EditAy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Ay);
-
-		m_EditWy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Wy);
-
-		m_EditFiy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->Fiy);
-	}
 }
 
 void CKnotPropertyPage4::SetData()
 {
 	UpdateData();
 	
-	m_EditAx.GetWindowText(pKnot->str_uAx);
-	m_EditWx.GetWindowText(pKnot->str_uWx);
-	m_EditFix.GetWindowText(pKnot->str_uFix);
-	m_EditUx.GetWindowText(pKnot->str_uUx);
+	pKnot->uAx = m_EditAx;
+	pKnot->uWx = m_EditWx;
+	pKnot->uFix = m_EditFix;
+	ShemeExprErr er = pKnot->m_uUx.Reset( m_EditUx );
+	ASSERT( er == SEE_NOERR );
 
-	m_EditAy.GetWindowText(pKnot->str_uAy);
-	m_EditWy.GetWindowText(pKnot->str_uWy);
-	m_EditFiy.GetWindowText(pKnot->str_uFiy);
-	m_EditUy.GetWindowText(pKnot->str_uUy);
+	pKnot->uAy = m_EditAy;
+	pKnot->uWy = m_EditWy;
+	pKnot->uFiy = m_EditFiy;
+	er = pKnot->m_uUy.Reset( m_EditUy );
+	ASSERT( er == SEE_NOERR );
 
 
 	if (m_RadUx1.GetCheck()) pKnot->TypeUx=0;
@@ -1427,32 +1252,6 @@ void CKnotPropertyPage4::SetData()
 	pKnot->UxEnable=m_CheckUx;
 	pKnot->UyEnable=m_CheckUy;
 
-	CString str1;
-	CExpression e;
-
-	if (m_RadUx1.GetCheck())
-	{
-		m_EditAx.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uAx);
-
-		m_EditWx.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uWx);
-
-		m_EditFix.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uFix);
-	}
-
-	if (m_RadUy1.GetCheck())
-	{
-		m_EditAy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uAy);
-
-		m_EditWy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uWy);
-
-		m_EditFiy.GetWindowText(str1);
-		e.IsNum(str1,&pKnot->uFiy);
-	}
 }
 
 BOOL CKnotPropertyPage4::OnApply() 
@@ -1499,14 +1298,20 @@ BOOL CKnotPropertyPage2::OnApply()
 void CKnotPropertyPage2::SetData()
 {
 	UpdateData();
-	
-	pKnot->SetStrUx(m_EditUx);
-	pKnot->SetStrUy(m_EditUy);
-	pKnot->SetStrUa(m_EditUa);
 
-	pKnot->SetStrUx(m_EditUxp,1);
-	pKnot->SetStrUy(m_EditUyp,1);
-	pKnot->SetStrUa(m_EditUap,1);
+	ShemeExprErr er = pKnot->m_Ux.Reset( m_EditUx );
+	ASSERT( er == SEE_NOERR );
+	er = pKnot->m_Uy.Reset( m_EditUy );
+	ASSERT( er == SEE_NOERR );
+	er = pKnot->m_Ua.Reset( m_EditUa );
+	ASSERT( er == SEE_NOERR );
+	er = pKnot->m_Uxp.Reset( m_EditUxp );
+	ASSERT( er == SEE_NOERR );
+	er = pKnot->m_Uyp.Reset( m_EditUyp );
+	ASSERT( er == SEE_NOERR );
+	er = pKnot->m_Uap.Reset( m_EditUap );
+	ASSERT( er == SEE_NOERR );
+
 }
 
 BOOL CKnotPropertyPage1::OnApply() 
@@ -1524,35 +1329,12 @@ void CKnotPropertyPage1::SetData()
 	
 	if( !m_bFull )
 	{
-		pKnot->FixedType=m_FixedType.GetCurSel();
+		pKnot->FixedType = m_FixedType.GetCurSel();
 		return;
 	}
 
-	CExpression e;
-	int ret;
-	if (ret=e.IsNum(m_EditX))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата X",
-			 MB_OK|MB_ICONERROR );
-		
-		return;
-	}
-
-	if (ret=e.IsNum(m_EditY))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата Y",
-			  MB_OK|MB_ICONERROR );
-		
-		return;
-	}
 	
-	pKnot->SetCoord(m_EditX,m_EditY);
+	pKnot->SetCoord( m_EditX, m_EditY );
 	pKnot->FixedType=m_FixedType.GetCurSel();
 }
 

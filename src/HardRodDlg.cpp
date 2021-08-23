@@ -5,6 +5,10 @@
 #include "NSys2D.h"
 #include "HardRodDlg.h"
 
+#include "Sheme.h"
+
+using namespace std;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -85,18 +89,13 @@ BOOL CHardRodDlg::OnInitDialog()
 		int pos1=pListKnot->FindPos(pHardRod->knot1)-1;
 		int pos2=pListKnot->FindPos(pHardRod->knot2)-1;
 
-		//CString name1=GetNameKnot(pos1,pRod->knot1->GetName());
-		//CString name2=GetNameKnot(pos2,pRod->knot2->GetName());
-
 		m_ComboBoxKnot1.SetCurSel(pos1);
 		m_ComboBoxKnot2.SetCurSel(pos2);
-//		m_ComboBoxKnot1.SelectString(0,name1);
-//		m_ComboBoxKnot2.SelectString(0,name2);
 
-		m_EditJ=pHardRod->GetStrJ();
-		m_EditE=pHardRod->GetStrE();
-		m_EditM=pHardRod->GetStrM();
-		m_EditF=pHardRod->GetStrF();
+		m_EditJ = pHardRod->m_J.GetExpr().c_str();
+		m_EditE = pHardRod->m_E.GetExpr().c_str();
+		m_EditM = pHardRod->m_M.GetExpr().c_str();
+		m_EditF = pHardRod->m_F.GetExpr().c_str();
 	}
 
 	GetDlgItem(IDC_COMBO1)->EnableWindow(m_bFull);
@@ -127,44 +126,33 @@ BOOL CHardRodDlg::VerifyInfo()
 		}
 	}
 
-	CExpression e;
-	int ret;
-	ret=e.IsNum(m_EditF);
-	if (ret)
+	CString mes;
+	ASSERT(pHardRod->m_pSheme);
+	if( !pHardRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditF, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для F не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении F:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditJ);
-	if (ret)
+	if( !pHardRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditE, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для J не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении E:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditE);
-	if (ret)
+	if( !pHardRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditJ, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для E не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении J:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditM);
-	if (ret)
+	if( !pHardRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditM, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для M не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении m:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
+
 	return TRUE;
 }
 
@@ -211,9 +199,6 @@ void CHardRodDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 
-//	if (pRod->knot1) pRod->knot1->DelElemKnot(pRod->knot2);
-//	if (pRod->knot2) pRod->knot2->DelElemKnot(pRod->knot1);
-
 	CKnot *kn1, *kn2;
 	if( m_bFull )
 	{
@@ -231,16 +216,17 @@ void CHardRodDlg::OnOK()
 	pHardRod->knot1=kn1;
 	pHardRod->knot2=kn2;
 
-	pHardRod->SetF(m_EditF);
-	pHardRod->SetJ(m_EditJ);
-	pHardRod->SetE(m_EditE);
-	pHardRod->SetM(m_EditM);
+	bool res = pHardRod->SetF(m_EditF);
+	ASSERT( res == true );
+	res = pHardRod->SetJ(m_EditJ);
+	ASSERT( res == true );
+	res = pHardRod->SetE(m_EditE);
+	ASSERT( res == true );
+	res = pHardRod->SetM(m_EditM);
+	ASSERT( res == true );
 
 	pHardRod->knot1->ConnectType=m_ConnectType1.GetCurSel();//m_Type1;
 	pHardRod->knot2->ConnectType=m_ConnectType2.GetCurSel();//m_Type2;
-
-//	pRod->knot1->AddElemKnot(pRod->knot2,pRod->type1);
-//	pRod->knot2->AddElemKnot(pRod->knot1,pRod->type2);
 
 	CDialog::OnOK();
 }

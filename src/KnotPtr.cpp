@@ -38,6 +38,23 @@ bool KnotPtr::Construct()
 	return true;
 }
 
+bool KnotPtr::Attach( CKnot *p )
+{
+	ASSERT(p);
+	Destruct();
+	m_pKnot = p;
+	AddRef( m_pKnot );
+	return true;
+}
+
+bool KnotPtr::Detach()
+{
+	if( m_pKnot == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 bool KnotPtr::RemoveRef( CKnot *pKn )
 {
 //ф-ция возвращает ИСТИНУ, если указатель уже можно удалять, 
@@ -45,7 +62,9 @@ bool KnotPtr::RemoveRef( CKnot *pKn )
 	if( pKn != NULL )
 	{
 		Refs::iterator it = m_RefMap.find(pKn);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+			return false;
 		(*it).second--;
 		if( (*it).second != 0 )	return false;
 		m_RefMap.erase(it);
@@ -63,7 +82,8 @@ bool KnotPtr::AddRef( CKnot *pKn )
 	if( pKn != NULL )
 	{
 		Pair p = m_RefMap.insert( MakeRef(pKn,1) );
-		if( p.second )	return true;
+		if( p.second )	
+			return true;
 		//значит такой указатель уже есть
 		++(*p.first).second;
 	}
@@ -76,7 +96,7 @@ void KnotPtr::Destruct()
 	{
 		if( RemoveRef(m_pKnot) )
 		{
-			delete m_pKnot;
+			//delete m_pKnot;
 			m_pKnot = NULL;
 		}
 	}
@@ -92,7 +112,7 @@ void KnotPtr::InitBy( const KnotPtr &obj )
 		if( m_pKnot )
 		{
 			bool res = AddRef( m_pKnot );
-			ASSERT( res == false );
+			//ASSERT( res == false );
 			//Refs::iterator it = m_RefMap.find(m_pKnot);
 			//ASSERT( it != m_RefMap.end() );
 			//(*it).second++;
@@ -110,8 +130,5 @@ bool KnotPtr::Create( double x, double y )
 {
 	if( !Construct() )
 		return false;
-	CString strx, stry;
-	strx.Format("%g", x );
-	stry.Format("%g", y );
-	return (m_pKnot->SetCoord(strx,stry) == 1)?true:false;
+	return (m_pKnot->SetCoord(x,y) == 1)?true:false;
 }

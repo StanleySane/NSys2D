@@ -17,6 +17,30 @@ typedef struct _Field
 	int left, right, top, down;
 }FieldGraph;
 
+class CGraphData
+{
+	void InitBy( const CGraphData& );
+public:
+//структура, хранящая данные о загруженных графиках
+	CGraphData();
+	~CGraphData();
+	CGraphData( const CGraphData& );
+	CGraphData& operator=( const CGraphData& );
+
+	CString m_strCaption, m_strFileName;
+	bool m_bEnable;//флаг видимости
+	COLORREF m_Clr;//цвет
+	double m_Scale;//масштабирующий множитель
+	CMatr m_Data;//вектор из 2-х столбцов (X;Y)
+
+	bool operator==( const CGraphData& ) const;
+	bool operator<( const CGraphData& ) const;
+	bool operator!=( const CGraphData& ) const;
+	bool operator>( const CGraphData& ) const;
+};
+
+typedef std::list<CGraphData> GraphList;
+
 class CGraphicView : public CView
 {
 protected:
@@ -25,9 +49,10 @@ protected:
 
 // Attributes
 public:
+	GraphList m_Graphs;
+
 	int TypeX, TypeY;
 	CKnot *pKnot;
-
 
 	int Mode_GetCoord;//Включен режим вывода координат курсора на графике
 	double RegionMaxY[2];
@@ -35,8 +60,9 @@ public:
 	CPoint RegionPoint[2];
 
 	int SizeX;
-	BOOL AutoSizing, Graph2Enable;
-	CMatr Dat, Graph2;
+	BOOL AutoSizing;
+	CMatr Dat;
+	bool m_bMainGraphEnable;//показывать или нет главный график
 	double ScaleX, ScaleY;
 	double minX, maxX, minY, maxY;
 	CPoint PointBeg, PointEnd, PointNew;
@@ -49,7 +75,7 @@ public:
 	inline void DrawRect(CDC* pDC, int x1, int y1, int x2, int y2);
 	void SetMaxMin();
 	double GetStandartStep(double _step);
-	inline void DrawTitle(CDC *pDC, CRect &clrect);
+	inline void DrawTitle( CDC*, CRect&, CFont&, COLORREF& );
 	inline void DrawOutLine(CDC *pDC, CRect &clrect);
 	inline BOOL NormalizePoint(CPoint *p);
 	inline CCoordD ScreenToSheme(POINT &p);
@@ -85,10 +111,10 @@ protected:
 	afx_msg void OnUpdateGetcoord(CCmdUI* pCmdUI);
 	afx_msg void OnSaverez();
 	afx_msg void OnUpdateSaverez(CCmdUI* pCmdUI);
-	afx_msg void OnUpdateGraph2(CCmdUI* pCmdUI);
-	afx_msg void OnGraph2();
-	afx_msg void OnLoadgraph2();
 	afx_msg void OnCalcmat();
+	afx_msg void OnGraphProp();
+	afx_msg void OnMainGraph();
+	afx_msg void OnUpdateMainGraph(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

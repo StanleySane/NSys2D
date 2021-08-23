@@ -6,7 +6,14 @@
 #include "NSys2D.h"
 #include "ParamView.h"
 
+#include "StdAfxMy.h"
+
+#include "Sheme.h"
+#include "Elem.h"
+
 #include<algorithm>
+
+using namespace std;
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -15,6 +22,9 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 double CParamView::m_DefaultScale = 5;
+
+//CArchive& operator <<( CArchive &, LOGFONT & );
+//CArchive& operator >>( CArchive &, LOGFONT & );
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -61,17 +71,57 @@ CParamView::~CParamView()
 	m_fntFree.DeleteObject();
 }
 
-void CParamView::Serialize(CArchive & ar)
+void CParamView::Serialize( CArchive &ar, int _sv )
 {
+	ShemeVersion sv = static_cast<ShemeVersion>(_sv);
 	if (ar.IsStoring())
 	{	// storing code
 		ar << Scale << pos.x << pos.y;
 		ar << MoveCenter.x << MoveCenter.y;
+		if( sv >= VER_EQ31 )
+		{
+			ar << m_bNumKnots << m_bNumElems << m_bTextOut;
+			/*
+			LOGFONT lf;
+			m_fntKnot.GetLogFont( &lf );
+			ar << lf;
+			m_fntElems.GetLogFont( &lf );
+			ar << lf;
+			m_fntFree.GetLogFont( &lf );
+			ar << lf;
+			*/
+			ar << m_clrNumKnots;
+			ar << m_clrNumElems;
+			ar << m_clrFree;
+			ar << m_ZeroRot;
+		}
 	}
 	else
 	{	// loading code
 		ar >> Scale >> pos.x >> pos.y;
 		ar >> MoveCenter.x >> MoveCenter.y;
+		if( sv >= VER_EQ31 )
+		{
+			int nk, ne, to;
+			ar >> nk >> ne >> to;
+			m_bNumKnots = (nk != 0);
+			m_bNumElems = (ne != 0);
+			m_bTextOut = (to != 0);
+			/*
+			LOGFONT lf;
+			m_fntKnot.GetLogFont( &lf );
+			ar >> lf;
+			m_fntKnot.CreateFontIndirect( lf );
+			ar >> lf;
+			m_fntElems.CreateFontIndirect( &lf );
+			ar >> lf;
+			m_fntFree.CreateFontIndirect( &lf );
+			*/
+			ar >> m_clrNumKnots;
+			ar >> m_clrNumElems;
+			ar >> m_clrFree;
+			ar >> m_ZeroRot;
+		}
 	}
 }
 
@@ -83,3 +133,29 @@ void CParamView::DelZeroInSelNumbers()
 	if( it != m_vecSelNumbers.end() )// по идее всегда должно выполняться, но мало ли...
 		m_vecSelNumbers.erase( it );
 }
+
+/*
+CArchive& operator <<( CArchive &ar, LOGFONT &lf )
+{
+	ar << lf.lfHeight << lf.lfWidth << lf.lfEscapement << lf.lfOrientation;
+	ar << lf.lfWeight << lf.lfItalic << lf.lfUnderline << lf.lfStrikeOut;
+	ar << lf.lfCharSet << lf.lfOutPrecision << lf.lfClipPrecision << lf.lfQuality;
+	ar << lf.lfPitchAndFamily;
+	CString str(lf.lfFaceName);
+	ar << str;
+	return ar;
+}
+
+CArchive& operator >>( CArchive &ar, LOGFONT &lf )
+{
+	ar >> lf.lfHeight >> lf.lfWidth >> lf.lfEscapement >> lf.lfOrientation;
+	ar >> lf.lfWeight >> lf.lfItalic >> lf.lfUnderline >> lf.lfStrikeOut;
+	ar >> lf.lfCharSet >> lf.lfOutPrecision >> lf.lfClipPrecision >> lf.lfQuality;
+	ar >> lf.lfPitchAndFamily;
+	CString str;
+	ar >> str;
+	strncpy( lf.lfFaceName, str.LockBuffer(), LF_FACESIZE );
+	str.UnlockBuffer();
+	return ar;
+}
+*/

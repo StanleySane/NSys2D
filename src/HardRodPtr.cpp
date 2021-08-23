@@ -49,12 +49,43 @@ bool HardRodPtr::Construct( KnotPtr *kn1, KnotPtr *kn2 )
 	return true;
 }
 
+bool HardRodPtr::Attach( CElem *pEl )
+{
+//ф-ция присоединяет к объекту указатель на элемент.
+//после удачного выполнения этой ф-ции данный объект
+//и присоединённый элемент - одно и то же.
+	ASSERT( (pEl != NULL)&&(pEl->TypeElem == IDC_HARDROD) );
+	ASSERT( (pEl->knot1 != NULL)&&(pEl->knot2 != NULL) );
+	Destruct();
+	m_pElem = static_cast<CHardRod*>(pEl);
+	Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+	if( p.second == false )
+		++(*p.first).second;
+	KnotPtr::AddRef( pEl->knot1 );
+	KnotPtr::AddRef( pEl->knot2 );
+	return true;
+}
+
+bool HardRodPtr::Detach()
+{
+//ф-ция отсоединяет от данного объекта указатель на элемент.
+	if( m_pElem == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 void HardRodPtr::Destruct()
 {
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+		{
+			m_pElem = NULL;
+			return;
+		}
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -77,15 +108,20 @@ void HardRodPtr::InitBy( const HardRodPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			ASSERT( it != m_RefMap.end() );
-			(*it).second++;
+			//ASSERT( it != m_RefMap.end() );
+			if( it == m_RefMap.end() )
+			{
+				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+			}
+			else
+				(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}
 	}
 }
 
-CHardRod* HardRodPtr::GetElem() const
+CElem* HardRodPtr::GetElem() const
 {
 	ASSERT(m_pElem);
 	return m_pElem;
@@ -100,33 +136,25 @@ bool HardRodPtr::Create( KnotPtr *kn1, KnotPtr *kn2 )
 bool HardRodPtr::SetM( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetM( str ) < 0)?false:true;
+	return m_pElem->SetM( v );
 }
 
 bool HardRodPtr::SetJ( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetJ( str ) < 0)?false:true;
+	return m_pElem->SetJ( v );
 }
 
 bool HardRodPtr::SetF( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetF( str ) < 0)?false:true;
+	return m_pElem->SetF( v );
 }
 
 bool HardRodPtr::SetE( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetE( str ) < 0)?false:true;
+	return m_pElem->SetE( v );
 }
 
 double HardRodPtr::GetM() const
@@ -193,4 +221,14 @@ AlgolMatr HardRodPtr::GetMatrC() const
 	matr.ConvertToAlgolMatr( am );
 	am.SetMinCol(0);
 	return am;
+}
+
+int HardRodPtr::GetRefCount()
+{
+	if( m_pElem == NULL )
+		return -1;
+	HardRodPtr::Refs::iterator it = HardRodPtr::m_RefMap.find(m_pElem);
+	if( it == HardRodPtr::m_RefMap.end() )
+		return -1;
+	return (*it).second;
 }

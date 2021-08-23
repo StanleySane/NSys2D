@@ -33,15 +33,15 @@ public:
 	enum { IDD = IDD_FREQDLG };
 	CComboBox	m_ComboBoxKnot2;
 	CComboBox	m_ComboBoxKnot1;
-	CString	m_w0;
-	CString	m_w1;
-	CString	m_dw;
 	BOOL	m_LogCoord;
 	int		m_TypeCharact;
 	int		m_Free1;
 	int		m_Free2;
 	int		m_Derive;
 	int		m_Force;
+	double	m_w0;
+	double	m_w1;
+	double	m_dw;
 	//}}AFX_DATA
 
 

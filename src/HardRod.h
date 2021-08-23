@@ -10,105 +10,62 @@
 #endif // _MSC_VER >= 1000
 
 #include "Elem.h"
-#include "Expression.h"
+
+class CShemeDoc;
 
 class CHardRod : public CElem  
 {
-
+	void InitBy( const CHardRod& );
 private:
-	CString str_E, str_J, str_m, str_F;
-	double E,J,m,F;
+	//CString str_E, str_J, str_m, str_F;
+	//double E,J,m,F;
 
 public:
+	CShemeExpr m_E, m_J, m_M, m_F;
+
 	int m_HardMethod;
 	int m_NofKnots;
 	int m_NofHardRodsInOneKnot[2];
 	//Ќомера поворотной степени свободы в массиве nRezA[]
 	int FreeA1,FreeA2;
-	virtual void Serialize(CArchive & ar);
-	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
-	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+	virtual void Serialize( CArchive &ar, int sv );
+	virtual int SetMatrmP( CMatr &, CMatr &, CMatr &, CMatr*, int, double, std::string *pMsg = NULL );
+	void SetMatrMDC( CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg = NULL );
 	
-	void GetMatrM( CMatr& ) const;
-	void GetMatrD( CMatr& ) const;
-	void GetMatrC( CMatr& ) const;
+	void GetMatrM( CMatr&, std::string *pMsg = NULL );
+	void GetMatrD( CMatr&, std::string *pMsg = NULL );
+	void GetMatrC( CMatr&, std::string *pMsg = NULL );
 
 	void Draw(CDC * pDC, CParamView *pParamView);
+	void DrawGL( CShemeDoc*, int );
 
 	int GoDlg(CListKnot *pListKnot, bool full = true );
-	bool SetCommonProperties( CElem* elem );
-//	Get-ы
-	CString GetStrM()
-	{	return str_m;	}
-	CString GetStrF()
-	{	return str_F;	}
-	CString GetStrJ()
-	{	return str_J;	}
-	CString GetStrE()
-	{	return str_E;	}
-	double GetM() const
-	{	return m;	}
-	double GetJ() const
-	{	return J;	}
-	double GetF() const
-	{	return F;	}
-	double GetE() const
-	{	return E;	}
-//	int type1,type2;
+	bool SetCommonProperties( const CElem* elem );
+
+	void SetVarState();
 
 //	Set-ы
-	double SetF(CString &str)
-	{
-		CExpression e;
-		double val;
-		if( !e.IsNum(str,&val) )
-		{
-			str_F = str;
-			F = val;
-			return val;
-		}
-		return -1;
-	}
-	double SetM(CString &str)
-	{
-		CExpression e;
-		double val;
-		if( !e.IsNum(str,&val) )
-		{
-			str_m = str;
-			m = val;
-			return val;
-		}
-		return -1;
-	}
-	double SetJ(CString &str)
-	{
-		CExpression e;
-		double val;
-		if( !e.IsNum(str,&val) )
-		{
-			str_J = str;
-			J = val;
-			return val;
-		}
-		return -1;
-	}
-	double SetE(CString &str)
-	{
-		CExpression e;
-		double val;
-		if( !e.IsNum(str,&val) )
-		{
-			str_E = str;
-			E = val;
-			return val;
-		}
-		return -1;
-	}
+	bool SetF( const CString& );
+	bool SetM( const CString& );
+	bool SetJ( const CString&);
+	bool SetE( const CString& );
+	bool SetF( double );
+	bool SetM( double );
+	bool SetJ( double );
+	bool SetE( double );
+//	Get-ы
+	double GetF( bool flg = true );
+	double GetM( bool flg = true );
+	double GetJ( bool flg = true );
+	double GetE( bool flg = true );
+
+	CString GetName() const;
 
 //	constructor/destructor
-	CHardRod( CKnot *kn1, CKnot *kn2 );
+	CHardRod( CKnot *kn1, CKnot *kn2, CSheme *p = NULL );
 	virtual ~CHardRod();
+	CHardRod( const CHardRod& );
+	CHardRod& operator=( const CHardRod& );
 
 };
 

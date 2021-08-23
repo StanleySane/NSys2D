@@ -15,15 +15,19 @@
 #include "ListKnot.h"
 #include "ShemeGroup.h"
 #include "Matr.h"
+#include "ShemeVarsTable.h"
 
 class CEqualDegrees;
 class CShemeDoc;
+class ShemePtr;
 class CElem;
+class CProgressDlg;
 
 typedef enum ShemeVersion
 {
 	VER_LE25 = 0,// верси€ 2.5 и ниже
-	VER_EQ30// верси€ 3.0
+	VER_EQ30,// верси€ 3.0
+	VER_EQ31//верси€ 3.1
 } ShemeVersion;
 
 class CSheme
@@ -39,6 +43,16 @@ public:
 	CListKnot listKnot;
 	CListSpectr listspectrP, listspectrU;
 
+	CShemeVarsTable m_VarsTable;//карта переменных схемы
+
+	bool m_bRichCalc;//показывает - надо ли выводить информацию о ходе
+	//интегрировани€ в диалоге "»нтегрирование" (CProgressDlg)
+	bool m_bValidateExpr;//флаг о том, что надо провер€ть правильность
+	//вычислени€ выражений.
+	bool m_bIntegrTest;//флаг о том, что при интегрировании надо провер€ть расходимость.
+	int m_InvertMethod;//метод инвертировани€ матри
+	//0 - решение системы уравнений
+	//1 - обращение положительно определЄнных матриц
 	EV_METHOD m_EVMethod;//метод поиска собств.форм и значений
 	CEqualDegrees *m_pEqDeg;//указатель на объект, который управл€ет
 	//модификацией матриц с учЄтом наличи€ жЄстких стержней
@@ -47,7 +61,6 @@ public:
 	//0 - без разноса масс
 	//1 - с разносом
 	//2 - обычный  .Ё., но с удалением степеней свободы
-	bool m_bCondenceMass;//использовать ли метод конденсации дл€ м-цы масс?
 
 	CMatr matr_M, matr_C, matr_D, matr_M_1, matr_RezY1, matr_RezY2, matr_RezY3;
 	CMatr matr_UM, matr_UC, matr_UD;
@@ -56,21 +69,25 @@ public:
 
 	ShemeVersion m_verShemeVersion;//текуща€ верси€ документов дл€ сохранени€
 	bool m_bAutoCorrect;//флаг об автокорректировке схем при сохранении в устаревшем формате
+	CString m_strDescription;//текстовое описание схемы
 
 	CFreqParam ParamFreq;
 	CFreqParam ParamSpectrOut;
 	CParamIntegr ParamIntegr;
 
 	CShemeDoc *m_pDoc;
+	CProgressDlg *pProgressDlg;
 
 protected:
 	CSheme();
 
 public:
 	friend class CShemeDoc;
+	friend class ShemePtr;
 
 	~CSheme();
 	void Serialize( CArchive& ar );
+	void Clear();
 //	void Serialize1( CArchive& ar, int &count, ShemeVersion &ver );
 //	void Serialize2( CArchive& ar, int &count, ShemeVersion &ver );
 
@@ -80,11 +97,19 @@ public:
 	CElem* AddSpring( CKnot*, CKnot* );
 	CElem* AddMass( CKnot* );
 
+	bool AddElem( CElem* );
+	bool DelElem( CElem* );
+
+	CElem* GetElemByNum( int );
+	CKnot* GetKnotByNum( int );
+
 	static ARRAY::iterator CSheme::GetElemIteratorInGroup( const CElem*, ARRAY& );
 	static ARRAY::iterator CSheme::GetKnotIteratorInGroup( const CKnot*, ARRAY& );
 	int IsGroupContainsNotexistingObject( bool, CShemeGroup&, CString&, ARRAY& );
 	bool IsElemGroupOfOneType( const ARRAY& vec );
 	bool IsShemeContainsHardRod();
+	bool IsXFree( int );
+	bool IsYFree( int );
 
 	int GetNotExistingElemNum();
 	void ClearElem();
@@ -99,8 +124,17 @@ public:
 	int DelFreeKnot();
 	void SetConnectElements();
 	void ReNumElems();
-	int SetMatrMDC(int Count, int Freq = 0 );
-	void CreateGroupForAllObjects( int type );
+	int SetMatrMDC(int Count, std::string *pMsg = NULL, int Freq = 0 );
+	bool CreateGroupForAllObjects( int type );
+
+	int Integrate();
+	int PreCalculated();
+
+	int Numark( int );
+	int Park( int );
+	int RungeKutt( int );
+
+	bool GetEigen( CMatr&, CMatr& );
 
 };
 

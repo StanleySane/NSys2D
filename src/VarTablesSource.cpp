@@ -56,8 +56,8 @@ TypeID VarTables::GetVarType( const std::string &var ) const
 		return TYPE_MASS;
 	if( m_vKnot.find(var) != m_vKnot.end() )
 		return TYPE_KNOT;
-//	if( m_vSheme.find(var) != m_vSheme.end() )
-//		return TYPE_SHEME;
+	if( m_vSheme.find(var) != m_vSheme.end() )
+		return TYPE_SHEME;
 	
 	return TYPE_UNKNOWN;
 }
@@ -168,6 +168,17 @@ KnotPtr* VarTables::GetKnot( const std::string &name )
 //ВНИМАНИЕ: name должен быть в нижнем регистре !
 	VarKnot::iterator it = m_vKnot.find(name);
 	if( it != m_vKnot.end() )
+		return &(*it).second;
+	return NULL;
+}
+
+ShemePtr* VarTables::GetSheme( const std::string &name )
+{
+//ф-ция возвращает указатель на схему с именем name из данной
+//карты, или NULL, если такой схемы в карте нет.
+//ВНИМАНИЕ: name должен быть в нижнем регистре !
+	VarSheme::iterator it = m_vSheme.find(name);
+	if( it != m_vSheme.end() )
 		return &(*it).second;
 	return NULL;
 }
@@ -287,7 +298,13 @@ void VarTables::GetVarValue( const std::string &str, TypeID tp, Value &val ) con
 				val.SetKnot( (*it).second );
 		}
 		break;
-//	case TYPE_SHEME:
+	case TYPE_SHEME:
+		{
+			VarSheme::const_iterator it = m_vSheme.find(name);
+			if( it != m_vSheme.end() )
+				val.SetSheme( (*it).second );
+		}
+		break;
 	default:
 		ASSERT(FALSE);
 		break;
@@ -347,7 +364,9 @@ void VarTables::AddVar( const std::string &name, TypeID tp )
 	case TYPE_KNOT:
 		m_vKnot.insert( MakeKnot(tmp,KnotPtr()) );
 		break;
-//	case TYPE_SHEME:
+	case TYPE_SHEME:
+		m_vSheme.insert( MakeSheme(tmp,ShemePtr()) );
+		break;
 	default:
 		ASSERT(FALSE);
 		break;
@@ -360,19 +379,19 @@ void VarTables::Clear()
 	m_vInt.erase( m_vInt.begin(), m_vInt.end() );
 	m_vDouble.erase( m_vDouble.begin(), m_vDouble.end() );
 	m_vString.erase( m_vString.begin(), m_vString.end() );
+
 	m_vArray.erase( m_vArray.begin(), m_vArray.end() );
 	m_vFile.erase( m_vFile.begin(), m_vFile.end() );
 	m_vScript.erase( m_vScript.begin(), m_vScript.end() );
 	m_vMatr.erase( m_vMatr.begin(), m_vMatr.end() );
+
 	m_vRod.erase( m_vRod.begin(), m_vRod.end() );
-	/*
 	m_vHardRod.erase( m_vHardRod.begin(), m_vHardRod.end() );
 	m_vSpring.erase( m_vSpring.begin(), m_vSpring.end() );
 	m_vDemfer.erase( m_vDemfer.begin(), m_vDemfer.end() );
 	m_vMass.erase( m_vMass.begin(), m_vMass.end() );
 	m_vKnot.erase( m_vKnot.begin(), m_vKnot.end() );
 	m_vSheme.erase( m_vSheme.begin(), m_vSheme.end() );
-	*/
 }
 
 inline void VarTables::InitBy( const VarTables &vt )
@@ -381,16 +400,17 @@ inline void VarTables::InitBy( const VarTables &vt )
 	m_vInt = vt.m_vInt;
 	m_vDouble = vt.m_vDouble;
 	m_vString = vt.m_vString;
+
+	m_vArray = vt.m_vArray;
 	m_vFile = vt.m_vFile;
 	m_vScript = vt.m_vScript;
 	m_vMatr = vt.m_vMatr;
+
 	m_vRod = vt.m_vRod;
-	/*
 	m_vHardRod = vt.m_vHardRod;
 	m_vSpring = vt.m_vSpring;
 	m_vDemfer = vt.m_vDemfer;
 	m_vMass = vt.m_vMass;
 	m_vKnot = vt.m_vKnot;
 	m_vSheme = vt.m_vSheme;
-	*/
 }

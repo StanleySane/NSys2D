@@ -10,43 +10,58 @@
 #endif // _MSC_VER >= 1000
 
 #include "Elem.h"
-#include "Expression.h"
+
+class CShemeDoc;
 
 class CRod : public CElem  
 {
+	void InitBy( const CRod& );
 private:
-	CString str_E, str_Jx, str_m0,str_F;
-	double E,Jx,m0,F;
+	//CString str_E, str_Jx, str_m0,str_F;
+	//double E,Jx,m0,F;
 public:
+	CShemeExpr m_E, m_Jx, m_m0, m_F;
 	//Ќомера поворотной степени свободы в массиве nRezA[]
-	int FreeA1,FreeA2;
-	virtual void Serialize(CArchive & ar);
-	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
-	double SetF(CString &str);
+	int FreeA1, FreeA2;
+	virtual void Serialize( CArchive &ar, int _sv );
+	virtual int SetMatrmP( CMatr &, CMatr &, CMatr &, CMatr*, int, double, std::string *pMsg = NULL );
+	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg = NULL );
+
+	void SetVarState();
+
+	bool SetF( const CString& );
+	bool SetM( const CString& );
+	bool SetJx( const CString&);
+	bool SetE( const CString& );
+	bool SetF( double );
+	bool SetM( double );
+	bool SetJx( double );
+	bool SetE( double );
+	/*
 	CString GetStrF();
-	double GetF() const;
-	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
-
-	void GetMatrM( CMatr& ) const;
-	void GetMatrD( CMatr& ) const;
-	void GetMatrC( CMatr& ) const;
-
 	CString GetStrM();
-	double GetM() const;
-	double SetM(CString &str);
-	int GoDlg(CListKnot *pListKnot, bool full = true );
-	bool SetCommonProperties( CElem* elem );
 	CString GetStrJx();
 	CString GetStrE();
+	*/
+	double GetF( bool flg = true );
+	double GetM( bool flg = true );
+	double GetJx( bool flg = true );
+	double GetE( bool flg = true );
+
+	void GetMatrM( CMatr&, std::string *pMsg = NULL );
+	void GetMatrD( CMatr&, std::string *pMsg = NULL );
+	void GetMatrC( CMatr&, std::string *pMsg = NULL );
+
+	int GoDlg(CListKnot *pListKnot, bool full = true );
+	bool SetCommonProperties( const CElem* elem );
 	void Draw(CDC * pDC, CParamView *pParamView);
-	double SetJx(CString &str);
-	double SetE(CString &str);
-	double GetJx() const;
-	double GetE() const;
-//	int type1,type2;
-	
-	CRod(CKnot *kn1, CKnot *kn2);
+	void DrawGL( CShemeDoc*, int );
+	CString GetName() const;
+
+	CRod( CKnot *kn1, CKnot *kn2, CSheme *p = NULL );
 	virtual ~CRod();
+	CRod( const CRod& );
+	CRod& operator=( const CRod& );
 
 };
 

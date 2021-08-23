@@ -25,11 +25,6 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CDemfDlg)
 	enum { IDD = IDD_DIALOGDEMF };
-	CEdit	m_Edit_XX;
-	CEdit	m_Edit_XS;
-	CEdit	m_Edit_X5;
-	CEdit	m_Edit_X3;
-	CEdit	m_Edit_X1;
 	CComboBox	m_ComboBoxKnot2;
 	CComboBox	m_ComboBoxKnot1;
 	int		m_Radio_X1;
@@ -37,6 +32,11 @@ public:
 	int		m_Radio_X5;
 	int		m_Radio_XX;
 	int		m_Radio_XS;
+	CString	m_Edit_XX;
+	double	m_Edit_X1;
+	double	m_Edit_X3;
+	double	m_Edit_X5;
+	double	m_Edit_XS;
 	//}}AFX_DATA
 
 

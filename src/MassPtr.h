@@ -15,6 +15,7 @@
 class CMass;
 class KnotPtr;
 class AlgolMatr;
+class CElem;
 
 class MassPtr
 {
@@ -45,8 +46,12 @@ public:
 	{	Destruct();	}
 
 	//ф-ции-члены
-	CMass* GetElem() const;
+	CElem* GetElem() const;
 	bool Create( KnotPtr* );
+	bool Attach( CElem* );
+	bool Detach();
+	int GetRefCount();
+
 	bool SetM( double );
 	bool SetJ( double );
 	double GetM() const;

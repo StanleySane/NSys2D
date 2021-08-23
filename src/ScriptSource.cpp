@@ -8,7 +8,8 @@
 #include "ScriptHeader.h"
 #include "ScriptObject.h"
 
-#include "OutputView.h"
+#include "ScriptDoc.h"
+
 using namespace std;
 
 #ifdef _DEBUG
@@ -85,9 +86,9 @@ bool CScript::FatalCrash()
 	return ScriptObject::FatalCrash();
 }
 
-void CScript::Set( COutputView *pView )
+void CScript::Set( CScriptDoc *p )
 {
 	if( !m_pScript )
 		return;
-	m_pScript->Set(pView);
+	m_pScript->Set(p);
 }

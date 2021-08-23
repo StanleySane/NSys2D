@@ -8,6 +8,12 @@
 #include "HardRodDlg.h"
 #include "matr.h"
 
+#include "ShemeDoc.h"
+#include "Sheme.h"
+#include "MovieView.h"
+
+using namespace std;
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -18,18 +24,26 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CHardRod::CHardRod(CKnot *kn1, CKnot *kn2):CElem(kn1,kn2)
+CHardRod::CHardRod( CKnot *kn1, CKnot *kn2, CSheme *p ):CElem(kn1,kn2,p)
 {
-	SetE(CString("1"));  
-	SetF(CString("1"));  
-	SetJ(CString("1"));
-	SetM(CString("1"));
+//	SetE(CString("1"));  
+//	SetF(CString("1"));  
+//	SetJ(CString("1"));
+//	SetM(CString("1"));
 	TypeElem = IDC_HARDROD;
 	FreeA1 = FreeA2 = 0;
 
 	m_HardMethod = 0;
 	m_NofKnots = 2;
 	m_NofHardRodsInOneKnot[0] = m_NofHardRodsInOneKnot[1] = 1;
+
+	CShemeVarsTable *pVT = (m_pSheme)?(&m_pSheme->m_VarsTable):(NULL);
+	string Val("1");
+
+	m_E.Reset( Val, pVT );
+	m_F.Reset( Val, pVT );
+	m_J.Reset( Val, pVT );
+	m_M.Reset( Val, pVT );
 }
 
 CHardRod::~CHardRod()
@@ -37,9 +51,90 @@ CHardRod::~CHardRod()
 
 }
 
+CHardRod::CHardRod( const CHardRod &elem ):CElem(elem)
+{
+	InitBy(elem);
+}
+
+CHardRod& CHardRod::operator=( const CHardRod &elem )
+{
+	if( this != (&elem) )
+		InitBy(elem);
+	return *this;
+}
+
+void CHardRod::InitBy( const CHardRod &elem )
+{
+	SetCommonProperties( &elem );
+	FreeA1 = elem.FreeA1;
+	FreeA2 = elem.FreeA2;
+	m_HardMethod = elem.m_HardMethod;
+	m_NofKnots = elem.m_NofKnots;
+	m_NofHardRodsInOneKnot[0] = elem.m_NofHardRodsInOneKnot[0];
+	m_NofHardRodsInOneKnot[1] = elem.m_NofHardRodsInOneKnot[1];
+}
+
 ///////////////////////////////////////////////////////////////
 //	realisations
 ///////////////////////////////////////////////////////////////
+void CHardRod::DrawGL( CShemeDoc *pDoc, int Time )
+{
+	ASSERT( pDoc->m_pMovieView );
+
+	glLineWidth( 4 );
+	glColor3f( 0.0f, 0.0f, GLfloat(150.0/255.0) );
+
+	double x1, y1, x2, y2;
+	CCoordD c;
+	if( Time < 0 )
+	{
+		c = knot1->GetCoord();
+		x1 = c.x;
+		y1 = c.y;
+		c = knot2->GetCoord();
+		x2 = c.x;
+		y2 = c.y;
+	}
+	else
+	{
+		if( (knot1->nXRez < 0)||(knot1->nYRez < 0) )
+			c = knot1->GetCoord();
+		if( knot1->nXRez >= 0 )
+			x1 = pDoc->m_pMovieView->m_Res( knot1->nXRez + 1, Time );
+		else
+		{
+			x1 = c.x;
+		}
+		if( knot1->nYRez >= 0 )
+			y1 = pDoc->m_pMovieView->m_Res( knot1->nYRez + 1, Time );
+		else
+		{
+			y1 = c.y;
+		}
+
+		if( (knot2->nXRez < 0)||(knot2->nYRez < 0) )
+			c = knot2->GetCoord();
+		if( knot2->nXRez >= 0 )
+			x2 = pDoc->m_pMovieView->m_Res( knot2->nXRez + 1, Time );
+		else
+		{
+			x2 = c.x;
+		}
+		if( knot2->nYRez >= 0 )
+			y2 = pDoc->m_pMovieView->m_Res( knot2->nYRez + 1, Time );
+		else
+		{
+			y2 = c.y;
+		}
+	}
+	glBegin(GL_LINES);
+		glVertex2f( x1, y1 );
+		glVertex2f( x2, y2 );
+	glEnd();
+
+	knot1->DrawGL( pDoc, Time );
+	knot2->DrawGL( pDoc, Time );
+}
 
 void CHardRod::Draw(CDC * pDC, CParamView *pParamView)
 {
@@ -80,9 +175,9 @@ void CHardRod::Draw(CDC * pDC, CParamView *pParamView)
 		GetMatrT(T1,2);
 		T_1 = !T1;//!T1;
 
-		double tmp1 = point2.x-point1.x, tmp2 = point2.y-point1.y;
-		double tmp3 = tmp1*tmp1, tmp4 = tmp2*tmp2;
-		double tStep=1.0/(sqrt(tmp3+tmp4)+1);
+//		double tmp1 = point2.x-point1.x, tmp2 = point2.y-point1.y;
+//		double tmp3 = tmp1*tmp1, tmp4 = tmp2*tmp2;
+//		double tStep=1.0/(sqrt(tmp3+tmp4)+1);
 		CCoordD c1=knot1->GetCoord();
 		CCoordD c2=knot2->GetCoord();
 
@@ -133,7 +228,7 @@ void CHardRod::Draw(CDC * pDC, CParamView *pParamView)
 	pDC->SelectObject(pOld);
 }
 
-void CHardRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
+void CHardRod::SetMatrMDC( CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg )
 {
 	//Ќомера степеней свободы
 	int N[6];
@@ -147,7 +242,9 @@ void CHardRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 	if( m_HardMethod == 2 )
 	{
 		CMatr locC;
-		GetMatrC( locC );
+		GetMatrC( locC, pMsg );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+			return;
 		for( int i = 0; i < 6; i++ )
 			for( int j = 0; j < 6; j++ )
 				if( (N[i] >= 0)&&(N[j] >= 0) )
@@ -157,7 +254,9 @@ void CHardRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 	}
 
 	CMatr locM;
-	GetMatrM( locM );
+	GetMatrM( locM, pMsg );
+	if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg && !pMsg->empty() )
+		return;
 	for( int i = 0; i < 6; i++ )
 		for( int j = 0; j < 6; j++ )
 			if( (N[i] >= 0)&&(N[j] >= 0) )
@@ -166,30 +265,28 @@ void CHardRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 			}
 }
 
-int CHardRod::SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt)
+int CHardRod::SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, CMatr *Y3, int i, double Tt, std::string *pMsg )
 {
 	return 0;
 }
 
-void CHardRod::Serialize(CArchive & ar)
+void CHardRod::Serialize( CArchive &ar, int sv )
 {
-	CElem::Serialize(ar);
+	CElem::Serialize( ar, sv );
 
 	if (ar.IsStoring())
 	{	// storing code
-		ar << GetStrF();
-		ar << GetStrJ();
-		ar << GetStrE();
-		ar << GetStrM();
+		m_F.Serialize(ar);
+		m_J.Serialize(ar);
+		m_E.Serialize(ar);
+		m_M.Serialize(ar);
 	}
 	else
 	{	// loading code
-		CString F, E, J, M;
-		ar >> F >> J >> E >> M;
-		SetF(F);
-		SetJ(J);
-		SetE(E);
-		SetM(M);
+		m_F.Serialize(ar);
+		m_J.Serialize(ar);
+		m_E.Serialize(ar);
+		m_M.Serialize(ar);
 	}
 }
 
@@ -200,11 +297,13 @@ int CHardRod::GoDlg( CListKnot *pListKnot, bool full )
 	return 0;
 }
 
-bool CHardRod::SetCommonProperties( CElem* elem )
+bool CHardRod::SetCommonProperties( const CElem* elem )
 {
-	CHardRod *pHR = dynamic_cast<CHardRod*>(elem);
+	//CHardRod *pHR = dynamic_cast<CHardRod*>(elem);
+	const CHardRod *pHR = static_cast<const CHardRod*>(elem);
 	if( !pHR )	return false;
 
+	/*
 	str_E = pHR->str_E;
 	str_J = pHR->str_J;
 	str_m = pHR->str_m;
@@ -213,16 +312,36 @@ bool CHardRod::SetCommonProperties( CElem* elem )
 	J = pHR->J;
 	m = pHR->m;
 	F = pHR->F;
+	*/
+	m_E.InitBy( pHR->m_E );
+	m_J.InitBy( pHR->m_J );
+	m_F.InitBy( pHR->m_F );
+	m_M.InitBy( pHR->m_M );
 
 	return true;
 }
 
-void CHardRod::GetMatrM( CMatr &matr ) const
+void CHardRod::GetMatrM( CMatr &matr, std::string *pMsg )
 {
 	matr.ReSize( 6, 6 );
 
 	double J = GetJ();
-	double m = GetM();//масса стержн€
+	double m = GetM( false );//масса стержн€
+	if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+	{
+		ShemeExprErr err = m_J.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_J.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_M.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_M.GetFullErrorMsg(err);
+			return;
+		}
+	}
 
 	if( m_HardMethod != 2 )
 	{
@@ -256,8 +375,23 @@ void CHardRod::GetMatrM( CMatr &matr ) const
 		GetMatrT( T, 6 );
 
 		double L = GetLength();
-		double F = GetF();
-		double E = GetE();
+		double F = GetF( false );
+		double E = GetE( false );
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+		{
+			ShemeExprErr err = m_E.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_E.GetFullErrorMsg(err);
+				return;
+			}
+			err = m_F.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_F.GetFullErrorMsg(err);
+				return;
+			}
+		}
 
 		m /= L;//погонна€ масса
 		double mL = m*L, mL2 = mL*L, mL3 = mL2*L, EF = E*F;
@@ -287,6 +421,7 @@ void CHardRod::GetMatrM( CMatr &matr ) const
 		matr = !T*matr*T;
 	}
 ////////////////////////////////////////////
+#ifdef _DEBUG
 	TRACE0("\n\n!T*locM*T:\n");
 	for( int r = 0; r < matr.SizeY; r++ )
 	{
@@ -296,15 +431,16 @@ void CHardRod::GetMatrM( CMatr &matr ) const
 		}
 		TRACE0("\n");
 	}
+#endif
 ////////////////////////////////////////////
 }
 
-void CHardRod::GetMatrD( CMatr &m ) const
+void CHardRod::GetMatrD( CMatr &m, std::string *pMsg )
 {
 	m.ReSize( 6, 6 );
 }
 
-void CHardRod::GetMatrC( CMatr &matr ) const
+void CHardRod::GetMatrC( CMatr &matr, std::string *pMsg )
 {
 	matr.ReSize( 6, 6 );
 	if( m_HardMethod == 2 )
@@ -314,10 +450,37 @@ void CHardRod::GetMatrC( CMatr &matr ) const
 		GetMatrT( T, 6 );
 
 		double F = GetF();
-		double E = GetE();
-		double J = GetJ();
+		double E = GetE( false );
+		double J = GetJ( false );
+		double m = GetM( false );//масса стержн€
+		if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+		{
+			ShemeExprErr err = m_E.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_E.GetFullErrorMsg(err);
+				return;
+			}
+			err = m_F.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_F.GetFullErrorMsg(err);
+				return;
+			}
+			err = m_J.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_J.GetFullErrorMsg(err);
+				return;
+			}
+			err = m_M.GetRunErrorCode();
+			if( err != SEE_NOERR )
+			{
+				(*pMsg) = m_M.GetFullErrorMsg(err);
+				return;
+			}
+		}
 		double L = GetLength();
-		double m = GetM();//масса стержн€
 
 		m /= L;//погонна€ масса
 		//матрица жЄсткости
@@ -341,4 +504,94 @@ void CHardRod::GetMatrC( CMatr &matr ) const
 		matr.CopyDownToUp();
 		matr = !T*matr*T;
 	}
+}
+
+void CHardRod::SetVarState()
+{
+	if( m_pSheme )
+	{
+		m_pSheme->m_VarsTable.SetVarValue("x",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("v",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("t",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("a",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("cx",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("cy",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("w",0.0);
+		CElem::SetVarState();
+	}
+}
+
+double CHardRod::GetM( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_M.GetValue();
+}
+
+double CHardRod::GetF( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_F.GetValue();
+}
+
+double CHardRod::GetE( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_E.GetValue();
+}
+
+double CHardRod::GetJ( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_J.GetValue();
+}
+
+bool CHardRod::SetF( const CString &str )
+{
+	return (m_F.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetM( const CString &str )
+{
+	return (m_M.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetE( const CString &str )
+{
+	return (m_E.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetJ( const CString &str )
+{
+	return (m_J.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetF( double val )
+{
+	return (m_F.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetE( double val )
+{
+	return (m_E.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetJ( double val )
+{
+	return (m_J.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CHardRod::SetM( double val )
+{
+	return (m_M.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+CString CHardRod::GetName() const
+{
+	CString name;
+	name.Format("∆есткий стержень є%d (E=%s,F=%s,J=%s,m=%s)", GetNumber(), m_E.GetExpr().c_str(), m_F.GetExpr().c_str(), m_J.GetExpr().c_str(), m_M.GetExpr().c_str() );
+	return name;
 }

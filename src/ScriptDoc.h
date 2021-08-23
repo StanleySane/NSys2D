@@ -6,8 +6,10 @@
 #endif // _MSC_VER >= 1000
 // ScriptDoc.h : header file
 //
+#include "OutputBuffer.h"
 
 class COutputView;
+class COutputFrame;
 /////////////////////////////////////////////////////////////////////////////
 // CScriptDoc document
 
@@ -19,20 +21,26 @@ protected:
 
 // Attributes
 public:
+	COutputBuffer m_Buf;
+	CEvent m_Break;
+	CWinThread *m_pOut;
 	//флаг, для предотвращения создания нескольких окон вывода:
-	//оно всегда одно!
-	bool m_bIsView;
+	//оно всегда одно! (если m_pView!=NULL, то окно уже есть)
+	COutputView *m_pView;
+	COutputFrame *m_pFrame;
 	bool m_bIsExecuting;
 // Operations
 public:
-	COutputView* MakeScript();
-	void RunScript( const CString&, COutputView* );
+	void StopThread();
+	COutputView* MakeScript( COutputFrame* );
+	void RunScript( const CString&, COutputView*, COutputFrame* );
 
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CScriptDoc)
 	public:
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
+	virtual void OnCloseDocument();
 	protected:
 	virtual BOOL OnNewDocument();
 	//}}AFX_VIRTUAL
@@ -48,8 +56,10 @@ public:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CScriptDoc)
-	afx_msg void OnUpdateCompileScript(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateRunScript(CCmdUI* pCmdUI);
+	afx_msg void OnOutputBreak();
+	afx_msg void OnUpdateOutputBreak(CCmdUI* pCmdUI);
+	afx_msg void OnScriptFileOpen();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -91,9 +91,10 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 	{
 	
 	case 0: 
-
+			//разрешены все перемещения
 			break;
 	case 1: 
+			//запрещён Y
 			dc.MoveTo(center_x,center_y-6);
 			dc.LineTo(center_x,center_y+6);
 			
@@ -118,6 +119,7 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 			break;
 	case 2: 
+			//запрещён X
 			dc.MoveTo(center_x-6,center_y);
 			dc.LineTo(center_x+6,center_y);
 			
@@ -142,6 +144,7 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 			break;
 	case 3: 
+			//запрещены X,Y разрешён только FI
 			dc.MoveTo(center_x-10,center_y+5);
 			dc.LineTo(center_x+10,center_y+5);
 
@@ -166,6 +169,7 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 			break;
 	case 4:
+			//заделка - все перемещения запрещены
 			dc.MoveTo(center_x-10,center_y);
 			dc.LineTo(center_x+10,center_y);
 
@@ -182,13 +186,119 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 
 			break;
 	case 5:
+		{
+			//запрещён только поворот
+			dc.SelectObject(&pen1);
+			int tmp = 2*rad, rad2 = 2;
+			CPoint pl[3] = { CPoint( center_x-rad2, center_y-rad2 ),
+							CPoint( center_x-rad2, center_y-tmp ),
+							CPoint( center_x-tmp, center_y-rad2 ) };
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x+rad2, center_y-rad2 );
+			pl[1] = CPoint( center_x+rad2, center_y-tmp );
+			pl[2] = CPoint( center_x+tmp, center_y-rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x-rad2, center_y+rad2 );
+			pl[1] = CPoint( center_x-rad2, center_y+tmp );
+			pl[2] = CPoint( center_x-tmp, center_y+rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x+rad2, center_y+rad2 );
+			pl[1] = CPoint( center_x+rad2, center_y+tmp );
+			pl[2] = CPoint( center_x+tmp, center_y+rad2 );
+			dc.Polygon( pl, 3 );
+			/*
 			dc.MoveTo(center_x-5,center_y+3);
 			dc.LineTo(center_x+3,center_y-5);
 			
 			dc.MoveTo(center_x-3,center_y+5);
 			dc.LineTo(center_x+5,center_y-3);
+			*/
+		}
+		break;
+	case 6:
+		{
+			//запрещены Y,FI разрешён только X
+			dc.MoveTo(center_x-8,center_y+5);
+			dc.LineTo(center_x+8,center_y+5);
 
-			break;
+			CPen pen3( PS_SOLID|PS_GEOMETRIC, 3,
+				(selMode?GetSysColor(COLOR_HIGHLIGHTTEXT):GetSysColor(COLOR_WINDOWTEXT)) );	
+			dc.SelectObject( &pen3 );
+
+			dc.MoveTo(center_x,center_y-1);
+			dc.LineTo(center_x,center_y+6);			
+
+			dc.SelectObject(&pen1);
+			
+			for(i=0;i<6;i++)
+			{
+				dc.MoveTo(center_x-7+3*i,center_y+5);
+				dc.LineTo(center_x-7+3*i-3,center_y+9);
+			}
+			int tmp = 2*rad, rad2 = 2, y = center_y - 4;
+			CPoint pl[3] = { CPoint( center_x-rad2, y-rad2 ),
+							CPoint( center_x-rad2, y-tmp ),
+							CPoint( center_x-tmp, y-rad2 ) };
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x+rad2, y-rad2 );
+			pl[1] = CPoint( center_x+rad2, y-tmp );
+			pl[2] = CPoint( center_x+tmp, y-rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x-rad2, y+rad2 );
+			pl[1] = CPoint( center_x-rad2, y+tmp );
+			pl[2] = CPoint( center_x-tmp, y+rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x+rad2, y+rad2 );
+			pl[1] = CPoint( center_x+rad2, y+tmp );
+			pl[2] = CPoint( center_x+tmp, y+rad2 );
+			dc.Polygon( pl, 3 );
+
+			dc.Ellipse(center_x-rad,center_y+5-rad,
+					center_x+rad,center_y+5+rad);
+		}
+		break;
+	case 7:
+		{
+			//запрещены X,FI разрешён только Y
+			dc.MoveTo(center_x+5,center_y-8);
+			dc.LineTo(center_x+5,center_y+8);
+
+			CPen pen3( PS_SOLID|PS_GEOMETRIC, 3,
+				(selMode?GetSysColor(COLOR_HIGHLIGHTTEXT):GetSysColor(COLOR_WINDOWTEXT)) );	
+			dc.SelectObject( &pen3 );
+
+			dc.MoveTo(center_x-4,center_y);
+			dc.LineTo(center_x+6,center_y);			
+
+			dc.SelectObject(&pen1);
+			
+			for(i=0;i<6;i++)
+			{
+				dc.MoveTo(center_x+5,center_y-7+3*i);
+				dc.LineTo(center_x+9,center_y-7+3*i-3);
+			}
+			int tmp = 2*rad, rad2 = 2;
+			CPoint pl[3] = { CPoint( center_x-7-rad2, center_y-rad2 ),
+							CPoint( center_x-7-rad2, center_y-tmp ),
+							CPoint( center_x-7-tmp, center_y-rad2 ) };
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x-7+rad2, center_y-rad2 );
+			pl[1] = CPoint( center_x-7+rad2, center_y-tmp );
+			pl[2] = CPoint( center_x-7+tmp, center_y-rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x-7-rad2, center_y+rad2 );
+			pl[1] = CPoint( center_x-7-rad2, center_y+tmp );
+			pl[2] = CPoint( center_x-7-tmp, center_y+rad2 );
+			dc.Polygon( pl, 3 );
+			pl[0] = CPoint( center_x-7+rad2, center_y+rad2 );
+			pl[1] = CPoint( center_x-7+rad2, center_y+tmp );
+			pl[2] = CPoint( center_x-7+tmp, center_y+rad2 );
+			dc.Polygon( pl, 3 );
+
+			dc.Ellipse(center_x+5-rad,center_y-rad,
+					center_x+5+rad,center_y+rad);			
+		}
+		break;
 	default:
 		ASSERT(FALSE);
 	}

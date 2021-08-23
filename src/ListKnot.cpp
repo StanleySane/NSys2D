@@ -93,7 +93,7 @@ CKnot* CListKnot::AddKnot(CKnot & knot)
 			return kn;
 		}
 	}
-	pKnot=new CKnot;
+	pKnot = new CKnot(knot.m_pSheme);
 	*pKnot=knot;
 	//Определение номера узла
 	int NewNum=0;

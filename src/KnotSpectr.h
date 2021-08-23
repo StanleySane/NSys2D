@@ -24,28 +24,28 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CKnotSpectr)
 	enum { IDD = IDD_KNOTSPECTR };
-	CEdit	m_Edit19;
-	CEdit	m_Edit18;
-	CEdit	m_Edit17;
-	CEdit	m_Edit16;
-	CEdit	m_Edit15;
-	CEdit	m_Edit14;
-	CEdit	m_Edit13;
-	CEdit	m_Edit12;
-	CEdit	m_Edit11;
-	CEdit	m_Edit10;
-	CEdit	m_Edit9;
-	CEdit	m_Edit8;
-	CEdit	m_Edit7;
-	CEdit	m_Edit6;
-	CEdit	m_Edit5;
-	CEdit	m_Edit4;
-	CEdit	m_Edit3;
-	CEdit	m_Edit2;
-	CEdit	m_Edit1;
 	int		m_TypeSpectr;
 	int		m_TypeInit;
 	BOOL	m_CheckView;
+	CString	m_Edit14;
+	double	m_Edit1;
+	double	m_Edit10;
+	double	m_Edit11;
+	double	m_Edit12;
+	double	m_Edit13;
+	double	m_Edit15;
+	double	m_Edit16;
+	double	m_Edit17;
+	double	m_Edit18;
+	double	m_Edit19;
+	double	m_Edit2;
+	double	m_Edit3;
+	double	m_Edit4;
+	double	m_Edit5;
+	double	m_Edit6;
+	double	m_Edit7;
+	double	m_Edit8;
+	double	m_Edit9;
 	//}}AFX_DATA
 
 

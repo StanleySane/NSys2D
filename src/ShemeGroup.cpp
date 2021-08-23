@@ -7,8 +7,10 @@
 #include "StdAfx.h"
 #include "NSys2D.h"
 #include "ShemeGroup.h"
-#include "Resource.h"
 
+#include "StdAfxMy.h"
+
+#include "Resource.h"
 #include "Elem.h"
 #include "Knot.h"
 

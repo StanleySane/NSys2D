@@ -13,7 +13,6 @@
 #include "FormsFrame.h"
 
 #include "GraphFrm.h"
-//#include "GraphView.h"
 #include "GraphicView.h"
 
 #include "ScriptFrame.h"
@@ -22,6 +21,9 @@
 
 #include "OutputFrame.h"
 #include "OutputView.h"
+
+#include "MovieView.h"
+#include "MovieFrame.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -56,6 +58,27 @@ CNSys2DApp::CNSys2DApp()
 
 /////////////////////////////////////////////////////////////////////////////
 // The one and only CNSys2DApp object
+
+double CNSys2DApp::InitPI()
+{
+	double pi = 3.14;
+	__asm
+	{
+		fldpi
+		fst pi
+	}
+	return pi;
+}
+double CNSys2DApp::InitPI_2()
+{
+	double pi = 3.14;
+	__asm
+	{
+		fldpi
+		fst pi
+	}
+	return pi/2.0;
+}
 
 CNSys2DApp theApp;
 
@@ -127,12 +150,13 @@ BOOL CNSys2DApp::InitInstance()
                 RUNTIME_CLASS(COutputView));
         AddDocTemplate(pDocTemplate);
 
-        /*pDocTemplate = new CMultiDocTemplate(
-                IDR_GRAPHTYPE,
+		//анимация:
+        pDocTemplate = new CMultiDocTemplate(
+                IDR_MOVIE,
                 RUNTIME_CLASS(CShemeDoc),
-                RUNTIME_CLASS(CGraphFrame), // custom MDI child frame
-                RUNTIME_CLASS(CGraphView));
-        AddDocTemplate(pDocTemplate);*/
+                RUNTIME_CLASS(CMovieFrame), // custom MDI child frame
+                RUNTIME_CLASS(CMovieView));
+        AddDocTemplate(pDocTemplate);
 
         // create main MDI Frame window
         CMainFrame* pMainFrame = new CMainFrame;

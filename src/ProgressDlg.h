@@ -14,6 +14,7 @@ class CProgressDlg : public CDialog
 {
 // Construction
 public:
+	void SetDetails( const CString& );
 	void SetPos(int i);
 	int maxValue;
 	CString title;
@@ -24,6 +25,7 @@ public:
 	enum { IDD = IDD_PROGRESSDIALOG };
 	CButton	m_Button;
 	CProgressCtrl	m_Progress;
+	CString	m_strDetails;
 	//}}AFX_DATA
 
 

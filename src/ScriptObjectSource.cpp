@@ -7,7 +7,9 @@
 
 #include "ScriptObject.h"
 #include "OutputView.h"
+#include "ScriptDoc.h"
 
+/*
 #include"AlgolMatr.h"
 
 #include"MatrPtr.h"
@@ -17,7 +19,8 @@
 #include"DemferPtr.h"
 #include"MassPtr.h"
 #include"KnotPtr.h"
-//#include"ShemePtr.h"
+#include"ShemePtr.h"
+*/
 
 #include<cmath>
 #include<new>
@@ -32,24 +35,6 @@ static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
 
-RodPtr::Refs RodPtr::m_RefMap;
-HardRodPtr::Refs HardRodPtr::m_RefMap;
-SpringPtr::Refs SpringPtr::m_RefMap;
-DemferPtr::Refs DemferPtr::m_RefMap;
-MassPtr::Refs MassPtr::m_RefMap;
-KnotPtr::Refs KnotPtr::m_RefMap;
-MatrPtr::Refs MatrPtr::m_MatrRefMap;
-ScriptPtr::Refs ScriptPtr::m_ScriptRefMap;
-Variables::Refs Variables::m_VarsRefMap;
-
-vector<string> ScriptObject::m_ErrMesTable = ScriptObject::InitErrMesTable();
-Commands ScriptObject::m_CommandTable = ScriptObject::InitCommandTable();
-Variables ScriptObject::m_ConstTable = ScriptObject::InitConstTable();
-Functions ScriptObject::m_FuncTable = ScriptObject::InitFuncTable();
-Types ScriptObject::m_TypeTable = ScriptObject::InitTypeTable();
-bool ScriptObject::m_bFatalCrash = false;
-const int ScriptObject::TAB_SIZE = 8;
-const int ScriptObject::MAX_ERRMES_LEN = 100;
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
@@ -62,7 +47,7 @@ ScriptObject::ScriptObject()
 	m_bBreak = false;
 	m_pCurrentUserFunc = NULL;
 	m_bRunable = false;
-	m_pView = NULL;
+	m_pDoc = NULL;
 }
 
 ScriptObject::~ScriptObject()
@@ -265,13 +250,14 @@ errorsT ScriptObject::AssignVar( const std::string &name, Variables &VarMap, con
 	return NOERR;
 }
 
-void ScriptObject::Set( COutputView *pView )
+void ScriptObject::Set( CScriptDoc *pDoc )
 {
-	m_pView = pView;
-	if( m_pView )
+	m_pDoc = pDoc;
+	if( m_pDoc )
 	{
-		string str( pView->m_Text.LockBuffer() );
-		pView->m_Text.UnlockBuffer();
+		ASSERT( m_pDoc->m_pView );
+		string str( m_pDoc->m_pView->m_Text.LockBuffer() );
+		m_pDoc->m_pView->m_Text.UnlockBuffer();
 		SetScriptText( str );
 	}
 }
@@ -279,10 +265,10 @@ void ScriptObject::Set( COutputView *pView )
 void ScriptObject::SetOutput( const std::string &str )
 {
 	m_strOutput = str;
-	if( m_pView )
+	if( m_pDoc )
 	{
-		m_pView->m_Buf.WriteOut( CString(m_strOutput.c_str()) );
-		CSyncObject *pObj[] = {	&m_pView->m_Break	};
+		m_pDoc->m_Buf.WriteOut( CString(m_strOutput.c_str()) );
+		CSyncObject *pObj[] = {	&m_pDoc->m_Break	};
 		CMultiLock Lock( pObj, 1 );
 		switch( Lock.Lock(5) )
 		{
@@ -353,6 +339,7 @@ bool ScriptObject::Compile()
 				break;
 			case NUMBER://метка
 				ChangeCurrentPosition( token );
+				break;
 				//здесь break не нужен, т.к. сразу должен выполняться default !
 			default://какая-то команда
 				prev = tok;
@@ -387,6 +374,10 @@ bool ScriptObject::Compile()
 					break;
 				case END:
 					Compile_end();
+					break;
+				case UNKNCOM:
+					if( tok != EOL )	find_eol();
+					ErrMesCompile(SERROR);
 					break;
 				}// end of switch(tok)
 				if( prev == IF )
@@ -2674,7 +2665,7 @@ typesT ScriptObject::get_token()
 		return (token_type=OPERATOR);
 	}
     
-	if(*prog=='"') 
+	if(*prog=='"')
 	{ // quoted string 
 		token = "";
 		++prog;
@@ -2865,7 +2856,7 @@ Variables ScriptObject::InitConstTable()
 
 	ct.BoolMap()->insert( MakeBool("true",true) );
 	ct.BoolMap()->insert( MakeBool("false",false) );
-	ct.DoubleMap()->insert( MakeDouble("pi",acos(-1)) );
+	ct.DoubleMap()->insert( MakeDouble("pi",CNSys2DApp::M_PI) );
 	ct.StringMap()->insert( MakeString("eol",string("\r\n")) );
 
 	return ct;
@@ -2888,7 +2879,7 @@ Types ScriptObject::InitTypeTable()
 	tt.insert( MakeType("matr", TYPE_MATR) );
 
 	//элементы
-//	tt.insert( MakeType("sheme", TYPE_SHEME) );
+	tt.insert( MakeType("sheme", TYPE_SHEME) );
 	tt.insert( MakeType("rod", TYPE_ROD) );
 	tt.insert( MakeType("hardrod", TYPE_HARDROD) );
 	tt.insert( MakeType("spring", TYPE_SPRING) );
@@ -2905,6 +2896,7 @@ Functions ScriptObject::InitFuncTable()
 
 	ft.insert( MakeFunc("printallreservedwords", FUN_PRINTALLRESERVEDWORDS) );
 	ft.insert( MakeFunc("printcode", FUN_PRINTCODE) );
+	ft.insert( MakeFunc("help", FUN_HELP) );
 	//массивы и м-цы
 	ft.insert( MakeFunc("setat", FUN_SETAT) );
 	ft.insert( MakeFunc("getat", FUN_GETAT) );
@@ -2937,6 +2929,22 @@ Functions ScriptObject::InitFuncTable()
 	ft.insert( MakeFunc("getelemmatrm", FUN_GETELEMMATRM) );
 	ft.insert( MakeFunc("getelemmatrd", FUN_GETELEMMATRD) );
 	ft.insert( MakeFunc("getelemmatrc", FUN_GETELEMMATRC) );
+	//схемы
+	ft.insert( MakeFunc("opensheme", FUN_OPENSHEME) );
+	ft.insert( MakeFunc("closesheme", FUN_CLOSESHEME) );
+	ft.insert( MakeFunc("savesheme", FUN_SAVESHEME) );
+	ft.insert( MakeFunc("saveshemeas", FUN_SAVESHEMEAS) );
+	ft.insert( MakeFunc("geteigen", FUN_GETEIGEN) );
+	ft.insert( MakeFunc("integrate", FUN_INTEGRATE) );
+	ft.insert( MakeFunc("getresy1", FUN_GETRESY1) );
+	ft.insert( MakeFunc("getresy2", FUN_GETRESY2) );
+	ft.insert( MakeFunc("getresy3", FUN_GETRESY3) );
+	ft.insert( MakeFunc("getmatrmdc", FUN_GETMATRMDC) );
+	ft.insert( MakeFunc("getelem", FUN_GETELEM) );
+	ft.insert( MakeFunc("delelem", FUN_DELELEM) );
+	ft.insert( MakeFunc("getknot", FUN_GETKNOT) );
+	ft.insert( MakeFunc("delete", FUN_DELETE) );
+	ft.insert( MakeFunc("addelement", FUN_ADDELEMENT) );
 
 	return ft;
 }
@@ -2986,6 +2994,35 @@ Variables* ScriptObject::GetVarTable( const std::string &str )
 		}
 	}
 	return &m_Vars;
+}
+
+TypeID ScriptObject::GetScriptElemType( int te )
+{
+//ф-ция возвращает скриптовый вариант типа te.
+//где te - тип КЭ.
+	TypeID tid = TYPE_UNKNOWN;
+	switch( te )
+	{
+	case IDC_ROD:
+		tid = TYPE_ROD;
+		break;
+	case IDC_HARDROD:
+		tid = TYPE_HARDROD;
+		break;
+	case IDC_SPRING:
+		tid = TYPE_SPRING;
+		break;
+	case IDC_DEMF:
+		tid = TYPE_DEMFER;
+		break;
+	case IDC_MASS:
+		tid = TYPE_MASS;
+		break;
+	default:
+		tid = TYPE_UNKNOWN;
+		break;
+	}
+	return tid;
 }
 
 TypeID ScriptObject::IsConstant( const std::string &s )
@@ -3055,8 +3092,8 @@ errorsT ScriptObject::CallUserFunc( const UserFuncTable::iterator &it, const Val
 //ф-ция вызывается только при выполнении
 	ASSERT( (*it).second.m_Params.size() == lst.size() );
 	//считаем значения параметров
-	ParamList::iterator ParIt = (*it).second.m_Params.begin(), fin = (*it).second.m_Params.end();
-	ValList::iterator ValIt = lst.begin();
+	ParamList::const_iterator ParIt = (*it).second.m_Params.begin(), fin = (*it).second.m_Params.end();
+	ValList::const_iterator ValIt = lst.begin();
 	errorsT er = NOERR;
 	while( ParIt != fin )
 	{
@@ -3102,6 +3139,9 @@ errorsT ScriptObject::CallFuncFromTable( const FuncIter &it,
 		break;
 	case FUN_PRINTCODE:
 		res = Fun_PrintCode( lst, val );
+		break;
+	case FUN_HELP:
+		res = Fun_Help( lst, val );
 		break;
 	case FUN_SETAT:
 		res = Fun_SetAt( lst, val );
@@ -3186,6 +3226,51 @@ errorsT ScriptObject::CallFuncFromTable( const FuncIter &it,
 		break;
 	case FUN_INVERT:
 		res = Fun_Invert( lst, val );
+		break;
+	case FUN_OPENSHEME:
+		res = Fun_OpenSheme( lst, val );
+		break;
+	case FUN_CLOSESHEME:
+		res = Fun_CloseSheme( lst, val );
+		break;
+	case FUN_SAVESHEME:
+		res = Fun_SaveSheme( lst, val );
+		break;
+	case FUN_SAVESHEMEAS:
+		res = Fun_SaveShemeAs( lst, val );
+		break;
+	case FUN_GETEIGEN:
+		res = Fun_GetEigen( lst, val );
+		break;
+	case FUN_INTEGRATE:
+		res = Fun_Integrate( lst, val );
+		break;
+	case FUN_GETRESY1:
+		res = Fun_GetResY1( lst, val );
+		break;
+	case FUN_GETRESY2:
+		res = Fun_GetResY2( lst, val );
+		break;
+	case FUN_GETRESY3:
+		res = Fun_GetResY3( lst, val );
+		break;
+	case FUN_GETMATRMDC:
+		res = Fun_GetMatrMDC( lst, val );
+		break;
+	case FUN_GETELEM:
+		res = Fun_GetElem( lst, val );
+		break;
+	case FUN_DELELEM:
+		res = Fun_DelElem( lst, val );
+		break;
+	case FUN_GETKNOT:
+		res = Fun_GetKnot( lst, val );
+		break;
+	case FUN_DELETE:
+		res = Fun_Delete( lst, val );
+		break;
+	case FUN_ADDELEMENT:
+		res = Fun_AddElement( lst, val );
 		break;
 	default:
 		ASSERT(FALSE);
@@ -3419,1975 +3504,3 @@ void ScriptObject::PrepareCode()
 	*/
 }
 
-errorsT ScriptObject::Fun_PrintAllReservedWords( const ValList &lst, Value *val )
-{
-	if( val == NULL )
-	{
-		if( lst.size() != 0 )
-		{
-			StackErr(0);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		return NOERR;
-	}
-	//возвращаемое значение
-	int i = 0;
-	for( Expression::InternalFuncMap::iterator itf = Expression::m_FuncTable.begin();
-			itf != Expression::m_FuncTable.end(); ++itf )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*itf).first );
-		i++;
-	}
-	for( Commands::iterator itc = m_CommandTable.begin();
-			itc != m_CommandTable.end(); ++itc )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*itc).first );
-		i++;
-	}
-	for( FuncIter it = m_FuncTable.begin();
-			it != m_FuncTable.end(); ++it )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*it).first );
-		i++;
-	}
-	for( Types::iterator itt = m_TypeTable.begin();
-			itt != m_TypeTable.end(); ++itt )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*itt).first );
-		i++;
-	}
-	//константы
-	for( VarBool::iterator itb = m_ConstTable.BoolMap()->begin();
-			itb != m_ConstTable.BoolMap()->end(); ++itb )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*itb).first );
-		i++;
-	}
-	for( VarInteger::iterator iti = m_ConstTable.IntMap()->begin();
-			iti != m_ConstTable.IntMap()->end(); ++iti )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*iti).first );
-		i++;
-	}
-	for( VarDouble::iterator itd = m_ConstTable.DoubleMap()->begin();
-			itd != m_ConstTable.DoubleMap()->end(); ++itd )
-	{
-		SetOutput("\r\n");
-		SetOutput( (*itd).first );
-		i++;
-	}	
-	val->SetInt( i );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_PrintCode( const ValList &lst, Value *val )
-{
-	if( val == NULL )
-	{
-		if( lst.size() != 0 )
-		{
-			StackErr(0);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		return NOERR;
-	}
-	//возвращаемое значение
-	val->SetInt( m_Code.size() );
-
-	CommandPointer cp;
-	for( cp = m_Code.begin(); cp != m_Code.end(); ++cp )
-	{
-		string CmdName, Params;
-		switch( (*cp)->GetCommandID() )
-		{
-		case CMD_LABEL:
-			CmdName = " LABEL ";
-			Params += (static_cast<CComLabel*>(*cp))->m_label;
-			break;
-		case CMD_MOV_EXPR:
-			CmdName = " MOV ";
-			Params += (static_cast<CComMovExpr*>(*cp))->m_name;
-			CutEOL(Params);
-			Params += ",";
-			Params += (static_cast<CComMovExpr*>(*cp))->m_expr.GetExpr();
-			CutEOL(Params);
-			break;
-		case CMD_ADD:
-			CmdName = " ADD ";
-			Params += (static_cast<CComAdd*>(*cp))->m_name;
-			CutEOL(Params);
-			Params += ",";
-			Params += (static_cast<CComAdd*>(*cp))->m_val.GetExpr();
-			CutEOL(Params);
-			break;
-		case CMD_PRINT:
-			{
-				CmdName = " PRINT ";
-				CComPrint *cmd = static_cast<CComPrint*>(*cp);
-				PrintList::iterator it = cmd->m_expr.begin(), fin = cmd->m_expr.end();
-				for(; it != fin; ++it )
-				{
-					Params += (*it).first.GetExpr();
-					Params += (*it).second;
-				}
-				CutEOL(Params);
-			}
-			break;
-		case CMD_CMP_VAR_EXPR:
-			CmdName = " CMP ";
-			Params += (static_cast<CComCmpVarExpr*>(*cp))->m_name;
-			CutEOL(Params);
-			Params += ",";
-			Params += (static_cast<CComCmpVarExpr*>(*cp))->m_expr.GetExpr();
-			CutEOL(Params);
-			break;
-		case CMD_CMP_EXPR_VAL:
-			{
-				CmdName = " CMP ";
-				Params += (static_cast<CComCmpExprVal*>(*cp))->m_expr.GetExpr();
-				CutEOL(Params);
-				Params += ",";
-				Value val = (static_cast<CComCmpExprVal*>(*cp))->m_val;
-				Params += val.StringVariant();
-			}
-			break;
-		case CMD_JMP:
-			CmdName = " JMP ";
-			Params += (static_cast<CComJmp*>(*cp))->m_label;
-			break;
-		case CMD_JE:
-			CmdName = " JE ";
-			Params += (static_cast<CComJe*>(*cp))->m_label;
-			break;
-		case CMD_JG:
-			CmdName = " JG ";
-			Params += (static_cast<CComJg*>(*cp))->m_label;
-			break;
-		case CMD_JL:
-			CmdName = " JL ";
-			Params += (static_cast<CComJl*>(*cp))->m_label;
-			break;
-		case CMD_CALL:
-			CmdName = " CALL ";
-			Params += (static_cast<CComCall*>(*cp))->m_func.GetExpr();
-			break;
-		case CMD_END:
-			CmdName = " END ";
-			Params = "";
-			break;
-		case CMD_PUSH_SUB:
-			CmdName = " PUSH_SUB ";
-			Params += (static_cast<CComPushSub*>(*cp))->m_label;
-			break;
-		case CMD_RET:
-			CmdName = " RET ";
-			Params = "";
-			break;
-		case CMD_RETF:
-			CmdName = " RETF ";
-			Params += (static_cast<CComRetf*>(*cp))->m_expr.GetExpr();
-			CutEOL(Params);
-			break;
-		default:
-			ASSERT(FALSE);
-			break;
-		}
-		SetOutput( CmdName );
-		if( !Params.empty() )
-			SetOutput( Params );
-		SetOutput("\r\n");
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_SetAt( const ValList &lst, Value *val )
-{
-//данная версия ф-ции работает с массивами и с м-цами
-	ValList::iterator it = lst.begin();
-	int s = lst.size();
-	if( val == NULL )
-	{
-		//компиляция
-		if( (s != 3)&&(s != 4) )
-		{
-			StackErr( s, false );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		bool bIsArr = Array::IsArray(tid);
-		if( !bIsArr && (tid != TYPE_MATR) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		else
-		{
-			//значит это массив ( bIsArr == true ) или матрица
-			if( (bIsArr && (s != 3))||(!bIsArr && (s != 4)) )
-				return WRONG_FUNC_PARAM_NUM;
-		}
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра - индекса:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_INT) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	int pos = (*it).first->GetInt(), pos2 = 0;
-	Array *ar = NULL;
-	MatrPtr *m = NULL;
-	if( s == 3 )
-	{
-		//массив
-		ar = vars->GetArray( Name );
-		ASSERT( ar != NULL );
-		tid = ar->GetType();//тип массива
-		ASSERT( tid != TYPE_UNKNOWN );
-		tid = Array::GetValType(tid);//тип хранимого в массиве значения
-		ASSERT( tid != TYPE_UNKNOWN );
-	}
-	else
-	{
-		//s == 4
-		//м-ца:
-		//вычисляем значение 3-го пар-ра:
-		++it;
-		if( !(*it).first->ConvertTo( TYPE_INT ) )
-		{
-			ErrMesRun(CONVERT_ERR);
-			return NOERR;
-		}
-		pos2 = (*it).first->GetInt();
-		m = vars->GetMatr( Name );
-		ASSERT( m );
-		tid = TYPE_DOUBLE;
-	}
-	//вычисляем значение последнего пар-ра (3-го или 4-го):
-	++it;
-	if( !(*it).first->ConvertTo( tid ) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	if( s == 3 )
-	{
-		//массив:
-		if( ar->SetAt( pos, *(*it).first ) == false )
-		{
-			ErrMesRun(ARRAY_ACCESS);
-			return NOERR;
-		}
-	}
-	else
-	{
-		//м-ца:
-		if( m->SetAt( pos, pos2, *(*it).first ) == false )
-		{
-			ErrMesRun(ARRAY_ACCESS);
-			return NOERR;
-		}
-	}
-	//возвращаемое значение
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetAt( const ValList &lst, Value *val )
-{
-//данная версия ф-ции работает с массивами и матрицами
-	ValList::iterator it = lst.begin();
-	int s = lst.size();
-	if( val == NULL )
-	{
-		//компиляция
-		if( (s != 2)&&(s != 3) )
-		{
-			StackErr( s, false );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		bool bIsArr = Array::IsArray(tid);
-		if( !bIsArr && (tid != TYPE_MATR) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		else
-		{
-			//значит это массив ( bIsArr == true ) или матрица
-			if( (bIsArr && (s != 2))||(!bIsArr && (s != 3)) )
-				return WRONG_FUNC_PARAM_NUM;
-		}
-		return NOERR;
-	}
-
-	//вычисляем значение второго пар-ра - индекса:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_INT) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	int pos = (*it).first->GetInt();
-	if( s == 2 )
-	{
-		Array *ar = vars->GetArray( Name );
-		ASSERT( ar != NULL );
-		tid = ar->GetType();//тип массива
-		ASSERT( tid != TYPE_UNKNOWN );
-		if( ar->GetAt( pos, *val ) == false )
-		{
-			ErrMesRun(ARRAY_ACCESS);
-			return ARRAY_ACCESS;
-		}
-	}
-	else
-	{
-		//вычисляем значение второго индекса:
-		++it;
-		if( !(*it).first->ConvertTo(TYPE_INT) )
-		{
-			ErrMesRun(CONVERT_ERR);
-			return NOERR;
-		}
-		MatrPtr *m = vars->GetMatr( Name );
-		ASSERT( m );
-		if( m->GetAt( pos, (*it).first->GetInt(), *val ) == false )
-		{
-			ErrMesRun(ARRAY_ACCESS);
-			return ARRAY_ACCESS;
-		}
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_Resize( const ValList &lst, Value *val )
-{
-//данная версия ф-ции работает с массивами и матрицами
-	ValList::iterator it = lst.begin();
-	int s = lst.size();
-	if( val == NULL )
-	{
-		//компиляция
-		if( (s != 2)&&(s != 3) )
-		{
-			StackErr( s, false );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;//имя массива или м-цы
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		bool bIsArr = Array::IsArray(tid);
-		if( !bIsArr && (tid != TYPE_MATR) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		else
-		{
-			//значит это массив ( bIsArr == true ) или матрица
-			if( (bIsArr && (s != 2))||(!bIsArr && (s != 3)) )
-				return WRONG_FUNC_PARAM_NUM;
-		}
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра - размера:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_INT) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	int len = (*it).first->GetInt();
-	if( s == 2 )
-	{
-		//массив
-		Array *ar = vars->GetArray( Name );
-		ASSERT( ar != NULL );
-//		tid = ar->GetType();//тип массива
-//		ASSERT( tid != TYPE_UNKNOWN );
-
-		if( ar->Resize( len ) == false )
-		{
-			return NOERR;
-		}
-	}
-	else
-	{
-		//м-ца
-		//вычисляем значение второго пар-ра - столбцы:
-		++it;
-		if( !(*it).first->ConvertTo(TYPE_INT) )
-		{
-			ErrMesRun(CONVERT_ERR);
-			return NOERR;
-		}
-		MatrPtr *m = vars->GetMatr( Name );
-		ASSERT( m != NULL );
-		if( m->Resize( len, (*it).first->GetInt() ) == false )
-			return NOERR;
-	}
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_Sizeof( const ValList &lst, Value *val )
-{
-//данная версия ф-ции работает с массивами и м-цами
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr(1);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	bool bIsArr = Array::IsArray(tid);
-	if( val == NULL )
-	{
-		if( (tid != TYPE_MATR) || !bIsArr )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	val->SetInt(0);
-
-	int sz = 0;
-	if( bIsArr )
-	{
-		Array *ar = vars->GetArray( Name );
-		ASSERT( ar != NULL );
-		sz = ar->Size();
-	}
-	else
-	{
-		MatrPtr *m = vars->GetMatr( Name );
-		ASSERT( m );
-		sz = m->GetMatr()->GetRow()*m->GetMatr()->GetWidth();
-	}
-	val->SetInt( sz );
-
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileOpenBin( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr(2);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	//вычисляем значение второго пар-ра - имени файла:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_STRING) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	File *f = vars->GetFile( Name );
-	ASSERT( f != NULL );
-	val->SetBool( f->OpenBin( (*it).first->GetString() ) );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileOpenTxt( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr(2);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	//вычисляем значение второго пар-ра - имени файла:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_STRING) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	File *f = vars->GetFile( Name );
-	ASSERT( f != NULL );
-	val->SetBool( f->OpenTxt( (*it).first->GetString() ) );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileRead( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr(2);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string FileName = *(*it).second;
-	Variables *varsFile = GetVarTable( FileName );
-	TypeID tid = varsFile->GetVarType( FileName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-	}
-
-	//вычисляем значение второго пар-ра - имени переменной:
-	++it;
-	if( val == NULL )
-	{
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-		}
-		return NOERR;
-	}
-	string VarName = *(*it).second;
-	Variables *varsVar = GetVarTable( VarName );
-	tid = varsVar->GetVarType( VarName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !ScriptObject::IsValidAssignment(tid) )
-		{
-			ErrMesCompile(TYPE_OP_ERR);
-		}
-		return NOERR;
-	}
-
-	File *f = varsFile->GetFile( FileName );
-	ASSERT( f != NULL );
-	val->SetBool( f->Read( *(*it).first ) );
-	errorsT er = ScriptObject::AssignVar( VarName, *varsVar, *(*it).first );
-	ASSERT( er == NOERR );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileWrite( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr(2);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string FileName = *(*it).second;
-	Variables *vars = GetVarTable( FileName );
-	TypeID tid = vars->GetVarType( FileName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	//вычисляем значение второго пар-ра:
-	++it;
-	File *f = vars->GetFile( FileName );
-	ASSERT( f != NULL );
-	val->SetBool( f->Write( *(*it).first ) );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileWriteEOL( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr(1);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string FileName = *(*it).second;
-	Variables *vars = GetVarTable( FileName );
-	TypeID tid = vars->GetVarType( FileName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	File *f = vars->GetFile( FileName );
-	ASSERT( f != NULL );
-	val->SetBool( f->WriteEOL() );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileRewind( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr(1);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string FileName = *(*it).second;
-	Variables *vars = GetVarTable( FileName );
-	TypeID tid = vars->GetVarType( FileName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	File *f = vars->GetFile( FileName );
-	ASSERT( f != NULL );
-	val->SetBool( f->Rewind() );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_FileClose( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr(1);
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string FileName = *(*it).second;
-	Variables *vars = GetVarTable( FileName );
-	TypeID tid = vars->GetVarType( FileName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_FILE )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-	File *f = vars->GetFile( FileName );
-	ASSERT( f != NULL );
-	f->Close();
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_RunScript( const ValList &lst, Value *val )
-{
-	ValList::iterator beg = lst.begin(), fin = lst.end();
-	ValList::iterator it = beg;
-	if( val == NULL )
-	{
-		int s = lst.size();
-		//компиляция
-		if( s < 1 )
-		{
-			StackErr( s, false );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ScrName = *(*it).second;
-	Variables *vars = GetVarTable( ScrName );
-	TypeID tid = vars->GetVarType( ScrName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_SCRIPT )
-		{
-			ErrMesCompile(CONVERT_ERR);
-			return NOERR;
-		}
-	}
-	ScriptPtr *pScr = vars->GetScript( ScrName );
-	ASSERT( pScr != NULL );
-	//вычисляем значения пар-ров:
-	++it;
-	while( it != fin )
-	{
-		//выставляем значения соответствующих параметров скрипта:
-		errorsT er;
-		if( val == NULL )
-		{
-			//компиляция:
-			if( (*it).second == NULL )
-			{
-				ErrMesCompile(NOT_VAR);
-				return NOERR;
-			}
-			vars = GetVarTable( *(*it).second );
-			tid = vars->GetVarType( *(*it).second );
-			ASSERT( tid != TYPE_UNKNOWN );
-			if( !ScriptObject::IsValidAssignment(tid) )
-			{
-				ErrMesExpr( *(*it).second );
-				ErrMesCompile(TYPE_OP_ERR);
-				return NOERR;
-			}
-		}
-		else
-		{
-			//выполнение:
-			if( (er = pScr->SetParam( distance(beg,it), *(*it).first )) != NOERR )
-			{
-				ErrMesRun(er);
-			}
-		}
-		++it;
-	}
-	if( val == NULL )
-		return NOERR;
-	val->SetBool( false );
-	string tmp = pScr->GetFileName();
-	SetOutput( FormatString("\r\n<------------Executing of module %s ...---->\r\n",
-				tmp.c_str() ) );
-	pScr->SetDebug(false);
-	bool res = pScr->Run();
-	pScr->GetOutput(tmp);
-	SetOutput( tmp );
-	SetOutput( FormatString("\r\n<------------Executing of module %s done---->\r\n",
-				pScr->GetFileName().c_str() ) );
-	if( res == false )
-	{
-		ErrMesRun(RUN_ERR);
-		return NOERR;
-	}
-	//если скрипт выполнился правильно:
-	it = beg;
-	++it;
-	res = true;
-	for(; it != fin; ++it )
-	{
-		errorsT er;
-		Value val;//значение пар-ра
-		if( (er = pScr->GetParam( distance(beg,it), val )) != NOERR )
-		{
-			ErrMesRun(er);
-			res = false;
-			continue;
-		}
-		string VarName = *(*it).second;
-		vars = GetVarTable( VarName );
-		tid = vars->GetVarType( VarName );
-		ASSERT( tid != TYPE_UNKNOWN );
-		er = ScriptObject::AssignVar( VarName, *vars, val );
-		ASSERT( er == NOERR );
-	}
-	val->SetBool(res);
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_CreateKnot( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 3 )
-		{
-			StackErr( 3 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;//имя узла
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_KNOT )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра - коор-ты X:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	double x = (*it).first->GetDouble();
-	//вычисляем значение 3-го пар-ра - коор-ты X:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-	KnotPtr *kn = vars->GetKnot( Name );
-	ASSERT( kn );
-	if( kn->Create( x, (*it).first->GetDouble() ) == false )
-		return NOERR;
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_CreateElem( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	int s = lst.size();
-	if( val == NULL )
-	{
-		//компиляция
-		if( (s != 2)&&(s != 3) )
-		{
-			StackErr( s, false );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя элемента
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID ElemType = ElemVars->GetVarType( ElemName );
-	ASSERT( ElemType != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(ElemType) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-			return NOERR;
-		}
-		if( (ElemType == TYPE_MASS)&&(s == 3) )
-			return WRONG_FUNC_PARAM_NUM;
-	}
-	//вычисляем второй пар-р - имя узла:
-	++it;
-	string Knot1Name = *(*it).second, Knot2Name;//имена узлов
-	Variables *Knot1Vars = GetVarTable( Knot1Name ), *Knot2Vars = NULL;
-	TypeID tid = Knot1Vars->GetVarType( Knot1Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( (val == NULL)&&(tid != TYPE_KNOT) )
-	{
-		ErrMesCompile(CONVERT_ERR);
-		return NOERR;
-	}
-	if( s == 3 )
-	{
-		//вычисляем 3-й пар-р - имя узла:
-		++it;
-		Knot2Name = *(*it).second;
-		Knot2Vars = GetVarTable( Knot2Name );
-		tid = Knot2Vars->GetVarType( Knot2Name );
-		ASSERT( tid != TYPE_UNKNOWN );
-		if( (val == NULL)&&(tid != TYPE_KNOT) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-			return NOERR;
-		}
-	}
-	if( val == NULL )
-		return NOERR;
-	
-	val->SetBool( false );
-
-	KnotPtr *kn1 = Knot1Vars->GetKnot( Knot1Name ), *kn2 = NULL;
-	ASSERT( kn1 );
-	if( s == 3 )
-	{
-		kn2 = Knot2Vars->GetKnot( Knot2Name );
-		ASSERT( kn2 );
-	}
-
-	switch( ElemType )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			if( elem->Create( kn1, kn2 ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			if( elem->Create( kn1, kn2 ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_SPRING:
-		{
-			SpringPtr *elem = ElemVars->GetSpring( ElemName );
-			ASSERT( elem );
-			if( elem->Create( kn1, kn2 ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_DEMFER:
-		{
-			DemferPtr *elem = ElemVars->GetDemfer( ElemName );
-			ASSERT( elem );
-			if( elem->Create( kn1, kn2 ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			if( elem->Create( kn1 ) == false )
-				return NOERR;
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_SetElemM( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr( 2 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid == TYPE_DEMFER)||(tid == TYPE_SPRING) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetM( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetM( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			if( elem->SetM( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_SetElemJ( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr( 2 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid == TYPE_DEMFER)||(tid == TYPE_SPRING) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetJ( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetJ( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			if( elem->SetJ( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_SetElemF( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr( 2 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid != TYPE_ROD)&&(tid != TYPE_HARDROD) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetF( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetF( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_SetElemE( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 2 )
-		{
-			StackErr( 2 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid != TYPE_ROD)&&(tid != TYPE_HARDROD) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	val->SetBool( false );
-	//вычисляем значение второго пар-ра:
-	++it;
-	if( !(*it).first->ConvertTo(TYPE_DOUBLE) )
-	{
-		ErrMesRun(CONVERT_ERR);
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetE( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			if( elem->SetE( (*it).first->GetDouble() ) == false )
-				return NOERR;
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemM( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid == TYPE_DEMFER)||(tid == TYPE_SPRING) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetM() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetM() );
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetM() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemJ( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid == TYPE_DEMFER)||(tid == TYPE_SPRING) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetJ() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetJ() );
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetJ() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemF( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid != TYPE_ROD)&&(tid != TYPE_HARDROD) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetF() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetF() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemE( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( (tid != TYPE_ROD)&&(tid != TYPE_HARDROD) )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetE() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetE() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetLength( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		if( tid == TYPE_MASS )
-			return TYPE_OP_ERR;
-		return NOERR;
-	}
-
-	val->SetDouble( 0.0 );
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetLength() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetLength() );
-		}
-		break;
-	case TYPE_SPRING:
-		{
-			SpringPtr *elem = ElemVars->GetSpring( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetLength() );
-		}
-		break;
-	case TYPE_DEMFER:
-		{
-			DemferPtr *elem = ElemVars->GetDemfer( ElemName );
-			ASSERT( elem );
-			val->SetDouble( elem->GetLength() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemMatrM( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrM() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrM() );
-		}
-		break;
-	case TYPE_SPRING:
-		{
-			SpringPtr *elem = ElemVars->GetSpring( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrM() );
-		}
-		break;
-	case TYPE_DEMFER:
-		{
-			DemferPtr *elem = ElemVars->GetDemfer( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrM() );
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrM() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemMatrD( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrD() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrD() );
-		}
-		break;
-	case TYPE_SPRING:
-		{
-			SpringPtr *elem = ElemVars->GetSpring( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrD() );
-		}
-		break;
-	case TYPE_DEMFER:
-		{
-			DemferPtr *elem = ElemVars->GetDemfer( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrD() );
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrD() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_GetElemMatrC( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string ElemName = *(*it).second;//имя эл-та
-	Variables *ElemVars = GetVarTable( ElemName );
-	TypeID tid = ElemVars->GetVarType( ElemName );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( !Variables::IsElem(tid) )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	switch( tid )
-	{
-	case TYPE_ROD:
-		{
-			RodPtr *elem = ElemVars->GetRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrC() );
-		}
-		break;
-	case TYPE_HARDROD:
-		{
-			HardRodPtr *elem = ElemVars->GetHardRod( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrC() );
-		}
-		break;
-	case TYPE_SPRING:
-		{
-			SpringPtr *elem = ElemVars->GetSpring( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrC() );
-		}
-		break;
-	case TYPE_DEMFER:
-		{
-			DemferPtr *elem = ElemVars->GetDemfer( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrC() );
-		}
-		break;
-	case TYPE_MASS:
-		{
-			MassPtr *elem = ElemVars->GetMass( ElemName );
-			ASSERT( elem );
-			val->SetMatr( elem->GetMatrC() );
-		}
-		break;
-	default:
-		ASSERT(FALSE);
-		return NOERR;
-	}
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_LoadIdentity( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_MATR )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	val->SetBool( false );
-
-	MatrPtr *m = vars->GetMatr( Name );
-	ASSERT( m );
-	if( m->GetMatr()->LoadIdentity() == false )
-		return NOERR;
-
-	val->SetBool( true );
-	return NOERR;
-}
-
-errorsT ScriptObject::Fun_Invert( const ValList &lst, Value *val )
-{
-	ValList::iterator it = lst.begin();
-	if( val == NULL )
-	{
-		//компиляция
-		if( lst.size() != 1 )
-		{
-			StackErr( 1 );
-			return WRONG_FUNC_PARAM_NUM;
-		}
-		if( (*it).second == NULL )
-		{
-			ErrMesCompile(NOT_VAR);
-			return NOERR;
-		}
-	}
-	string Name = *(*it).second;
-	Variables *vars = GetVarTable( Name );
-	TypeID tid = vars->GetVarType( Name );
-	ASSERT( tid != TYPE_UNKNOWN );
-	if( val == NULL )
-	{
-		if( tid != TYPE_MATR )
-		{
-			ErrMesCompile(CONVERT_ERR);
-		}
-		return NOERR;
-	}
-
-	val->SetBool( false );
-
-	MatrPtr *m = vars->GetMatr( Name );
-	ASSERT( m );
-	if( m->GetMatr()->Invert() == false )
-		return NOERR;
-
-	val->SetBool( true );
-	return NOERR;
-}

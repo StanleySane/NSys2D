@@ -4,11 +4,15 @@
 #include "stdafx.h"
 #include "NSys2D.h"
 #include "KnotSpectr.h"
-#include "Expression.h"
 #include "Matr.h"
 #include "ProgressDlg.h"
 #include "GraphFrm.h"
 #include "GraphicView.h"
+
+#include "Sheme.h"
+#include "Elem.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,6 +34,25 @@ CKnotSpectr::CKnotSpectr(CSpectrParam *pSpParam, CWnd* pParent /*=NULL*/)
 	m_TypeSpectr = 0;
 	m_TypeInit = 0;
 	m_CheckView = FALSE;
+	m_Edit14 = _T("");
+	m_Edit1 = 0.0;
+	m_Edit10 = 0.0;
+	m_Edit11 = 0.0;
+	m_Edit12 = 0.0;
+	m_Edit13 = 0.0;
+	m_Edit15 = 0.0;
+	m_Edit16 = 0.0;
+	m_Edit17 = 0.0;
+	m_Edit18 = 0.0;
+	m_Edit19 = 0.0;
+	m_Edit2 = 0.0;
+	m_Edit3 = 0.0;
+	m_Edit4 = 0.0;
+	m_Edit5 = 0.0;
+	m_Edit6 = 0.0;
+	m_Edit7 = 0.0;
+	m_Edit8 = 0.0;
+	m_Edit9 = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -38,28 +61,29 @@ void CKnotSpectr::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CKnotSpectr)
-	DDX_Control(pDX, IDC_EDIT19, m_Edit19);
-	DDX_Control(pDX, IDC_EDIT18, m_Edit18);
-	DDX_Control(pDX, IDC_EDIT17, m_Edit17);
-	DDX_Control(pDX, IDC_EDIT16, m_Edit16);
-	DDX_Control(pDX, IDC_EDIT15, m_Edit15);
-	DDX_Control(pDX, IDC_EDIT14, m_Edit14);
-	DDX_Control(pDX, IDC_EDIT13, m_Edit13);
-	DDX_Control(pDX, IDC_EDIT12, m_Edit12);
-	DDX_Control(pDX, IDC_EDIT11, m_Edit11);
-	DDX_Control(pDX, IDC_EDIT10, m_Edit10);
-	DDX_Control(pDX, IDC_EDIT9, m_Edit9);
-	DDX_Control(pDX, IDC_EDIT8, m_Edit8);
-	DDX_Control(pDX, IDC_EDIT7, m_Edit7);
-	DDX_Control(pDX, IDC_EDIT6, m_Edit6);
-	DDX_Control(pDX, IDC_EDIT5, m_Edit5);
-	DDX_Control(pDX, IDC_EDIT4, m_Edit4);
-	DDX_Control(pDX, IDC_EDIT3, m_Edit3);
-	DDX_Control(pDX, IDC_EDIT2, m_Edit2);
-	DDX_Control(pDX, IDC_EDIT1, m_Edit1);
 	DDX_Radio(pDX, IDC_RADIO1, m_TypeSpectr);
 	DDX_Radio(pDX, IDC_RADIO7, m_TypeInit);
 	DDX_Check(pDX, IDC_CHECK1, m_CheckView);
+	DDX_Text(pDX, IDC_EDIT14, m_Edit14);
+	DDV_MaxChars(pDX, m_Edit14, 100);
+	DDX_Text(pDX, IDC_EDIT1, m_Edit1);
+	DDX_Text(pDX, IDC_EDIT10, m_Edit10);
+	DDX_Text(pDX, IDC_EDIT11, m_Edit11);
+	DDX_Text(pDX, IDC_EDIT12, m_Edit12);
+	DDX_Text(pDX, IDC_EDIT13, m_Edit13);
+	DDX_Text(pDX, IDC_EDIT15, m_Edit15);
+	DDX_Text(pDX, IDC_EDIT16, m_Edit16);
+	DDX_Text(pDX, IDC_EDIT17, m_Edit17);
+	DDX_Text(pDX, IDC_EDIT18, m_Edit18);
+	DDX_Text(pDX, IDC_EDIT19, m_Edit19);
+	DDX_Text(pDX, IDC_EDIT2, m_Edit2);
+	DDX_Text(pDX, IDC_EDIT3, m_Edit3);
+	DDX_Text(pDX, IDC_EDIT4, m_Edit4);
+	DDX_Text(pDX, IDC_EDIT5, m_Edit5);
+	DDX_Text(pDX, IDC_EDIT6, m_Edit6);
+	DDX_Text(pDX, IDC_EDIT7, m_Edit7);
+	DDX_Text(pDX, IDC_EDIT8, m_Edit8);
+	DDX_Text(pDX, IDC_EDIT9, m_Edit9);
 	//}}AFX_DATA_MAP
 }
 
@@ -85,6 +109,7 @@ BOOL CKnotSpectr::OnInitDialog()
 	CDialog::OnInitDialog();
 	
 	// TODO: Add extra initialization here
+	/*
 	m_Edit1.SetWindowText(pSpectrParam->strEdit[0]);
 	m_Edit2.SetWindowText(pSpectrParam->strEdit[1]);
 	m_Edit3.SetWindowText(pSpectrParam->strEdit[2]);
@@ -104,8 +129,29 @@ BOOL CKnotSpectr::OnInitDialog()
 	m_Edit17.SetWindowText(pSpectrParam->strEdit[16]);
 	m_Edit18.SetWindowText(pSpectrParam->strEdit[17]);
 	m_Edit19.SetWindowText(pSpectrParam->strEdit[18]);
-	m_TypeSpectr=pSpectrParam->TypeSpectr;
-	m_TypeInit=pSpectrParam->TypeInit;
+	*/
+	m_Edit1 = pSpectrParam->m_1S;
+	m_Edit2 = pSpectrParam->m_1Wc;
+	m_Edit3 = pSpectrParam->m_2S;
+	m_Edit4 = pSpectrParam->m_2a;
+	m_Edit5 = pSpectrParam->m_3S;
+	m_Edit6 = pSpectrParam->m_3Wo;
+	m_Edit7 = pSpectrParam->m_3a;
+	m_Edit8 = pSpectrParam->m_4S;
+	m_Edit9 = pSpectrParam->m_4a;
+	m_Edit10 = pSpectrParam->m_4b;
+	m_Edit11 = pSpectrParam->m_5S;
+	m_Edit12 = pSpectrParam->m_5a;
+	m_Edit13 = pSpectrParam->m_5b;
+	m_Edit14 = pSpectrParam->m_Sw.GetExpr().c_str();
+	m_Edit15 = pSpectrParam->m_6Wmin;
+	m_Edit16 = pSpectrParam->m_6Wmax;
+	m_Edit17 = pSpectrParam->m_Seed;
+	m_Edit18 = pSpectrParam->m_Late;
+	m_Edit19 = pSpectrParam->m_Wmax;
+
+	m_TypeSpectr = pSpectrParam->TypeSpectr;
+	m_TypeInit = pSpectrParam->TypeInit;
 	UpdateData(false);
 	SetState();
 	
@@ -116,6 +162,7 @@ BOOL CKnotSpectr::OnInitDialog()
 void CKnotSpectr::SetState()
 {
 	UpdateData(true);
+	/*
 	m_Edit1.EnableWindow(false);
 	m_Edit2.EnableWindow(false);
 	m_Edit3.EnableWindow(false);
@@ -134,17 +181,85 @@ void CKnotSpectr::SetState()
 	m_Edit16.EnableWindow(false);
 	m_Edit17.EnableWindow(false);
 	m_Edit19.EnableWindow(false);
+	*/
+	GetDlgItem(IDC_EDIT1)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT2)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT3)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT4)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT5)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT6)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT7)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT8)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT9)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT10)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT11)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT12)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT13)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT14)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT15)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT16)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT17)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT18)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT19)->EnableWindow(FALSE);
 
 	switch(m_TypeSpectr)
 	{
-	case 0: m_Edit1.EnableWindow();	m_Edit2.EnableWindow(); break;
-	case 1: m_Edit3.EnableWindow();	m_Edit4.EnableWindow(); m_Edit19.EnableWindow(); break;
-	case 2: m_Edit5.EnableWindow();	m_Edit6.EnableWindow(); m_Edit7.EnableWindow(); m_Edit19.EnableWindow();break;
-	case 3: m_Edit8.EnableWindow();	m_Edit9.EnableWindow(); m_Edit10.EnableWindow(); m_Edit19.EnableWindow();break;
-	case 4: m_Edit11.EnableWindow();m_Edit12.EnableWindow();m_Edit13.EnableWindow(); m_Edit19.EnableWindow();break;
-	case 5: m_Edit14.EnableWindow();m_Edit15.EnableWindow();m_Edit16.EnableWindow();break;
+	case 0:
+//		m_Edit1.EnableWindow();
+//		m_Edit2.EnableWindow(); 
+		GetDlgItem(IDC_EDIT1)->EnableWindow();
+		GetDlgItem(IDC_EDIT2)->EnableWindow();
+		break;
+	case 1:
+//		m_Edit3.EnableWindow();	
+//		m_Edit4.EnableWindow();
+//		m_Edit19.EnableWindow();
+		GetDlgItem(IDC_EDIT3)->EnableWindow();
+		GetDlgItem(IDC_EDIT4)->EnableWindow();
+		GetDlgItem(IDC_EDIT19)->EnableWindow();
+		break;
+	case 2: 
+//		m_Edit5.EnableWindow();
+//		m_Edit6.EnableWindow(); 
+//		m_Edit7.EnableWindow();
+//		m_Edit19.EnableWindow();
+		GetDlgItem(IDC_EDIT5)->EnableWindow();
+		GetDlgItem(IDC_EDIT6)->EnableWindow();
+		GetDlgItem(IDC_EDIT7)->EnableWindow();
+		GetDlgItem(IDC_EDIT19)->EnableWindow();
+		break;
+	case 3: 
+//		m_Edit8.EnableWindow();
+//		m_Edit9.EnableWindow();
+//		m_Edit10.EnableWindow(); 
+//		m_Edit19.EnableWindow();
+		GetDlgItem(IDC_EDIT8)->EnableWindow();
+		GetDlgItem(IDC_EDIT9)->EnableWindow();
+		GetDlgItem(IDC_EDIT10)->EnableWindow();
+		GetDlgItem(IDC_EDIT19)->EnableWindow();
+		break;
+	case 4:
+//		m_Edit11.EnableWindow();
+//		m_Edit12.EnableWindow();
+//		m_Edit13.EnableWindow();
+//		m_Edit19.EnableWindow();
+		GetDlgItem(IDC_EDIT11)->EnableWindow();
+		GetDlgItem(IDC_EDIT12)->EnableWindow();
+		GetDlgItem(IDC_EDIT13)->EnableWindow();
+		GetDlgItem(IDC_EDIT19)->EnableWindow();
+		break;
+	case 5: 
+//		m_Edit14.EnableWindow();
+//		m_Edit15.EnableWindow();
+//		m_Edit16.EnableWindow();
+		GetDlgItem(IDC_EDIT14)->EnableWindow();
+		GetDlgItem(IDC_EDIT15)->EnableWindow();
+		GetDlgItem(IDC_EDIT16)->EnableWindow();
+		break;
 	}
-	if (m_TypeInit==1) m_Edit17.EnableWindow();
+	if( m_TypeInit == 1 )
+		GetDlgItem(IDC_EDIT17)->EnableWindow();
+//		m_Edit17.EnableWindow();
 	UpdateData(false);
 }
 
@@ -154,7 +269,6 @@ void CKnotSpectr::OnRadio1()
 	SetState();
 }
 
-
 void CKnotSpectr::OnOK() 
 {
 	// TODO: Add extra validation here
@@ -162,6 +276,7 @@ void CKnotSpectr::OnOK()
 
 	if (!VerifyInfo(p)) return;
 
+	/*
 	m_Edit1.GetWindowText(pSpectrParam->strEdit[0]);
 	m_Edit2.GetWindowText(pSpectrParam->strEdit[1]);
 	m_Edit3.GetWindowText(pSpectrParam->strEdit[2]);
@@ -181,25 +296,59 @@ void CKnotSpectr::OnOK()
 	m_Edit17.GetWindowText(pSpectrParam->strEdit[16]);
 	m_Edit18.GetWindowText(pSpectrParam->strEdit[17]);
 	m_Edit19.GetWindowText(pSpectrParam->strEdit[18]);
-	pSpectrParam->TypeSpectr=m_TypeSpectr;
-	pSpectrParam->TypeInit=m_TypeInit;
-	for (int i=0;i<19;i++)
-		pSpectrParam->param[i]=p[i];
+	*/
+	pSpectrParam->m_1S = m_Edit1;
+	pSpectrParam->m_1Wc = m_Edit2;
+	pSpectrParam->m_2S = m_Edit3;
+	pSpectrParam->m_2a = m_Edit4;
+	pSpectrParam->m_3S = m_Edit5;
+	pSpectrParam->m_3Wo = m_Edit6;
+	pSpectrParam->m_3a = m_Edit7;
+	pSpectrParam->m_4S = m_Edit8;
+	pSpectrParam->m_4a = m_Edit9;
+	pSpectrParam->m_4b = m_Edit10;
+	pSpectrParam->m_5S = m_Edit11;
+	pSpectrParam->m_5a = m_Edit12;
+	pSpectrParam->m_5b = m_Edit13;
+	ShemeExprErr res = pSpectrParam->m_Sw.Reset( m_Edit14 );
+	ASSERT( res == SEE_NOERR );
+	pSpectrParam->m_6Wmin = m_Edit15;
+	pSpectrParam->m_6Wmax = m_Edit16;
+	pSpectrParam->m_Seed = m_Edit17;
+	pSpectrParam->m_Late = m_Edit18;
+	pSpectrParam->m_Wmax = m_Edit19;
+
+	pSpectrParam->TypeSpectr = m_TypeSpectr;
+	pSpectrParam->TypeInit = m_TypeInit;
+//	for (int i=0;i<19;i++)	pSpectrParam->param[i]=p[i];
 	
 	//Рисуем график если надо
 	if (m_CheckView)
 	{
 		int s=500;
-		double stepW=pSpectrParam->GetMaxW()/s;
+		double stepW = pSpectrParam->GetMaxW()/s;
 
 		CMatr Dat(2,s);
 		CProgressDlg *pDlg=new CProgressDlg(100,_T("Вычисление S(w)"));
 		BOOL FlagExit=false;
+		CString tmpstr;
 
+		string msg;
 		for (int i=0;i<s;i++)
 		{
-			Dat[0][i]=i*stepW;
-			Dat[1][i]=pSpectrParam->GetSpectr(i*stepW);
+			double tmpx = i*stepW;
+			if( pSpectrParam->m_pSheme && pSpectrParam->m_pSheme->m_bRichCalc )
+			{
+				tmpstr.Format("Вычисление точки %.16g", tmpx );
+				pDlg->SetDetails(tmpstr);
+			}
+			Dat(0,i) = tmpx;
+			Dat(1,i) = pSpectrParam->GetSpectr( tmpx, &msg );
+			if( pSpectrParam->m_pSheme && pSpectrParam->m_pSheme->m_bValidateExpr && !msg.empty() )
+			{
+				AfxMessageBox( CString("Ошибка вычисления выражения: ") + msg.c_str() );
+				break;
+			}
 
 			//Обработка сообщений
 			MSG msg;
@@ -249,8 +398,8 @@ void CKnotSpectr::OnOK()
 		//Начальная установка границ изображения
 		pGraphView->SetMaxMin();
 		pNewFrame->SetWindowText(str);
-		pGraphView->Dat.ReSize(2,Dat.SizeX);
-		pGraphView->Dat=Dat;
+		pGraphView->Dat.ReSize( 2, Dat.SizeX );
+		pGraphView->Dat = Dat;
 	}
 
 	CDialog::OnOK();
@@ -260,248 +409,19 @@ BOOL CKnotSpectr::VerifyInfo(double *p)
 {
 	UpdateData();
 	
-	CExpression e;
-	int ret;
-	CString str;
-
-	switch(m_TypeSpectr)
+	if( m_TypeSpectr == 5 )
 	{
-	case 0:
+		CString mes;
+		ASSERT(pSpectrParam->m_pSheme);
+		if( !pSpectrParam->m_pSheme->m_VarsTable.IsValidExpr( m_Edit14, mes ) )
 		{
-			m_Edit1.GetWindowText(str);
-			ret=e.IsNum(str,&p[0]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для s=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit2.GetWindowText(str);
-			ret=e.IsNum(str,&p[1]);
-			if ((ret)||(p[1]<=0))
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wc=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			break;
-		}
-	case 1:
-		{
-			m_Edit3.GetWindowText(str);
-			ret=e.IsNum(str,&p[2]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для s=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit4.GetWindowText(str);
-			ret=e.IsNum(str,&p[3]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для a=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit19.GetWindowText(str);
-			ret=e.IsNum(str,&p[18]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wmax=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			break;
-		}
-	case 2:
-		{
-			m_Edit5.GetWindowText(str);
-			ret=e.IsNum(str,&p[4]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для s=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit6.GetWindowText(str);
-			ret=e.IsNum(str,&p[5]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wo=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit7.GetWindowText(str);
-			ret=e.IsNum(str,&p[6]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для a=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit19.GetWindowText(str);
-			ret=e.IsNum(str,&p[18]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wmax=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			break;
-		}
-	case 3:
-		{
-			m_Edit8.GetWindowText(str);
-			ret=e.IsNum(str,&p[7]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для s=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit9.GetWindowText(str);
-			ret=e.IsNum(str,&p[8]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для a=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit10.GetWindowText(str);
-			ret=e.IsNum(str,&p[9]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для b=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit19.GetWindowText(str);
-			ret=e.IsNum(str,&p[18]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wmax=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			break;
-		}
-	case 4:
-		{
-			m_Edit11.GetWindowText(str);
-			ret=e.IsNum(str,&p[10]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для s=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit12.GetWindowText(str);
-			ret=e.IsNum(str,&p[11]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для a=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit13.GetWindowText(str);
-			ret=e.IsNum(str,&p[12]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для b=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit19.GetWindowText(str);
-			ret=e.IsNum(str,&p[18]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для Wmax=",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			break;
-		}
-	case 5:
-		{
-			CIDValuesMap idv;
-			m_Edit14.GetWindowText(str);
-			idv.SetAt(_T("w"),0.1);
-			ret=e.IsNum(str,&p[13],&idv);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка в выражении",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit15.GetWindowText(str);
-			ret=e.IsNum(str,&p[14]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для w от",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			m_Edit16.GetWindowText(str);
-			ret=e.IsNum(str,&p[15]);
-			if (ret)
-			{
-				CString str;
-				str.LoadString(ret);
-				MessageBox(str,"Ошибка для w до",MB_OK|MB_ICONERROR);
-				return false;
-			}
-			if (p[14]>p[15])
-			{
-				MessageBox("Значение w от больше чем w до","Ошибка",MB_OK|MB_ICONERROR);
-				return false;
-			}
-
-			break;
-		}
-	};
-	if (m_TypeInit==1)
-	{
-		m_Edit17.GetWindowText(str);
-		ret=e.IsNum(str,&p[16]);
-		if (ret)
-		{
-			CString str;
-			str.LoadString(ret);
-			MessageBox(str,"Ошибка в инициализации",MB_OK|MB_ICONERROR);
-			return false;
+			mes = _T("Ошибка в выражении S(w):\n") + mes;
+			AfxMessageBox( mes );
+			return FALSE;
 		}
 	}
-	m_Edit18.GetWindowText(str);
-	ret=e.IsNum(str,&p[17]);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Ошибка в запаздывании",MB_OK|MB_ICONERROR);
-		return false;
-	}
 
-	return true;
+	return TRUE;
 }
 
 void CKnotSpectr::OnRadio7() 

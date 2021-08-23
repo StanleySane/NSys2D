@@ -94,6 +94,7 @@ int CScriptView::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	BOOL res = GetRichEditCtrl().SetDefaultCharFormat(cf);
 	ASSERT(res!=FALSE);
 	*/
+	SetTabStops(8);
 	return 0;
 }
 
@@ -105,9 +106,10 @@ void CScriptView::OnRunScript()
 
 	CString str( LockBuffer() );
 	UnlockBuffer();
-	COutputView *pView = pDoc->MakeScript();
+	COutputFrame *pFrame = NULL;
+	COutputView *pView = pDoc->MakeScript(pFrame);
 	if( pView )
-		pDoc->RunScript( str, pView );
+		pDoc->RunScript( str, pView, pFrame );
 }
 
 /*
@@ -204,6 +206,7 @@ void CScriptView::OnScriptFileOpen()
 	ASSERT_VALID(pDoc);
 
 	CFileDialog dlg(TRUE);
+	CString strName = pDoc->GetTitle();
 
 	dlg.m_ofn.lpstrTitle = _T("Окрыть скрипт");
 	CString str;
@@ -211,41 +214,19 @@ void CScriptView::OnScriptFileOpen()
 	str += "*.scr"; str += (TCHAR)NULL;
 	str += "All Files (*.*)"; str += (TCHAR)NULL;
 	str += "*.*"; str += (TCHAR)NULL;
-	char Filter[256];
-	int size = str.GetLength(), pos = 0;
-	for( int i = 0; i < size; ++i )
-	{
-		if( i >= 256 )
-		{
-			pos = 256-2;
-			break;
-		}
-		Filter[i] = str[i];
-		pos = i;
-	}
-	Filter[pos+1] = '\0';
-	dlg.m_ofn.lpstrFilter = Filter;
+
+	dlg.m_ofn.lpstrFilter = static_cast<LPCTSTR>(str);
 
 	dlg.m_ofn.nFilterIndex = 1;
 	dlg.m_ofn.lpstrDefExt = _T("scr");
 	dlg.m_ofn.Flags |= OFN_OVERWRITEPROMPT;
 
-	CString strName = pDoc->GetTitle();
-	char FileName[80];
-	size = strName.GetLength();
-	pos = 0;
-	for( i = 0; i < size; ++i )
-	{
-		if( i >= 80 )
-		{
-			pos = 78;
-			break;
-		}
-		FileName[i] = strName[i];
-		pos = i;
-	}
-	FileName[pos+1] = '\0';
+	const int N = 80;
+	char FileName[N];
+	strncpy( FileName, strName.LockBuffer(), N );
+	strName.UnlockBuffer();
 	dlg.m_ofn.lpstrFile = FileName;
+	dlg.m_ofn.nMaxFile = N;
 
 	while( dlg.DoModal() == IDOK )
 	{
@@ -277,5 +258,7 @@ void CScriptView::OnScriptFileOpen()
 void CScriptView::OnDraw(CDC* pDC) 
 {
 	// TODO: Add your specialized code here and/or call the base class
+	CScriptDoc* pDoc = (CScriptDoc*)GetDocument();
+	ASSERT_VALID(pDoc);
 		
 }

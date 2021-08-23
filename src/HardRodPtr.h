@@ -15,6 +15,7 @@
 class CHardRod;
 class KnotPtr;
 class AlgolMatr;
+class CElem;
 
 class HardRodPtr
 {
@@ -45,8 +46,12 @@ public:
 	{	Destruct();	}
 
 	//ф-ции-члены
-	CHardRod* GetElem() const;
+	CElem* GetElem() const;
 	bool Create( KnotPtr*, KnotPtr* );
+	bool Attach( CElem* );
+	bool Detach();
+	int GetRefCount();
+
 	bool SetM( double );
 	bool SetJ( double );
 	bool SetF( double );

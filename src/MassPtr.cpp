@@ -46,12 +46,42 @@ bool MassPtr::Construct( KnotPtr *kn )
 	return true;
 }
 
+bool MassPtr::Attach( CElem *pEl )
+{
+//ф-ция присоединяет к объекту указатель на элемент.
+//после удачного выполнения этой ф-ции данный объект
+//и присоединённый элемент - одно и то же.
+	ASSERT( (pEl != NULL)&&(pEl->TypeElem == IDC_MASS) );
+	ASSERT( pEl->knot1 != NULL );
+	Destruct();
+	m_pElem = static_cast<CMass*>(pEl);
+	Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+	if( p.second == false )
+		++(*p.first).second;
+	KnotPtr::AddRef( pEl->knot1 );
+	return true;
+}
+
+bool MassPtr::Detach()
+{
+//ф-ция отсоединяет от данного объекта указатель на элемент.
+	if( m_pElem == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 void MassPtr::Destruct()
 {
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+		{
+			m_pElem = NULL;
+			return;
+		}
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		if( (*it).second == 0 )
@@ -73,14 +103,19 @@ void MassPtr::InitBy( const MassPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			ASSERT( it != m_RefMap.end() );
-			(*it).second++;
+			//ASSERT( it != m_RefMap.end() );
+			if( it == m_RefMap.end() )
+			{
+				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+			}
+			else
+				(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 		}
 	}
 }
 
-CMass* MassPtr::GetElem() const
+CElem* MassPtr::GetElem() const
 {
 	ASSERT(m_pElem);
 	return m_pElem;
@@ -95,17 +130,13 @@ bool MassPtr::Create( KnotPtr *kn )
 bool MassPtr::SetM( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetMassM( str ) < 0)?false:true;
+	return m_pElem->SetMassM( v );
 }
 
 bool MassPtr::SetJ( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetMassJp( str ) < 0)?false:true;
+	return m_pElem->SetMassJp( v );
 }
 
 double MassPtr::GetM() const
@@ -154,4 +185,14 @@ AlgolMatr MassPtr::GetMatrC() const
 	matr.ConvertToAlgolMatr( am );
 	am.SetMinCol(0);
 	return am;
+}
+
+int MassPtr::GetRefCount()
+{
+	if( m_pElem == NULL )
+		return -1;
+	MassPtr::Refs::iterator it = MassPtr::m_RefMap.find(m_pElem);
+	if( it == MassPtr::m_RefMap.end() )
+		return -1;
+	return (*it).second;
 }

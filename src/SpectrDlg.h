@@ -29,9 +29,9 @@ public:
 	enum { IDD = IDD_SPECTRDLG };
 	CComboBox	m_ComboKnot;
 	int		m_Free;
-	CString	m_W0;
-	CString	m_W1;
-	CString	m_dW;
+	double	m_W0;
+	double	m_W1;
+	double	m_dW;
 	//}}AFX_DATA
 
 

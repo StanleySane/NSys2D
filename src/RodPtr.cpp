@@ -8,7 +8,6 @@
 
 #include "Rod.h"
 #include "AlgolMatr.h"
-//#include "CoordD.h"
 #include "KnotPtr.h"
 
 using namespace std;
@@ -52,12 +51,48 @@ bool RodPtr::Construct( KnotPtr *kn1, KnotPtr *kn2 )
 	return true;
 }
 
+bool RodPtr::Attach( CElem *pEl )
+{
+//ф-ция присоединяет к объекту указатель на элемент.
+//после удачного выполнения этой ф-ции данный объект
+//и присоединённый элемент - одно и то же.
+	ASSERT( (pEl != NULL)&&(pEl->TypeElem == IDC_ROD) );
+	ASSERT( (pEl->knot1 != NULL)&&(pEl->knot2 != NULL) );
+	Destruct();
+	m_pElem = static_cast<CRod*>(pEl);
+	Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+	if( p.second == false )
+		++(*p.first).second;
+	KnotPtr::AddRef( pEl->knot1 );
+	KnotPtr::AddRef( pEl->knot2 );
+	return true;
+}
+
+bool RodPtr::Detach()
+{
+//ф-ция отсоединяет от данного объекта указатель на элемент.
+	if( m_pElem == NULL )
+		return false;
+	Destruct();
+	return true;
+}
+
 void RodPtr::Destruct()
 {
 	if( m_pElem )
 	{
+		//KnotPtr::RemoveRef( m_pElem->knot1 );
+		//KnotPtr::RemoveRef( m_pElem->knot2 );
+		//delete m_pElem;
+		//m_pElem = NULL;
+		//return;
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		ASSERT( it != m_RefMap.end() );
+		//ASSERT( it != m_RefMap.end() );
+		if( it == m_RefMap.end() )
+		{
+			m_pElem = NULL;
+			return;
+		}
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -72,6 +107,16 @@ void RodPtr::Destruct()
 
 void RodPtr::InitBy( const RodPtr &obj )
 {
+	/*
+	Destruct();
+	if( obj.m_pElem )
+	{
+		m_pElem = new CRod( *obj.m_pElem );
+		KnotPtr::AddRef( m_pElem->knot1 );
+		KnotPtr::AddRef( m_pElem->knot2 );
+	}
+	return;
+	*/
 	if( m_pElem != obj.m_pElem )
 	{
 		if( m_pElem )
@@ -80,15 +125,22 @@ void RodPtr::InitBy( const RodPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			ASSERT( it != m_RefMap.end() );
-			(*it).second++;
+			//ASSERT( it != m_RefMap.end() );
+			if( it == m_RefMap.end() )
+			{
+				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
+				//ASSERT( p.second != false );
+				//++(*p.first).second; ???
+			}
+			else
+				++((*it).second);
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}
 	}
 }
 
-CRod* RodPtr::GetElem() const
+CElem* RodPtr::GetElem() const
 {
 	ASSERT(m_pElem);
 	return m_pElem;
@@ -103,33 +155,25 @@ bool RodPtr::Create( KnotPtr *kn1, KnotPtr *kn2 )
 bool RodPtr::SetM( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetM( str ) < 0)?false:true;
+	return m_pElem->SetM( v );
 }
 
 bool RodPtr::SetJ( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetJx( str ) < 0)?false:true;
+	return m_pElem->SetJx( v );
 }
 
 bool RodPtr::SetF( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetF( str ) < 0)?false:true;
+	return m_pElem->SetF( v );
 }
 
 bool RodPtr::SetE( double v )
 {
 	if( m_pElem == NULL )	return false;
-	CString str;
-	str.Format("%g", v );
-	return (m_pElem->SetE( str ) < 0)?false:true;
+	return m_pElem->SetE( v );
 }
 
 double RodPtr::GetM() const
@@ -196,4 +240,14 @@ AlgolMatr RodPtr::GetMatrC() const
 	matr.ConvertToAlgolMatr( am );
 	am.SetMinCol(0);
 	return am;
+}
+
+int RodPtr::GetRefCount()
+{
+	if( m_pElem == NULL )
+		return -1;
+	RodPtr::Refs::iterator it = RodPtr::m_RefMap.find(m_pElem);
+	if( it == RodPtr::m_RefMap.end() )
+		return -1;
+	return (*it).second;
 }

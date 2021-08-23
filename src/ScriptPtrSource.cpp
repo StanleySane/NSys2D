@@ -43,7 +43,12 @@ void ScriptPtr::Destruct()
 	if( m_pScript )
 	{
 		Refs::iterator it = m_ScriptRefMap.find(m_pScript);
-		ASSERT( it != m_ScriptRefMap.end() );
+		//ASSERT( it != m_ScriptRefMap.end() );
+		if( it == m_ScriptRefMap.end() )
+		{
+			m_pScript = NULL;
+			return;
+		}
 		(*it).second--;
 		if( (*it).second == 0 )
 		{

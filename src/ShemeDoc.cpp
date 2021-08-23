@@ -4,16 +4,19 @@
 #include "stdafx.h"
 #include "NSys2D.h"
 
+#include "StdAfxMy.h"
+
 #include "ShemeDoc.h"
 #include "FormsView.h"
 #include "FormsFrame.h"
 #include "GraphicView.h"
 #include "ScriptView.h"
 #include "ScriptFrame.h"
+#include "MovieView.h"
+#include "MovieFrame.h"
 
 #include "ElemDlg.h"
 #include "PreCalcDlg.h"
-#include "FreqViewDlg.h"
 #include "EVMDialog.h"
 #include "ViewStyles.h"
 #include "NewGroupDlg.h"
@@ -21,15 +24,19 @@
 #include "GroupPreviewDlg.h"
 #include "GroupEditDlg.h"
 #include "ConvertToDlg.h"
+#include "ShemeVars.h"
+#include "DescriptionDlg.h"
+
 #include "EqualDegrees.h"
 #include "Sheme.h"
 
-#include <fstream.h>
+//#include <fstream.h>
 
 #include "ComplexSpectrDlg.h"
 #include "ComplexMatr.h"
 
 #include<algorithm>
+#include<cmath>
 using namespace std;
 
 #ifdef _DEBUG
@@ -66,8 +73,6 @@ BEGIN_MESSAGE_MAP(CShemeDoc, CDocument)
 	ON_COMMAND(ID_ALL_RODS, OnAllRods)
 	ON_COMMAND(ID_ALL_SPRINGS, OnAllSprings)
 	ON_COMMAND(ID_GROUP_CONVERT_TO, OnGroupConvertTo)
-	ON_COMMAND(ID_GROUP_CLICK_ELEMS, OnGroupClickElems)
-	ON_COMMAND(ID_GROUP_CLICK_KNOTS, OnGroupClickKnots)
 	ON_UPDATE_COMMAND_UI(ID_GROUP_CLICK_ELEMS, OnUpdateGroupClickElems)
 	ON_UPDATE_COMMAND_UI(ID_GROUP_CLICK_KNOTS, OnUpdateGroupClickKnots)
 	ON_COMMAND(ID_BUTTON_DEL_FREE_KNOTS, OnButtonDelFreeKnots)
@@ -89,11 +94,15 @@ BEGIN_MESSAGE_MAP(CShemeDoc, CDocument)
 	ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
 	ON_COMMAND(ID_AUTOCORRECT, OnAutoCorrect)
 	ON_UPDATE_COMMAND_UI(ID_AUTOCORRECT, OnUpdateAutoCorrect)
-	ON_COMMAND(ID_BUTTON_GRCLICK_ELEMS, OnGroupClickElems)
-	ON_UPDATE_COMMAND_UI(ID_BUTTON_GRCLICK_ELEMS, OnUpdateGroupClickElems)
-	ON_COMMAND(ID_BUTTON_GRCLICK_KNOTS, OnGroupClickKnots)
-	ON_UPDATE_COMMAND_UI(ID_BUTTON_GRCLICK_KNOTS, OnUpdateGroupClickKnots)
 	ON_COMMAND(ID_FREE_NUMS, OnFreeNums)
+	ON_COMMAND(ID_MAKE_MOVIE, OnMakeMovie)
+	ON_COMMAND(ID_SHEME_VARS, OnShemeVars)
+	ON_COMMAND(ID_DESCRIPT, OnDescript)
+	ON_UPDATE_COMMAND_UI(ID_DESCRIPT, OnUpdateDescript)
+	ON_UPDATE_COMMAND_UI(ID_SHEME_VARS, OnUpdateShemeVars)
+	ON_UPDATE_COMMAND_UI(ID_FREE_NUMS, OnUpdateFreeNums)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_GRCLICK_ELEMS, OnUpdateGroupClickElems)
+	ON_UPDATE_COMMAND_UI(ID_BUTTON_GRCLICK_KNOTS, OnUpdateGroupClickKnots)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -131,9 +140,10 @@ CShemeDoc::CShemeDoc():m_pSheme(NULL)
 	}
 	
 	m_pPropFrame = NULL;
+	m_pMovieView = NULL;
 	// TODO: add one-time construction code here
 	ParamView.Scale = ParamView.m_DefaultScale;
-	pProgressDlg=0;
+//	pProgressDlg = NULL;
 
 	m_bIsView = false;
 	m_bMakeBar = true;
@@ -224,82 +234,37 @@ void CShemeDoc::Serialize(CArchive& ar)
     GetNextView(pos)->Serialize(ar);
 }
 
+void CShemeDoc::CloseView( CKnot *pKn )
+{
+	//Поиск графиков с несуществующими узлами
+	POSITION posgraph = GetFirstViewPosition();
+	while( posgraph )
+	{
+		CGraphicView *pview = (CGraphicView*)GetNextView(posgraph);
+		if( pview->pKnot == pKn )
+		{
+			RemoveView(pview);
+			pview->GetOwner()->DestroyWindow();
+		}
+	}
+}
+
 int CShemeDoc::PreCalculated()
 {
 	ASSERT(m_pSheme);
-	int Count = m_pSheme->UpdateAllFree();
-	int code = m_pSheme->SetMatrMDC(Count);
-	if (code) return -1;
 	
 	//запрашиваем время, шаг и метод интегрирования 
 	CPreCalcDlg dlg( &m_pSheme->ParamIntegr );
-	if (dlg.DoModal()!=IDOK) return -1;
-	/****************************************************/
-	if( m_pSheme->m_bIsHardRod )
-	{
-		if( (m_pSheme->ParamIntegr.TypeMethod != 0)&&
-			(m_pSheme->ParamIntegr.TypeMethod != 2)&&
-			(m_pSheme->ParamIntegr.TypeMethod != 1) )
-		{
-			//если выбран не метод Рунге-Кутта или Ньюмарка или Парка,
-			//то решать нельзя
-			AfxMessageBox("Использование данного метода для жёст.стержней невозможно !!!",
-				MB_OK|MB_ICONINFORMATION);
-			return -1;
-		}
-	}
-	/****************************************************/
-
-	//Выделение памяти под массивы интегрирования
-	//перемещение
-	int cntstep=int(ceil(m_pSheme->ParamIntegr.Time/m_pSheme->ParamIntegr.Step)+1);
-	m_pSheme->matr_RezY1.ReSize(Count,cntstep);
-	//скорость
-	m_pSheme->matr_RezY2.ReSize(Count,cntstep);
-	if (m_pSheme->ParamIntegr.TypeMethod==2) 
-		m_pSheme->matr_RezY3.ReSize(Count,cntstep);
-	else m_pSheme->matr_RezY3.ReSize(1,1);
-	
-	//Подготовка для интегрирования со случайным возмущением
-	POSITION pos=m_pSheme->listKnot.GetHeadPosition();
-	while (pos)
-	{
-		//проходим по всем элементам
-		CKnot *kn = m_pSheme->listKnot.GetNext(pos);
-		kn->BeginIntegr(m_pSheme->ParamIntegr.Time);
-	}
-
-	//установка начальных условий
-	BeginWaitCursor();
-	m_pSheme->SetBeginPosition();
-	EndWaitCursor();
+	if( dlg.DoModal() != IDOK )
+		return -1;
 	return 0;
 }
 
 void CShemeDoc::OnCalc() 
 {
 	// TODO: Add your command handler code here
-	if (PreCalculated()) return;
-
-	CString title( _T("Интегрирование схемы ") );
-	title += GetTitle();
- 	pProgressDlg=new CProgressDlg(100, title );
-
-	int code;
-	switch (m_pSheme->ParamIntegr.TypeMethod)
-	{
-	case 0: code=RungeKutt(m_pSheme->matr_RezY1.SizeX); break;
-	case 1: code=Park(m_pSheme->matr_RezY1.SizeX); break;
-	case 2: code=Numark(m_pSheme->matr_RezY1.SizeX); break;
-	};
-
-	//if (code) //Интегрирование было прервано
-	pProgressDlg->DestroyWindow();
-	delete pProgressDlg;
-	pProgressDlg = NULL;
-
-	m_pSheme->AfterCalc();
-	UpdateAllViews(0);
+	ASSERT(m_pSheme);
+	m_pSheme->Integrate();
 }
 
 void CShemeDoc::OnListelem() 
@@ -350,6 +315,7 @@ void CShemeDoc::OnProperties()
 		m_pPropFrame->ShowWindow(SW_SHOW);
 }
 
+/*
 //Интегрирование методом Рунге-Кутта (nStep - число шагов плюс один)
 int CShemeDoc::RungeKutt(int nStep)
 {
@@ -443,7 +409,7 @@ int CShemeDoc::RungeKutt(int nStep)
 		if( m_pSheme->m_bIsHardRod )	Psize = short_size;
 		CMatr tmpVect( Psize, 1);
 		
-		/*******************************************************/
+		//////////////////////////////////////////////////////////////
 		//учёт жёст.стержней если надо
 		if( m_pSheme->m_bIsHardRod )
 		{
@@ -631,7 +597,7 @@ int CShemeDoc::Park(int nStep)
 		int short_size = m_pSheme->m_pEqDeg->GetModifiedSize();
 		if( m_pSheme->m_bIsHardRod )	Psize = short_size;
 		CMatr tmpVect( Psize, 1);
-		/*******************************************************/
+		//////////////////////////////////////////////////////////////
 		//учёт жёст.стержней если надо
 		if( m_pSheme->m_bIsHardRod )
 		{
@@ -823,7 +789,7 @@ int CShemeDoc::Numark(int nStep)
 		int short_size = m_pSheme->m_pEqDeg->GetModifiedSize();
 		if( m_pSheme->m_bIsHardRod )	Psize = short_size;
 		CMatr tmpVect( Psize, 1);
-		/*******************************************************/
+		//////////////////////////////////////////////////////////////
 		//учёт жёст.стержней если надо
 		if( m_pSheme->m_bIsHardRod )
 		{
@@ -916,6 +882,7 @@ int CShemeDoc::Numark(int nStep)
 	}
 	return (FlagExit?-1:0);
 }
+*/
 
 void CShemeDoc::OnFreeformCalc() 
 {
@@ -1086,7 +1053,9 @@ void CShemeDoc::OnShemeParams()
 	CEVMDialog dlg;
 
 	dlg.m_HardMethod = m_pSheme->m_HardMethod;
-	dlg.m_bCondenceMass = m_pSheme->m_bCondenceMass;
+	dlg.m_InvertMethod = m_pSheme->m_InvertMethod;
+	dlg.m_bValidateExpr = m_pSheme->m_bValidateExpr;
+	dlg.m_bIntegrTest = (m_pSheme->m_bIntegrTest)?(TRUE):(FALSE);
 	switch(m_pSheme->m_EVMethod)
 	{
 	case EVM_JACOBY:
@@ -1107,8 +1076,10 @@ void CShemeDoc::OnShemeParams()
 	}
 	if( dlg.DoModal() == IDOK )
 	{
-		m_pSheme->m_bCondenceMass = (dlg.m_bCondenceMass)?(true):(false);
 		m_pSheme->m_HardMethod = dlg.m_HardMethod;
+		m_pSheme->m_InvertMethod = dlg.m_InvertMethod;
+		m_pSheme->m_bIntegrTest = (dlg.m_bIntegrTest == FALSE)?(false):(true);
+		m_pSheme->m_bValidateExpr = (dlg.m_bValidateExpr != FALSE);
 		switch(dlg.m_Method)
 		{
 		case 0:
@@ -1127,6 +1098,7 @@ void CShemeDoc::OnShemeParams()
 			m_pSheme->m_EVMethod = EVM_JACOBY;
 			break;
 		}
+		SetModifiedFlag();
 	}
 }
 
@@ -1141,6 +1113,7 @@ void CShemeDoc::OnViewStyles()
 	dlg.m_bNumElems = ParamView.m_bNumElems;
 	dlg.m_bNumKnots = ParamView.m_bNumKnots;
 	dlg.m_bTextOut = ParamView.m_bTextOut;
+	dlg.m_bRichCalc = m_pSheme->m_bRichCalc;
 
 	dlg.m_clrFree = ParamView.m_clrFree;
 	dlg.m_clrNumElems = ParamView.m_clrNumElems;
@@ -1164,6 +1137,7 @@ void CShemeDoc::OnViewStyles()
 		ParamView.m_bNumElems = dlg.m_bNumElems?true:false;
 		ParamView.m_bNumKnots = dlg.m_bNumKnots?true:false;
 		ParamView.m_bTextOut = dlg.m_bTextOut?true:false;
+		m_pSheme->m_bRichCalc = (dlg.m_bRichCalc != FALSE);
 
 		ParamView.m_ZeroRot = dlg.m_ZeroRot;
 
@@ -1191,6 +1165,7 @@ void CShemeDoc::OnViewStyles()
 			flag = ParamView.m_fntKnot.CreateFontIndirect( &dlg.m_lfNumKnots );
 			ASSERT( flag );
 		}
+		SetModifiedFlag();
 	}
 	UpdateAllViews(NULL);
 }
@@ -1663,31 +1638,31 @@ void CShemeDoc::OnGroupPreview()
 void CShemeDoc::OnAllDemf() 
 {
 	// TODO: Add your command handler code here
-	m_pSheme->CreateGroupForAllObjects( IDC_DEMF );
+	SetModifiedFlag( m_pSheme->CreateGroupForAllObjects( IDC_DEMF ) );
 }
 
 void CShemeDoc::OnAllHardRods() 
 {
 	// TODO: Add your command handler code here
-	m_pSheme->CreateGroupForAllObjects( IDC_HARDROD );
+	SetModifiedFlag( m_pSheme->CreateGroupForAllObjects( IDC_HARDROD ) );
 }
 
 void CShemeDoc::OnAllMasses() 
 {
 	// TODO: Add your command handler code here
-	m_pSheme->CreateGroupForAllObjects( IDC_MASS );
+	SetModifiedFlag( m_pSheme->CreateGroupForAllObjects( IDC_MASS ) );
 }
 
 void CShemeDoc::OnAllRods() 
 {
 	// TODO: Add your command handler code here
-	m_pSheme->CreateGroupForAllObjects( IDC_ROD );
+	SetModifiedFlag( m_pSheme->CreateGroupForAllObjects( IDC_ROD ) );
 }
 
 void CShemeDoc::OnAllSprings() 
 {
 	// TODO: Add your command handler code here
-	m_pSheme->CreateGroupForAllObjects( IDC_SPRING );
+	SetModifiedFlag( m_pSheme->CreateGroupForAllObjects( IDC_SPRING ) );
 }
 
 void CShemeDoc::OnGroupConvertTo() 
@@ -1764,27 +1739,32 @@ void CShemeDoc::OnGroupConvertTo()
 				if( elem->TypeElem != elemType )	continue;//такое может быть, если этот элемент уже был конвертирован
 				//теперь читаем св-ва старого элемента
 				CKnot *kn1 = elem->knot1, *kn2 = elem->knot2;
-				CString E, F, J;
-				double m;
+				CString E, F, J, M;
 				int num = elem->GetNumber();
 				if( elemType == IDC_ROD )
 				{
-					E = ((CRod*)elem)->GetStrE();
-					F = ((CRod*)elem)->GetStrF();
-					J = ((CRod*)elem)->GetStrJx();
+					CRod *pRd = static_cast<CRod*>(elem);
+					E = pRd->m_E.GetExpr().c_str();
+					F = pRd->m_F.GetExpr().c_str();
+					J = pRd->m_Jx.GetExpr().c_str();
 					//делаем из погонной массы массу стержня
-					m = ((CRod*)elem)->GetM()*((CRod*)elem)->GetLength();
+					M = pRd->m_m0.GetExpr().c_str();
+					CString tmp;
+					tmp.Format("*(%.16g)", pRd->GetLength());
+					M += tmp;
 				}
 				else
 				{
-					E = ((CHardRod*)elem)->GetStrE();
-					F = ((CHardRod*)elem)->GetStrF();
-					J = ((CHardRod*)elem)->GetStrJ();
+					CHardRod *pHRd = static_cast<CHardRod*>(elem);
+					E = pHRd->m_E.GetExpr().c_str();
+					F = pHRd->m_F.GetExpr().c_str();
+					J = pHRd->m_J.GetExpr().c_str();
 					//делаем из массы стержня погонную массу
-					m = ((CHardRod*)elem)->GetM()/((CHardRod*)elem)->GetLength();
+					M = pHRd->m_M.GetExpr().c_str();
+					CString tmp;
+					tmp.Format("/(%.16g)", pHRd->GetLength());
+					M += tmp;
 				}
-				CString M;
-				M.Format("%.11e", m );
 				//Удаление старого элемента из списка
 				delete elem;
 				m_pSheme->listElem.RemoveAt(pos2);
@@ -1792,19 +1772,19 @@ void CShemeDoc::OnGroupConvertTo()
 				if( elemType == IDC_ROD )
 				{
 					CHardRod *rodNew = (CHardRod*)AddHardRod( kn1, kn2 );
-					rodNew->SetE( E );
-					rodNew->SetF( F );
-					rodNew->SetJ( J );
-					rodNew->SetM( M );
+					rodNew->m_E.Reset(E);
+					rodNew->m_F.Reset(F);
+					rodNew->m_J.Reset(J);
+					rodNew->m_M.Reset(M);
 					rodNew->SetNumber( num );
 				}
 				else
 				{
 					CRod *rodNew = (CRod*)AddRod( kn1, kn2 );
-					rodNew->SetE( E );
-					rodNew->SetF( F );
-					rodNew->SetJx( J );
-					rodNew->SetM( M );
+					rodNew->m_E.Reset(E);
+					rodNew->m_F.Reset(F);
+					rodNew->m_Jx.Reset(J);
+					rodNew->m_m0.Reset(M);
 					rodNew->SetNumber( num );
 				}
 				pos = m_pSheme->listElem.GetHeadPosition();
@@ -1853,6 +1833,7 @@ void CShemeDoc::GroupClicking( int type )
 				m_pSheme->m_vecElemGroups.push_back( gr );
 			else
 				m_pSheme->m_vecKnotGroups.push_back( gr );
+			SetModifiedFlag();
 		}
 		ParamView.m_vecSelNumbers.clear();
 		m_pSheme->ClearAllSelectings();
@@ -1872,44 +1853,19 @@ void CShemeDoc::OnFileSaveAs()
 	str += "*.shm"; str += (TCHAR)NULL;
 	str += "Sheme Files v3.0 (*.shm)"; str += (TCHAR)NULL;
 	str += "*.shm"; str += (TCHAR)NULL;
+	str += "Sheme Files v3.1 (*.shm)"; str += (TCHAR)NULL;
+	str += "*.shm"; str += (TCHAR)NULL;
 	str += "All Files (*.*)"; str += (TCHAR)NULL;
 	str += "*.*"; str += (TCHAR)NULL;
 
-/*	char Filter[256];
-	int size = str.GetLength(), pos = 0;
-	for( int i = 0; i < size; ++i )
-	{
-		if( i >= 256 )
-		{
-			pos = 256-2;
-			break;
-		}
-		Filter[i] = str[i];
-		pos = i;
-	}
-	Filter[pos+1] = '\0';
-	dlg.m_ofn.lpstrFilter = Filter;*/
 	dlg.m_ofn.lpstrFilter = static_cast<LPCTSTR>(str);
 
-	dlg.m_ofn.nFilterIndex = 2;
+	dlg.m_ofn.nFilterIndex = 3;
 	dlg.m_ofn.lpstrDefExt = _T("shm");
 	dlg.m_ofn.Flags |= OFN_OVERWRITEPROMPT;
 
 	const int N = 80;
 	char FileName[N];
-/*	size = strName.GetLength();
-	pos = 0;
-	for( i = 0; i < size; ++i )
-	{
-		if( i >= N )
-		{
-			pos = N-2;
-			break;
-		}
-		FileName[i] = strName[i];
-		pos = i;
-	}
-	FileName[pos+1] = '\0';*/
 	strncpy( FileName, strName.LockBuffer(), N );
 	strName.UnlockBuffer();
 	dlg.m_ofn.lpstrFile = FileName;
@@ -1923,30 +1879,34 @@ void CShemeDoc::OnFileSaveAs()
 								MB_YESNOCANCEL|MB_TASKMODAL|MB_ICONQUESTION);
 			if( ret == IDNO )
 			{
-				m_pSheme->m_verShemeVersion = VER_EQ30;
+				m_pSheme->m_verShemeVersion = VER_EQ31;
 				continue;
 			}
 			else	if( ret = IDCANCEL )	return;
 		}
-		if( dlg.m_ofn.nFilterIndex == 1 )
+		if( (dlg.m_ofn.nFilterIndex == 1)||
+			(dlg.m_ofn.nFilterIndex == 2) )
 		{
 			if( AfxMessageBox("Выбран устаревший формат файла.\nНе все возможности будут сохранены.\nСохранить?",
 								MB_YESNO|MB_TASKMODAL|MB_ICONQUESTION) == IDNO )
 			{
-				m_pSheme->m_verShemeVersion = VER_EQ30;
+				m_pSheme->m_verShemeVersion = VER_EQ31;
 				return;
 			}
-			if( m_pSheme->IsShemeContainsHardRod() )
+			if( (dlg.m_ofn.nFilterIndex == 1) && m_pSheme->IsShemeContainsHardRod() )
 			{
 				CString mes("Схема содержит абс.жёсткие стержни, которые не могут быть сохранены в данном формате.");
 				mes += _T("\nКонвертируйте все жёсткие стержни в обычные и снова попытайтесь сохраниться.");
 				AfxMessageBox( mes, MB_OK|MB_TASKMODAL|MB_ICONEXCLAMATION );
 				return;
 			}
-			m_pSheme->m_verShemeVersion = VER_LE25;
+			if( dlg.m_ofn.nFilterIndex == 1 )
+				m_pSheme->m_verShemeVersion = VER_LE25;
+			else
+				m_pSheme->m_verShemeVersion = VER_EQ30;
 		}
 		else
-			m_pSheme->m_verShemeVersion = VER_EQ30;
+			m_pSheme->m_verShemeVersion = VER_EQ31;
 
 		CString strPathName( dlg.GetPathName() );
 		CFile F( strPathName, CFile::modeCreate|CFile::modeWrite );
@@ -1957,26 +1917,12 @@ void CShemeDoc::OnFileSaveAs()
 		ar.Flush();
 		F.Flush();
 		F.Close();
-		m_pSheme->m_verShemeVersion = VER_EQ30;
+		m_pSheme->m_verShemeVersion = VER_EQ31;
 
 		SetModifiedFlag(FALSE);
 		SetPathName( strPathName );
 		break;
 	}
-}
-
-void CShemeDoc::OnGroupClickElems() 
-{
-	// TODO: Add your command handler code here
-	GroupClicking( 1 );//набрать группу элементов
-	UpdateAllViews(NULL);
-}
-
-void CShemeDoc::OnGroupClickKnots() 
-{
-	// TODO: Add your command handler code here
-	GroupClicking( 2 );//набрать группу узлов
-	UpdateAllViews(NULL);	
 }
 
 void CShemeDoc::OnUpdateGroupClickElems(CCmdUI* pCmdUI) 
@@ -1999,12 +1945,14 @@ void CShemeDoc::OnButtonDelFreeKnots()
 	//Удаление пустых узлов
 	m_pSheme->DelFreeKnot();
 	UpdateAllViews(NULL);
+	SetModifiedFlag();
 }
 
 void CShemeDoc::OnAutoCorrect() 
 {
 	// TODO: Add your command handler code here
 	m_pSheme->m_bAutoCorrect = !m_pSheme->m_bAutoCorrect;
+	SetModifiedFlag();
 }
 
 void CShemeDoc::OnUpdateAutoCorrect(CCmdUI* pCmdUI) 
@@ -2118,3 +2066,75 @@ void CShemeDoc::OnFreeNums()
 	ParamView.Gray = FALSE;
 	ParamView.m_bFreeNums = false;
 }
+
+void CShemeDoc::OnMakeMovie() 
+{
+	// TODO: Add your command handler code here
+	if( m_pMovieView != NULL )
+	{
+		m_pMovieView->InitMatr(this);
+		return;
+	}
+
+	CNSys2DApp *pApp = static_cast<CNSys2DApp*>(AfxGetApp());
+
+	POSITION pos = pApp->GetFirstDocTemplatePosition();
+	pApp->GetNextDocTemplate(pos);
+	pApp->GetNextDocTemplate(pos);
+	pApp->GetNextDocTemplate(pos);
+	pApp->GetNextDocTemplate(pos);
+	pApp->GetNextDocTemplate(pos);
+	CDocTemplate *pTemplate = pApp->GetNextDocTemplate(pos);
+
+	//CMDIChildWnd* 
+	CMovieFrame *pNewFrame	= static_cast<CMovieFrame*>(pTemplate->CreateNewFrame(this, NULL));
+	ASSERT(pNewFrame);
+	
+	pTemplate->InitialUpdateFrame( pNewFrame, this );
+
+	m_pMovieView = static_cast<CMovieView*>(pNewFrame->GetActiveView());
+	ASSERT(m_pMovieView);
+//	m_pMovieView->InitMatr(this);
+}
+
+void CShemeDoc::OnShemeVars() 
+{
+	// TODO: Add your command handler code here
+	ASSERT(m_pSheme);
+	CShemeVars dlg( &m_pSheme->m_VarsTable);
+
+	dlg.DoModal();
+	SetModifiedFlag( dlg.m_bWasActions );
+}
+
+void CShemeDoc::OnDescript() 
+{
+	// TODO: Add your command handler code here
+	ASSERT(m_pSheme);
+	CDescriptionDlg dlg;
+	dlg.m_strDescr = m_pSheme->m_strDescription;
+	if( dlg.DoModal() == IDOK )
+	{
+		m_pSheme->m_strDescription = dlg.m_strDescr;
+		SetModifiedFlag();
+	}
+}
+
+void CShemeDoc::OnUpdateDescript(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->Enable( ParamView.m_iClickedObjects == 0 );	
+}
+
+void CShemeDoc::OnUpdateShemeVars(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->Enable( ParamView.m_iClickedObjects == 0 );
+}
+
+void CShemeDoc::OnUpdateFreeNums(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->Enable( ParamView.m_iClickedObjects == 0 );
+}
+

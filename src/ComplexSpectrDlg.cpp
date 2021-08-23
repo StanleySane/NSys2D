@@ -75,7 +75,7 @@ void CComplexSpectrDlg::OnAddElem()
 {
 	// TODO: Add your control notification handler code here
 	UpdateData(true);
-	CComplexSpectr CS;
+	CComplexSpectr CS( pkn->m_pSheme );
 	CS.pKn1=pkn;
 	CS.Free1=nFree;
 	CS.pKn2=GetKnot(m_ComboKnot.GetCurSel());

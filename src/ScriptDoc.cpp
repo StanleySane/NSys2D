@@ -19,9 +19,12 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CScriptDoc, CDocument)
 
-CScriptDoc::CScriptDoc()
+CScriptDoc::CScriptDoc():
+m_pOut(NULL), m_Break(FALSE,TRUE)
 {
-	m_bIsView = m_bIsExecuting = false;
+	m_pView = NULL;
+	m_pFrame = NULL;
+	m_bIsExecuting = false;
 }
 
 BOOL CScriptDoc::OnNewDocument()
@@ -38,8 +41,10 @@ CScriptDoc::~CScriptDoc()
 
 BEGIN_MESSAGE_MAP(CScriptDoc, CDocument)
 	//{{AFX_MSG_MAP(CScriptDoc)
-	ON_UPDATE_COMMAND_UI(ID_COMPILE_SCRIPT, OnUpdateCompileScript)
 	ON_UPDATE_COMMAND_UI(ID_RUN_SCRIPT, OnUpdateRunScript)
+	ON_COMMAND(ID_OUTPUT_BREAK, OnOutputBreak)
+	ON_UPDATE_COMMAND_UI(ID_OUTPUT_BREAK, OnUpdateOutputBreak)
+	ON_COMMAND(ID_SCRIPT_FILE_OPEN, OnScriptFileOpen)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -94,11 +99,15 @@ void CScriptDoc::Serialize(CArchive& ar)
 
 /////////////////////////////////////////////////////////////////////////////
 // CScriptDoc commands
-COutputView* CScriptDoc::MakeScript()
+COutputView* CScriptDoc::MakeScript( COutputFrame *pFrame )
 {
-	if( m_bIsView )
-		return NULL;
-	m_bIsView = true;
+	if( m_pView != NULL )
+	{
+		ASSERT( m_pOut == NULL );
+		m_pView->GetEditCtrl().SetWindowText("");
+		pFrame = m_pFrame;
+		return m_pView;
+	}
 
 	CString str;
 	str = GetTitle();
@@ -119,41 +128,118 @@ COutputView* CScriptDoc::MakeScript()
 	COutputFrame *pNewFrame	= static_cast<COutputFrame*>(pTemplate->CreateNewFrame(this, NULL));
 	ASSERT(pNewFrame);
 	
-	/*
-	CRect rect;
-	pos = GetFirstViewPosition();
-	CView *pView = GetNextView(pos);
-	pView->GetOwner()->GetWindowRect(&rect);
-	rect.OffsetRect(rect.Width()/2,0);
-	if( rect.Width() < 325 ) 
-		rect.right = rect.left + 325;
-	rect.bottom += 100;
-	pNewFrame->MoveWindow(&rect);
-	*/
-	
 	pTemplate->InitialUpdateFrame( pNewFrame, this );
 
-	COutputView *pOutputView = static_cast<COutputView*>(pNewFrame->GetActiveView());
-	ASSERT(pOutputView);
+	//COutputView *pOutputView = static_cast<COutputView*>(pNewFrame->GetActiveView());
+	m_pView = static_cast<COutputView*>(pNewFrame->GetActiveView());
+	ASSERT(m_pView);
 	pNewFrame->SetWindowText(str);
+	pFrame = pNewFrame;
+	m_pFrame = pNewFrame;
 
-	return pOutputView;
+	return m_pView;
 }
 
-void CScriptDoc::RunScript( const CString &text, COutputView *pView )
+void CScriptDoc::RunScript( const CString &text, COutputView *pView,  COutputFrame *pFrame )
 {
 	ASSERT(pView);
-	pView->Run(text);
-}
-
-void CScriptDoc::OnUpdateCompileScript(CCmdUI* pCmdUI) 
-{
-	// TODO: Add your command update UI handler code here
-	pCmdUI->Enable( !m_bIsExecuting );
+	m_Break.ResetEvent();
+	pView->Run( text, pFrame );
 }
 
 void CScriptDoc::OnUpdateRunScript(CCmdUI* pCmdUI) 
 {
 	// TODO: Add your command update UI handler code here
 	pCmdUI->Enable( !m_bIsExecuting );	
+}
+
+void CScriptDoc::StopThread()
+{
+	m_Break.SetEvent();
+	if( m_pOut )
+	{
+		WaitForSingleObject( m_pOut->m_hThread, INFINITE );
+		delete m_pOut;
+		m_pOut = NULL;
+	}
+	m_Break.ResetEvent();
+	m_bIsExecuting = false;
+	ASSERT( m_pFrame );
+	m_pFrame->GetSystemMenu(FALSE)->EnableMenuItem(SC_CLOSE, MF_BYCOMMAND|MF_ENABLED );
+	AfxGetMainWnd()->GetSystemMenu(FALSE)->EnableMenuItem(SC_CLOSE, MF_BYCOMMAND|MF_ENABLED );
+}
+
+void CScriptDoc::OnOutputBreak() 
+{
+	// TODO: Add your command handler code here
+	m_Break.SetEvent();	
+}
+
+void CScriptDoc::OnUpdateOutputBreak(CCmdUI* pCmdUI) 
+{
+	// TODO: Add your command update UI handler code here
+	pCmdUI->Enable( m_pOut != NULL );
+}
+
+void CScriptDoc::OnCloseDocument() 
+{
+	// TODO: Add your specialized code here and/or call the base class
+	if( m_pOut )
+	{
+		AfxMessageBox("Сначала прервите выполнение скрипта!");
+		return;
+	}
+	if( m_pOut )
+		::TerminateThread( m_pOut->m_hThread, 0 );
+	CDocument::OnCloseDocument();
+}
+
+
+void CScriptDoc::OnScriptFileOpen() 
+{
+	// TODO: Add your command handler code here
+	CFileDialog dlg(TRUE);
+
+	dlg.m_ofn.lpstrTitle = _T("Загрузить текст скрипта");
+
+	CString strName = GetTitle();
+	CString str;
+	str += "Script Files (*.scr)"; str += (TCHAR)NULL;
+	str += "*.scr"; str += (TCHAR)NULL;
+	str += "All Files (*.*)"; str += (TCHAR)NULL;
+	str += "*.*"; str += (TCHAR)NULL;
+
+	dlg.m_ofn.lpstrFilter = static_cast<LPCTSTR>(str);
+
+	dlg.m_ofn.nFilterIndex = 1;
+	dlg.m_ofn.lpstrDefExt = _T("scr");
+//	dlg.m_ofn.Flags |= OFN_OVERWRITEPROMPT;
+
+/*	const int N = 80;
+	char FileName[N];
+	strncpy( FileName, strName.LockBuffer(), N );
+	strName.UnlockBuffer();
+	dlg.m_ofn.lpstrFile = FileName;
+	dlg.m_ofn.nMaxFile = N;
+*/
+
+	if( dlg.DoModal() == IDOK )
+	{
+		try
+		{
+			CString strPathName( dlg.GetPathName() );
+			CFile F( strPathName, CFile::modeRead );
+			CArchive ar( &F, CArchive::load );
+		
+			Serialize( ar );
+			SetTitle( dlg.GetFileName() );
+			SetModifiedFlag(FALSE);
+			SetPathName( strPathName );
+		}
+		catch( CException &ex )
+		{
+			ex.ReportError();
+			return;
+		}
+	}	
 }

@@ -4,7 +4,6 @@
 #include "stdafx.h"
 #include "NSys2D.h"
 #include "KnotDlg.h"
-#include "Expression.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -21,8 +20,8 @@ CKnotDlg::CKnotDlg(CKnot *pKn/*=NULL*/, CWnd* pParent /*=NULL*/)
 {
 	pKnot=pKn;
 	//{{AFX_DATA_INIT(CKnotDlg)
-	m_EditX = _T("");
-	m_EditY = _T("");
+	m_EditX = 0.0;
+	m_EditY = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -33,9 +32,7 @@ void CKnotDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CKnotDlg)
 	DDX_Control(pDX, IDC_COMBO1, m_FixedType);
 	DDX_Text(pDX, IDC_EDIT1, m_EditX);
-	DDV_MaxChars(pDX, m_EditX, 100);
 	DDX_Text(pDX, IDC_EDIT2, m_EditY);
-	DDV_MaxChars(pDX, m_EditY, 100);
 	//}}AFX_DATA_MAP
 }
 
@@ -70,10 +67,12 @@ BOOL CKnotDlg::OnInitDialog()
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
+	m_FixedType.AddString("");
+	m_FixedType.AddString("");
 	m_FixedType.SetCurSel(pKnot->FixedType);
 
-	m_EditX=pKnot->GetStrX();
-	m_EditY=pKnot->GetStrY();
+	m_EditX = pKnot->GetCoordX();
+	m_EditY = pKnot->GetCoordY();
 
 	UpdateData(FALSE);
 
@@ -85,33 +84,8 @@ void CKnotDlg::OnOK()
 {
 	// TODO: Add extra validation here
 	UpdateData();
-	
-	CExpression e;
-	int ret;
-	if (ret=e.IsNum(m_EditX))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата X",
-			 MB_OK|MB_ICONERROR );
-		
-		return;
-	}
-
-	if (ret=e.IsNum(m_EditY))
-	{
-		CString mes;
-		mes.LoadString(ret);
-		
-		MessageBox(mes,"Координата Y",
-			  MB_OK|MB_ICONERROR );
-		
-		return;
-	}
-	
-	pKnot->SetCoord(m_EditX,m_EditY);
-	pKnot->FixedType=m_FixedType.GetCurSel();
+	pKnot->SetCoord( m_EditX, m_EditY );
+	pKnot->FixedType = m_FixedType.GetCurSel();
 
 	CDialog::OnOK();
 }

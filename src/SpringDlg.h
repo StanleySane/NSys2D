@@ -28,16 +28,16 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CSpringDlg)
 	enum { IDD = IDD_DIALOGSPRING };
-	CEdit	m_Edit_XX;
-	CEdit	m_Edit_X5;
-	CEdit	m_Edit_X3;
-	CEdit	m_Edit_X1;
 	CComboBox	m_ComboBoxKnot2;
 	CComboBox	m_ComboBoxKnot1;
 	int		m_Radio_X1;
 	int		m_Radio_X3;
 	int		m_Radio_X5;
 	int		m_Radio_XX;
+	CString	m_Edit_XX;
+	double	m_Edit_X1;
+	double	m_Edit_X3;
+	double	m_Edit_X5;
 	//}}AFX_DATA
 
 

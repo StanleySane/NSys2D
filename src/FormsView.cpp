@@ -73,7 +73,12 @@ void CFormsView::OnDraw(CDC* pDC)
 	CShemeDoc* pDoc = (CShemeDoc*)GetDocument();
 	ASSERT_VALID(pDoc);
 	// TODO: add draw code here
-	if (!ViewEnable) return;
+	if( !ViewEnable )
+	{
+		(m_DlgBar.GetDlgItem(IDC_BAR_FREQ))->SetWindowText( _T("(нет данных)") );
+		(m_DlgBar.GetDlgItem(IDC_BAR_T))->SetWindowText( _T("(нет данных)") );
+		return;
+	}
 
 	double oldMove=pDoc->ParamView.MultMove;
 	double oldAngl=pDoc->ParamView.MultAngl;
@@ -102,9 +107,10 @@ void CFormsView::OnDraw(CDC* pDC)
 	if( m_bBar )
 	{
 		CString strFreq, strT;
-		strFreq.Format("%d(%d): %.10lg 1/рад", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm]);
-		double T=(matr_Freq[0][NumForm]!=0?2*acos(-1)/matr_Freq[0][NumForm]:0);
-		strT.Format("%d(%d): %.8lg c",     NumForm+1, matr_Freq.SizeX, T);
+		double PI2 = 2.0*CNSys2DApp::M_PI;
+		strFreq.Format("%d(%d): %.16g 1/рад (%.16g Гц)", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm], matr_Freq[0][NumForm]/PI2 );
+		double T=(matr_Freq[0][NumForm]!=0?PI2/matr_Freq[0][NumForm]:0);
+		strT.Format("%d(%d): %.16g c",     NumForm+1, matr_Freq.SizeX, T);
 
 		(m_DlgBar.GetDlgItem(IDC_BAR_FREQ))->SetWindowText(strFreq);
 		(m_DlgBar.GetDlgItem(IDC_BAR_T))->SetWindowText(strT);
@@ -121,10 +127,11 @@ void CFormsView::OnDraw(CDC* pDC)
 		COLORREF oldClr = pDC->SetTextColor(pDoc->ParamView.m_clrFree);
 
 		CString str;
-		str.Format("Частота колебаний %d(%d): %.8lg 1/рад", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm]);
+		double PI2 = 2.0*CNSys2DApp::M_PI;
+		str.Format("Частота колебаний %d(%d): %.16lg 1/рад (%.16g Гц)", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm], matr_Freq[0][NumForm]/PI2 );
 		pDC->TextOut(2, 5, str);
-		double T=(matr_Freq[0][NumForm]!=0?2*acos(-1)/matr_Freq[0][NumForm]:0);
-		str.Format("Период колебаний  %d(%d): %.8lg c",     NumForm+1, matr_Freq.SizeX, T);
+		double T=(matr_Freq[0][NumForm]!=0?2*CNSys2DApp::M_PI/matr_Freq[0][NumForm]:0);
+		str.Format("Период колебаний  %d(%d): %.16g c",     NumForm+1, matr_Freq.SizeX, T);
 		pDC->TextOut(2, 25, str);
 
 		pDC->SetTextColor(oldClr);
@@ -161,20 +168,20 @@ void CFormsView::SetForm(int n)
 	{
 		CKnot *kn=pDoc->m_pSheme->listKnot.GetNext(pos);
 		if (kn->nXRez>=0) 
-			kn->MoveX=matr_Forms[kn->nXRez][n];
+			kn->MoveX = matr_Forms(kn->nXRez,n);
 		else 
-			kn->MoveX=0;
+			kn->MoveX = 0;
 
 		if (kn->nYRez>=0) 
-			kn->MoveY=matr_Forms[kn->nYRez][n];
+			kn->MoveY = matr_Forms(kn->nYRez,n);
 		else 
-			kn->MoveY=0;
+			kn->MoveY = 0;
 
 		for (int i=0;i<kn->CntAngle;i++)
 			if (kn->nARez[i]>=0)
-				kn->MoveA[i]=matr_Forms[kn->nARez[i]][n];
+				kn->MoveA[i] = matr_Forms(kn->nARez[i],n);
 			else 
-				kn->MoveA[i]=0;
+				kn->MoveA[i] = 0;
 	}
 	NumForm=n;
 }
@@ -222,14 +229,28 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 
 	BeginWaitCursor();
 
-	int Count=pDoc->m_pSheme->UpdateAllFree();
-	if (!Count) 
+	if( !pDoc->m_pSheme->GetEigen( matr_Freq, matr_Forms ) )
+	{
+		ViewEnable = false;
+		EndWaitCursor();
+		Invalidate();
+		return;
+	}
+	if( NumForm >= matr_Forms.SizeX )	NumForm = 0;
+	SetForm( NumForm );
+	ViewEnable = true;
+
+	EndWaitCursor();
+	Invalidate();
+/*
+	int Count = pDoc->m_pSheme->UpdateAllFree();
+	if( Count == 0 )
 	{
 		EndWaitCursor();
 		return;
 	}
-	int code=pDoc->m_pSheme->SetMatrMDC(Count);
-	if (code) 
+	int code = pDoc->m_pSheme->SetMatrMDC(Count);
+	if( code )
 	{
 		EndWaitCursor();
 		return;
@@ -240,19 +261,7 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	matr_Freq.ReSize (pDoc->m_pSheme->matr_C.SizeY, pDoc->m_pSheme->matr_C.SizeY);
 	matr_Freq=pDoc->m_pSheme->matr_M_1*pDoc->m_pSheme->matr_C;
 
-////////////////////////////////////////////
-			TRACE0("\n\nBefore solve:\n");
-			for( int r = 0; r < matr_Freq.SizeY; r++ )
-			{
-				for( int c = 0; c < matr_Freq.SizeX; c++ )
-				{
-					TRACE1("%.5lf ", matr_Freq[r][c] );
-				}
-				TRACE0("\n");
-			}
-////////////////////////////////////////////
-
-	if (Count>1)
+	if( Count > 1 )
 	{
 		EV_METHOD EVm = pDoc->m_pSheme->m_EVMethod;
 
@@ -263,15 +272,16 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			if (code<0) 
 			{
 		//		AfxMessageBox( _T("Процесс нахождения собственных частот не сходится."),MB_OK|MB_ICONSTOP);
-				/**************************************************/
+				//////////////////////////////////////////////////////////
 				//демодификация форм если надо
 				if( pDoc->m_pSheme->m_bIsHardRod )
 				{
 					pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
 				}
-				/**************************************************/
+				//////////////////////////////////////////////////////////
 				ViewEnable=false;
 				EndWaitCursor();
+				Invalidate();
 				return;
 			}
 		}
@@ -281,20 +291,22 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 			code = matr_Freq.GetEigenVecs( matr_Forms, EVm );
 			if (code<0) 
 			{
-				/**************************************************/
+				//////////////////////////////////////////////////////////
 				//демодификация форм если надо
 				if( pDoc->m_pSheme->m_bIsHardRod )
 				{
 					pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
 				}
-				/**************************************************/	
+				//////////////////////////////////////////////////////////
 				ViewEnable=false;
 				EndWaitCursor();
+				Invalidate();
 				return;
 			}
 		}//if(EVm==EVM_JACOBY)
 
 ////////////////////////////////////////////
+#ifdef _DEBUG
 			TRACE0("Before demodify:\n");
 			for( int r = 0; r < matr_Forms.SizeY; r++ )
 			{
@@ -304,15 +316,17 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				}
 				TRACE0("\n");
 			}
+#endif
 ////////////////////////////////////////////
-		/**************************************************/
+		//////////////////////////////////////////////////////////
 		//демодификация форм если надо
 		if( pDoc->m_pSheme->m_bIsHardRod )
 		{
 			pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
 		}
-		/**************************************************/	
+		//////////////////////////////////////////////////////////
 ////////////////////////////////////////////
+#ifdef _DEBUG
 			TRACE0("After demodify:\n");
 			for( r = 0; r < matr_Forms.SizeY; r++ )
 			{
@@ -322,6 +336,7 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				}
 				TRACE0("\n");
 			}
+#endif
 ////////////////////////////////////////////
 
 		//Нормирование форм
@@ -367,6 +382,7 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 					}
 				}
 ////////////////////////////////////////////
+#ifdef _DEBUG
 			TRACE0("After sort:\n");
 			for( r = 0; r < matr_Forms.SizeY; r++ )
 			{
@@ -376,24 +392,22 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 				}
 				TRACE0("\n");
 			}
+#endif
 ////////////////////////////////////////////
-
-		ViewEnable=true;
-
-		if (NumForm>=matr_Forms.SizeX) NumForm=0;
-		SetForm(NumForm);
-		Invalidate();
 	}
 	else
 	{
-		matr_Freq[0][0]=sqrt(pDoc->m_pSheme->matr_C[0][0]/pDoc->m_pSheme->matr_M[0][0]);
-		matr_Forms[0][0]=30.0/pDoc->ParamView.Scale;
-		NumForm=0;
-		SetForm(NumForm);
-		ViewEnable=true;
-		Invalidate();
+		ASSERT( matr_Forms.SizeX == 1 );
+		matr_Freq[0][0] = sqrt(pDoc->m_pSheme->matr_C[0][0]/pDoc->m_pSheme->matr_M[0][0]);
+		matr_Forms[0][0] = 30.0/pDoc->ParamView.Scale;
 	}
+	if( NumForm >= matr_Forms.SizeX )	NumForm = 0;
+	SetForm(NumForm);
+	ViewEnable=true;
+
 	EndWaitCursor();
+	Invalidate();
+	*/
 }
 
 void CFormsView::OnPrint(CDC* pDC, CPrintInfo* pInfo) 

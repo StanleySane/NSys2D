@@ -9,7 +9,6 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-//#include "ListKnot.h"
 #include "elem.h"
 #include "rod.h"
 #include "HardRod.h"
@@ -18,15 +17,11 @@
 #include "Mass.h"
 #include "knot.h"
 #include "KnotPropertyFrame.h"
-#include "ProgressDlg.h"
-//#include "FreqParam.h"
-//#include "ParamIntegr.h"
-//#include "ListSpectr.h"
-//#include "ShemeGroup.h"
-
+//#include "ProgressDlg.h"
 
 class CSheme;
 class CShemeGroup;
+class CMovieView;
 
 class CShemeDoc : public CDocument
 {
@@ -49,14 +44,8 @@ public:
 
 // Implementation
 public:
-//	int SetBeginPosition();
-//	int SetMatrMDC(int Count, int Freq=0);
-//	int UpdateAllFree();
-//	void AfterCalc();
-//	void SetConnectElements();
-	int Numark(int nStep);
-	int Park(int nStep);
-	int RungeKutt(int nStep);
+	void GroupClicking( int );
+	void CloseView( CKnot* );
 	void OnProperties();
 	int PreCalculated();
 
@@ -65,12 +54,9 @@ public:
 	CElem* AddSpring(CKnot *knot1, CKnot *knot2);
 	CElem* AddRod(CKnot *knot1, CKnot *knot2);
 	CElem* AddHardRod(CKnot *knot1, CKnot *knot2);
-//	void ClearElem();
-//	CRod* GoRodDlg(CRod* pRod=0);
-//	CKnot* GoKnotDlg(CKnot * pKnot);
-//	CKnot* AddKnot(CKnot &knot);
 
-	CProgressDlg* pProgressDlg;
+	CMovieView *m_pMovieView;
+//	CProgressDlg* pProgressDlg;
 	//m_bIsView нужна для исключения повторного создания
 	//окна с формами
 	bool m_bIsView;
@@ -111,8 +97,6 @@ protected:
 	afx_msg void OnAllRods();
 	afx_msg void OnAllSprings();
 	afx_msg void OnGroupConvertTo();
-	afx_msg void OnGroupClickElems();
-	afx_msg void OnGroupClickKnots();
 	afx_msg void OnUpdateGroupClickElems(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateGroupClickKnots(CCmdUI* pCmdUI);
 	afx_msg void OnButtonDelFreeKnots();
@@ -135,6 +119,12 @@ protected:
 	afx_msg void OnAutoCorrect();
 	afx_msg void OnUpdateAutoCorrect(CCmdUI* pCmdUI);
 	afx_msg void OnFreeNums();
+	afx_msg void OnMakeMovie();
+	afx_msg void OnShemeVars();
+	afx_msg void OnDescript();
+	afx_msg void OnUpdateDescript(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateShemeVars(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFreeNums(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -146,24 +136,10 @@ protected:
 	DECLARE_DISPATCH_MAP()
 	DECLARE_INTERFACE_MAP()
 private:
-//	void CorrectGroups();
-//	bool IsShemeContainsHardRod();
-	void GroupClicking( int );
-//	int DelFreeKnot();
-//	void ClearAllSelectings();
-//	void CreateGroupForAllObjects( int type );
-//	int GetRealPosInGroup( const ARRAY&, int );
-//	int IsGroupContainsNotexistingObject( bool bElem, CShemeGroup& gr, CString& ErrorMsg, ARRAY& vec );
 	void PreviewGroup( bool bElem );
-//	ARRAY::iterator GetElemIteratorInGroup( const CElem* elem, ARRAY& vec );
-//	ARRAY::iterator GetKnotIteratorInGroup( const CKnot* knot, ARRAY& vec );
-//	bool IsElemGroupOfOneType( const ARRAY& vec );
-//	void ReNumElems();
 
 public:
 	CSheme *m_pSheme;
-//	bool IsElemContainsInGroup( const CElem* elem, const ARRAY& vec );
-//	bool IsKnotContainsInGroup( const CKnot* knot, const ARRAY& vec );
 };
 
 /////////////////////////////////////////////////////////////////////////////

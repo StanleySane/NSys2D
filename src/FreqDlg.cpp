@@ -25,15 +25,15 @@ CFreqDlg::CFreqDlg(CListKnot *plistkn, CFreqParam *param, CWnd* pParent /*=NULL*
 	if (!pParam->pKnot2) pParam->pKnot2=pListKnot->GetKnotPos(0);
 
 	//{{AFX_DATA_INIT(CFreqDlg)
-	m_w0 = _T("");
-	m_w1 = _T("");
-	m_dw = _T("");
 	m_LogCoord = FALSE;
 	m_TypeCharact = -1;
 	m_Free1 = -1;
 	m_Free2 = -1;
 	m_Derive = -1;
 	m_Force = -1;
+	m_w0 = 0.0;
+	m_w1 = 0.0;
+	m_dw = 0.0;
 	//}}AFX_DATA_INIT
 }
 
@@ -44,15 +44,15 @@ void CFreqDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CFreqDlg)
 	DDX_Control(pDX, IDC_COMBO2, m_ComboBoxKnot2);
 	DDX_Control(pDX, IDC_COMBO1, m_ComboBoxKnot1);
-	DDX_Text(pDX, IDC_EDIT1, m_w0);
-	DDX_Text(pDX, IDC_EDIT2, m_w1);
-	DDX_Text(pDX, IDC_EDIT3, m_dw);
 	DDX_Check(pDX, IDC_CHECK1, m_LogCoord);
 	DDX_Radio(pDX, IDC_RADIO1, m_TypeCharact);
 	DDX_Radio(pDX, IDC_RADIO4, m_Free1);
 	DDX_Radio(pDX, IDC_RADIO7, m_Free2);
 	DDX_Radio(pDX, IDC_RADIO10, m_Derive);
 	DDX_Radio(pDX, IDC_RADIO13, m_Force);
+	DDX_Text(pDX, IDC_EDIT1, m_w0);
+	DDX_Text(pDX, IDC_EDIT2, m_w1);
+	DDX_Text(pDX, IDC_EDIT3, m_dw);
 	//}}AFX_DATA_MAP
 }
 
@@ -90,9 +90,11 @@ BOOL CFreqDlg::OnInitDialog()
 	m_Free1=pParam->typeFree1;
 	m_Free2=pParam->typeFree2;
 	m_Derive=pParam->Derive;
-	m_w0=pParam->strwBeg;
-	m_w1=pParam->strwEnd;
-	m_dw=pParam->strwStep;
+
+	m_w0=pParam->m_wBeg;
+	m_w1=pParam->m_wEnd;
+	m_dw=pParam->m_wStep;
+
 	m_LogCoord=pParam->LogCoord;
 	m_Force=pParam->typeForce;
 
@@ -144,9 +146,9 @@ void CFreqDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 
-	pParam->strwBeg=m_w0;
-	pParam->strwEnd=m_w1;
-	pParam->strwStep=m_dw;
+	pParam->m_wBeg=m_w0;
+	pParam->m_wEnd=m_w1;
+	pParam->m_wStep=m_dw;
 	pParam->Derive=m_Derive;
 	pParam->TypeCharact=m_TypeCharact;
 	pParam->LogCoord=m_LogCoord;
@@ -192,36 +194,5 @@ BOOL CFreqDlg::VerifyInfo()
 		return false;
 	}
 
-	CExpression e;
-	int ret;
-	CString str1;
-
-	ret=e.IsNum(m_w0);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Начальная частота не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_w1);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Конечная частота не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
-	ret=e.IsNum(m_dw);
-	if (ret)
-	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Шаг частоты не число"
-			,MB_OK|MB_ICONERROR);
-		return false;
-	}
 	return true;
 }

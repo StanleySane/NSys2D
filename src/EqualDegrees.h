@@ -14,6 +14,15 @@
 
 #include<afxtempl.h>
 
+//	right_move = left_move + rotate*L
+typedef struct __TRIPLE__
+{
+	int right_move;
+	int left_move;
+	int rotate;
+	double L;
+}	Triple;
+
 class CEqualDegrees  
 {
 private:
@@ -21,7 +30,9 @@ private:
 	CList<Triple,Triple> *m_lstTriples;
 	int m_size;//размер исходной матрицы
 	ARRAY m_SolVect;
-	CMatr m_Cond;
+	CMatr m_Cond;//м-ца преобразования.
+	CMatr m_CondT;//м-ца преобразования, но транспонированная 
+	//(её использование предъявляет доп.требования к памяти).
 public:
 	int CountDegrees( int );
 	int CountKnots( int );
@@ -34,10 +45,10 @@ public:
 	void ModifyVect( CMatr &v );
 	void AddTriple( int, int, int, double );
 	void Prepare();
+//	void Prepare1();
 	void AddPair( int, int );
 
-	void ModifyMatrMDC( CMatr &M, CMatr &D, CMatr &C, bool condence );
-	void ModifyMatrMC( CMatr &M, CMatr &C );
+	void ModifyMatrMDC( CMatr &M, CMatr &D, CMatr &C );
 
 	CEqualDegrees( int n = 0 );
 	virtual ~CEqualDegrees();

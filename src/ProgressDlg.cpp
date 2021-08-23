@@ -19,7 +19,7 @@ CProgressDlg::CProgressDlg(int Count, CString tit,
 	: CDialog(CProgressDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CProgressDlg)
-		// NOTE: the ClassWizard will add member initialization here
+	m_strDetails = _T("");
 	//}}AFX_DATA_INIT
 	maxValue=Count;
 	title=tit;
@@ -33,6 +33,7 @@ void CProgressDlg::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(CProgressDlg)
 	DDX_Control(pDX, IDCANCEL, m_Button);
 	DDX_Control(pDX, IDC_PROGRESS1, m_Progress);
+	DDX_Text(pDX, IDC_DETAILS, m_strDetails);
 	//}}AFX_DATA_MAP
 }
 
@@ -63,4 +64,10 @@ void CProgressDlg::SetPos(int i)
 {
 	m_Progress.SetPos(i);
 	UpdateData(false);
+}
+
+void CProgressDlg::SetDetails( const CString &str )
+{
+	m_strDetails = str;
+	UpdateData(FALSE);
 }

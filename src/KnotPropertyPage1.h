@@ -29,8 +29,8 @@ public:
 	//{{AFX_DATA(CKnotPropertyPage1)
 	enum { IDD = IDD_KNOTPAGE1 };
 	CComboBox_FixedType	m_FixedType;
-	CString	m_EditX;
-	CString	m_EditY;
+	double	m_EditX;
+	double	m_EditY;
 	//}}AFX_DATA
 
 
@@ -142,16 +142,16 @@ public:
 	CButton	m_RadPx1;
 	CButton	m_ButPy;
 	CButton	m_ButPx;
-	CEdit	m_EditFiy;
-	CEdit	m_EditWy;
-	CEdit	m_EditAy;
-	CEdit	m_EditPy;
-	CEdit	m_EditPx;
-	CEdit	m_EditFix;
-	CEdit	m_EditWx;
-	CEdit	m_EditAx;
 	BOOL	m_CheckPx;
 	BOOL	m_CheckPy;
+	CString	m_EditPx;
+	CString	m_EditPy;
+	double	m_EditAx;
+	double	m_EditWx;
+	double	m_EditFix;
+	double	m_EditAy;
+	double	m_EditWy;
+	double	m_EditFiy;
 	//}}AFX_DATA
 
 
@@ -220,20 +220,20 @@ public:
 	CButton	m_RadUx3;
 	CButton	m_ButUy;
 	CButton	m_ButUx;
-	CEdit	m_EditUy;
-	CEdit	m_EditFiy;
-	CEdit	m_EditWy;
-	CEdit	m_EditAy;
-	CEdit	m_EditUx;
-	CEdit	m_EditFix;
-	CEdit	m_EditWx;
-	CEdit	m_EditAx;
 	CButton	m_RadUy2;
 	CButton	m_RadUy1;
 	CButton	m_RadUx2;
 	CButton	m_RadUx1;
 	BOOL	m_CheckUx;
 	BOOL	m_CheckUy;
+	CString	m_EditUy;
+	CString	m_EditUx;
+	double	m_EditAx;
+	double	m_EditWx;
+	double	m_EditFix;
+	double	m_EditAy;
+	double	m_EditWy;
+	double	m_EditFiy;
 	//}}AFX_DATA
 
 

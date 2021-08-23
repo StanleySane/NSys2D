@@ -21,10 +21,6 @@ class CRodDlg : public CDialog
 public:
 	void InvalidateKnot(BOOL bSave=FALSE);
 	CListKnot *pListKnot;
-//	int Type2;
-//	int Type1;
-	CString strJx;
-	CString strE;
 	CRod* pRod;
 	BOOL VerifyInfo();
 	CRodDlg(CListKnot *plistkn,CRod *prod=NULL,bool full = true,CWnd* pParent = NULL);   // standard constructor

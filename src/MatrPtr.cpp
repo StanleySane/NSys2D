@@ -6,10 +6,14 @@
 #include "NSys2D.h"
 #include "MatrPtr.h"
 
+#include "StdAfxMy.h"
+
 #include "AlgolMatr.h"
+#include "Matr.h"
 #include "ValueHeader.h"
 
 #include<new>
+#include<cmath>
 using namespace std;
 
 #ifdef _DEBUG
@@ -49,7 +53,12 @@ errorsT MatrPtr::Construct( int r, int c )
 	ASSERT( (r>=0)&&(c>=0) );
 	try
 	{
-		m_pMatr = new AlgolMatr( r, 0, c-1 );
+		if( (c == 0)||(r == 0) )
+		{
+			m_pMatr = new AlgolMatr();
+		}
+		else
+			m_pMatr = new AlgolMatr( r, 0, c-1 );
 	}
 	catch( bad_alloc& )
 	{
@@ -69,7 +78,12 @@ void MatrPtr::Destruct()
 	if( m_pMatr )
 	{
 		Refs::iterator it = m_MatrRefMap.find(m_pMatr);
-		ASSERT( it != m_MatrRefMap.end() );
+		//ASSERT( it != m_MatrRefMap.end() );
+		if( it == m_MatrRefMap.end() )
+		{
+			m_pMatr = NULL;
+			return;
+		}
 		(*it).second--;
 		if( (*it).second == 0 )
 		{
@@ -98,7 +112,7 @@ void MatrPtr::InitBy( const MatrPtr &obj )
 
 AlgolMatr* MatrPtr::GetMatr() const
 {
-	ASSERT(m_pMatr);
+//	ASSERT(m_pMatr);
 	return m_pMatr;
 }
 
@@ -137,5 +151,125 @@ bool MatrPtr::GetAt( int r, int c, Value &v )
 	if( !m_pMatr->IsValidPos( r, c ) )
 		return false;
 	v.SetDouble( m_pMatr->GetAt( r, c ) );
+	return true;
+}
+
+bool MatrPtr::GetEigen( AlgolMatr &Freqs, AlgolMatr &Forms, int iMethod )
+{
+	if( m_pMatr == NULL )
+		return false;
+	if( (iMethod < 0)||(iMethod > 3) )
+		return false;
+
+	if( iMethod == 0 )
+	{
+		CMatr m;
+		m.ConvertToCMatr( *m_pMatr );
+		CMatr forms( m.SizeY, m.SizeY );
+		//¬ычисление собственных частот и форм методом якоби
+		if( m.Eigen( &forms ) < 0 )
+			return false;
+		//Ќормирование форм
+		for( int i = 0; i < forms.SizeX; i++ )
+		{
+			double val = 0.0;
+			for( int j = 0; j < forms.SizeY; j++ )
+			{
+				double tmp = forms.GetAt( j, i );
+				val += tmp*tmp;
+			}
+			val = sqrt(val);
+			for( j = 0; j < forms.SizeY; j++ )
+			{
+				forms.GetAt( j, i ) /= val;
+			}
+		}
+		//—ортируем формы по возрастанию частот
+		int s = m.SizeX - 1;
+		for( i = 0; i < s; i++ )
+		{
+			for( int j = i+1; j < m.SizeX; j++ )
+			{
+				if( m.GetAt(i,i) > m.GetAt(j,j) )
+				{
+					double tmp = m.GetAt(i,i);
+					m.GetAt(i,i) = m.GetAt(j,j);
+					m.GetAt(j,j) = tmp;
+					for( int k = 0; k < forms.SizeY; k++ )
+					{
+						tmp = forms.GetAt(k,i);
+						forms.GetAt(k,i) = forms.GetAt(k,j);
+						forms.GetAt(k,j) = tmp;
+					}
+				}
+			}
+		}
+		if( Freqs.Resize( m.SizeX, 1 ) == false )
+			return false;
+		for( i = 0; i < m.SizeX; i++ )
+		{
+			Freqs( i+1, 0 ) = m.GetAt( 0, i );
+		}
+		forms.ConvertToAlgolMatr( Forms );
+	}
+	else
+	{
+		//вычисление собств.значений и форм QR-методом
+		EV_METHOD EVMethod;
+		switch( iMethod )
+		{
+		case 1:
+			EVMethod = EVM_QR_ELM;
+			break;
+		case 2:
+			EVMethod = EVM_QR_DIR;
+			break;
+		case 3:
+			EVMethod = EVM_QR_ORT;
+			break;
+		}
+		if( m_pMatr->GetEigen( Freqs, Forms, EVMethod ) == false )
+			return false;
+		Freqs.SetMinCol(0);
+		Forms.SetMinCol(0);
+		//Ќормирование форм
+		int r, c, cols = Forms.GetMaxCol(), rows = Forms.GetRow();
+		for( c = 0; c < cols; c++ )
+		{
+			double val = 0.0;
+			for( r = 0; r < rows; r++ )
+			{
+				double tmp = Forms( r, c );
+				val += tmp*tmp;
+			}
+			val = sqrt(val);
+			for( r = 0; r < rows; r++ )
+			{
+				Forms( r, c ) /= val;
+			}
+		}
+		//—ортируем формы по возрастанию частот
+		cols = Freqs.GetRow();
+		rows = Forms.GetMaxCol();
+		int s = cols - 1;
+		for( r = 0; r < s; r++ )
+		{
+			for( c = r+1; c < cols; c++ )
+			{
+				if( Freqs(r,0) > Freqs(c,0) )
+				{
+					double tmp = Freqs(r,0);
+					Freqs(r,0) = Freqs(c,0);
+					Freqs(c,0) = tmp;
+					for( int k = 0; k < rows; k++ )
+					{
+						tmp = Forms(k,r);
+						Forms(k,r) = Forms(k,c);
+						Forms(k,c) = tmp;
+					}
+				}
+			}
+		}
+	}//if(EVm==EVM_JACOBY)
 	return true;
 }

@@ -6,6 +6,8 @@
 #include "NSys2D.h"
 #include "AlgolMatr.h"
 
+#include "StdAfxMy.h"
+
 #include<algorithm>
 #include<cmath>
 #include<functional>
@@ -16,6 +18,23 @@ using namespace std;
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW
 #endif
+
+void Balance( AlgolMatr &a, AlgolMatr &d, int &low, int &hi, int base = 2 );
+void BalBack( int low, int hi, AlgolMatr d, AlgolMatr &z );
+
+void ElmHes( int k, int l, AlgolMatr &a, int *inter );
+void DirHes( int k, int l, AlgolMatr &a, int *inter );
+void OrtHes( int k, int l, AlgolMatr &a, AlgolMatr &d );
+
+void ElmTrans( int low, int upp, int *inter, AlgolMatr h, AlgolMatr &v );
+void DirTrans( int low, int upp, int *inter, AlgolMatr h, AlgolMatr &v );
+void OrtTrans( int low, int upp, AlgolMatr h, AlgolMatr d, AlgolMatr &v );
+
+void HQR2( int low, int upp, AlgolMatr &h, AlgolMatr &vecs, 
+		  AlgolMatr &wr, AlgolMatr &wi, int *cnt, int maxiter = 30 );
+
+int ACCInverse( AlgolMatr &a, int &l );
+bool SymDet( AlgolMatr &a, AlgolMatr &p, DETERMINANT &det );
 
 bool Ortho1( const AlgolMatr &a, AlgolMatr &inv, double eps = 1e-6 );
 
@@ -202,7 +221,7 @@ AlgolMatr AlgolMatr::operator * ( const AlgolMatr &v )
 
 AlgolMatr& AlgolMatr::operator *= ( const AlgolMatr &v )
 {
-	if( m_mincol != v.m_row );
+	if( m_mincol != v.m_row )
 		return *this;
 	AlgolMatr temp( m_row, v.m_mincol, v.m_maxcol );
 
@@ -235,7 +254,7 @@ AlgolMatr AlgolMatr::operator * ( double v )
 
 AlgolMatr AlgolMatr::operator - ( const AlgolMatr &v )
 {
-	if( (m_row != v.m_row)||(GetWidth() != v.GetWidth()) );
+	if( (m_row != v.m_row)||(GetWidth() != v.GetWidth()) )
 		return AlgolMatr();
 	AlgolMatr temp( m_row, v.m_mincol, v.m_maxcol );
 
@@ -267,7 +286,7 @@ AlgolMatr AlgolMatr::operator - ( double v )
 
 AlgolMatr AlgolMatr::operator + ( const AlgolMatr &v )
 {
-	if( (m_row != v.m_row)||(GetWidth() != v.GetWidth()) );
+	if( (m_row != v.m_row)||(GetWidth() != v.GetWidth()) )
 		return AlgolMatr();
 	AlgolMatr temp( m_row, v.m_mincol, v.m_maxcol );
 
@@ -363,10 +382,146 @@ bool AlgolMatr::Resize( int r, int c )
 		SetMinCol(0);
 		return true;
 	}
+	if( (r == 0)||(c == 0) )
+	{
+		m_row = m_mincol = m_maxcol = 0;
+		m_vect.resize( 0 );
+		return true;
+	}
 	m_row = r;
 	m_mincol = 0;
 	m_maxcol = c - 1;
 	m_vect.resize( r*c );
+	return true;
+}
+
+bool AlgolMatr::GetEigen( AlgolMatr &Freqs, AlgolMatr &Forms, EV_METHOD evm )
+{
+//ф-ция ищет собств.числа и вектора м-цы (n:n) методом evm.
+//в случае успеха (возвращается true) собств.числа заносятся в вектор Freqs (n:1).
+//собств. вектора заносятся в Forms (n:n) по столбцам 
+//(т.е. каждый столбец м-цы - собств.вектор).
+//каждому i-му собств. числу (Freqs(i,0)) соответсвует собств.вектор (Forms(-,i-1)).
+//частоты неотсортированы, формы неотнормированны.
+//на выходе у матриц Freqs и Forms нумерация стобцов от нуля.
+//исходная м-ца (*this) сохраняется.
+	int n = m_row;
+
+	ASSERT( GetWidth() == n );
+
+	Forms.Resize( n, n );
+	Forms.SetMinCol(1);
+	Freqs.Resize( n, 1 );
+	Freqs.SetMinCol(1);
+	AlgolMatr A( *this );
+//	AlgolMatr vecs(n,1,n);
+//	AlgolMatr wr(n,1,1);
+	AlgolMatr wi(n,1,1);
+	//ConvertToAlgolMatr( A );
+	A.SetMinCol(1);
+
+	int low = 1, hi = n;
+	int *cnt, *inter;
+
+	cnt = new int[n];
+	inter = new int[n];
+
+	AlgolMatr d(n,1,1);
+
+	Balance( A, d, low, hi );
+	if( low > hi )	
+	{
+		delete [] cnt;
+		delete [] inter;
+		return false;
+	}
+
+	switch( evm )
+	{
+	case EVM_QR_ELM:
+		ElmHes( low, hi, A, inter );
+		ElmTrans( low, hi, inter, A, Forms );
+		break;
+	case EVM_QR_DIR:
+		DirHes( low, hi, A, inter );
+		DirTrans( low, hi, inter, A, Forms );
+		break;
+	case EVM_QR_ORT:
+		{
+			AlgolMatr d_ort(n,1,1);
+			OrtHes( low, hi, A, d_ort );
+			OrtTrans( low, hi, A, d_ort, Forms );
+		}
+		break;
+	default:
+		ASSERT(FALSE);
+		return false;
+		break;
+	}
+
+	int maxiter = 30;
+	AlgolMatr H(A), wr_temp(Freqs), wi_temp(wi), vecs_temp(Forms);
+	//H = A;
+	//wr_temp = wr;
+	//wi_temp = wi;
+	//vecs_temp = vecs;
+	for(;;)
+	{
+		try
+		{
+			HQR2( low, hi, H, vecs_temp, wr_temp, wi_temp, cnt, maxiter );
+		}
+		catch( EV_EXCEPT &ex )
+		{
+			if( ex != EVE_NOERR )
+			{
+				H = A;
+				//wr_temp = wr;
+				wr_temp = Freqs;
+				wi_temp = wi;
+				//vecs_temp = vecs;
+				vecs_temp = Forms;
+				if( maxiter >= 30000 )
+				{
+					delete [] cnt;
+					delete [] inter;
+					return false;
+				}
+				maxiter *= 2;
+				continue;
+			}
+		}
+		//wr = wr_temp;
+		Freqs = wr_temp;
+		wi = wi_temp;
+		//vecs = vecs_temp;
+		Forms = vecs_temp;
+		break;
+	}
+
+	//проверяем полученные собств.значения
+	for( int r = 1; r <= n; r++ )
+	{
+		if( fabs(wi(r,1)) >= ZERO )
+		{
+			delete [] cnt;
+			delete [] inter;
+			return false;
+		}
+//		if( wr(r,1) < 0.0 )	return -1;
+	}
+
+	//BalBack( low, hi, d, vecs );
+	BalBack( low, hi, d, Forms );
+
+	//ASSERT( (wr.GetWidth() == 1) );
+	ASSERT( (Freqs.GetWidth() == 1) );
+	Freqs.SetMinCol(0);
+	//M.ConvertToCMatr( vecs );
+
+	delete [] cnt;
+	delete [] inter;
+
 	return true;
 }
 

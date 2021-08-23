@@ -8,6 +8,14 @@
 #include "RodDlg.h"
 #include "matr.h"
 
+#include "ShemeDoc.h"
+#include "Sheme.h"
+#include "MovieView.h"
+
+#include <cmath>
+
+using namespace std;
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
@@ -18,14 +26,22 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CRod::CRod(CKnot *kn1, CKnot *kn2):CElem(kn1,kn2)
+CRod::CRod( CKnot *kn1, CKnot *kn2, CSheme *p ):CElem(kn1,kn2,p)
 {
-	SetE(CString("1"));  
-	SetF(CString("1"));  
-	SetJx(CString("1"));
-	SetM(CString("1"));
-	TypeElem=IDC_ROD;
-	FreeA1=FreeA2=0;
+	//SetE(CString("1"));  
+	//SetF(CString("1"));  
+	//SetJx(CString("1"));
+	//SetM(CString("1"));
+	TypeElem = IDC_ROD;
+	FreeA1 = FreeA2 = 0;
+
+	CShemeVarsTable *pVT = (m_pSheme)?(&m_pSheme->m_VarsTable):(NULL);
+	string Val("1");
+
+	m_E.Reset( Val, pVT );
+	m_F.Reset( Val, pVT );
+	m_Jx.Reset( Val, pVT );
+	m_m0.Reset( Val, pVT );
 }
 
 CRod::~CRod()
@@ -33,42 +49,150 @@ CRod::~CRod()
 
 }
 
-double CRod::GetE() const
+CRod::CRod( const CRod &elem ):CElem(elem)
 {
-	return E;
+	InitBy(elem);
 }
 
-double CRod::GetJx() const
+CRod& CRod::operator=( const CRod &elem )
 {
-	return Jx;
+	if( this != (&elem) )
+		InitBy(elem);
+	return *this;
 }
 
-double CRod::SetE(CString & str)
+void CRod::InitBy( const CRod &elem )
 {
-	CExpression e;
-	double val;
+	SetCommonProperties( &elem );
+	FreeA1 = elem.FreeA1;
+	FreeA2 = elem.FreeA2;
+}
 
-	if (!e.IsNum(str,&val))
+void CRod::SetVarState()
+{
+	if( m_pSheme )
 	{
-		str_E=str;
-		E=val;
-		return val;
+		m_pSheme->m_VarsTable.SetVarValue("x",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("w",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("v",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("t",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("a",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("cx",0.0);
+		m_pSheme->m_VarsTable.SetVarValue("cy",0.0);
+		CElem::SetVarState();
 	}
-	return -1;
 }
 
-double CRod::SetJx(CString & str)
+double CRod::GetM( bool flg )
 {
-	CExpression e;
-	double val;
+	if( flg )
+		SetVarState();
+	return m_m0.GetValue();
+}
 
-	if (!e.IsNum(str,&val))
+double CRod::GetF( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_F.GetValue();
+}
+
+double CRod::GetE( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_E.GetValue();
+}
+
+double CRod::GetJx( bool flg )
+{
+	if( flg )
+		SetVarState();
+	return m_Jx.GetValue();
+}
+
+bool CRod::SetF( const CString &str )
+{
+	return (m_F.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetM( const CString &str )
+{
+	return (m_m0.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetE( const CString &str )
+{
+	return (m_E.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetJx( const CString &str )
+{
+	return (m_Jx.Reset(str) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetF( double val )
+{
+	return (m_F.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetE( double val )
+{
+	return (m_E.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetJx( double val )
+{
+	return (m_Jx.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+bool CRod::SetM( double val )
+{
+	return (m_m0.SetValue(val) == SEE_NOERR)?(true):(false);
+}
+
+void CRod::DrawGL( CShemeDoc *pDoc, int Time )
+{
+	ASSERT( pDoc->m_pMovieView );
+
+	CMovieView::RodMoves::iterator it = pDoc->m_pMovieView->m_RodMoves.find(this);
+	if( it == pDoc->m_pMovieView->m_RodMoves.end() )
 	{
-		str_Jx=str;
-		Jx=val;
-		return val;
+		ASSERT(FALSE);
+		return;
 	}
-	return -1;
+
+	glLineWidth( 2 );
+	glColor3f( 0.0f, 0.0f, 1.0f );
+
+	if( Time < 0 )
+	{
+		double x1, y1, x2, y2;
+		CCoordD c;
+		c = knot1->GetCoord();
+		x1 = c.x;
+		y1 = c.y;
+		c = knot2->GetCoord();
+		x2 = c.x;
+		y2 = c.y;
+		glBegin(GL_LINES);
+			glVertex2d( x1, y1 );
+			glVertex2d( x2, y2 );
+		glEnd();
+	}
+	else
+	{
+		CMovieView::RodMoves::referent_type::value_type *vec = &((*it).second.at(Time));
+		int s = vec->size();
+		glBegin(GL_LINE_STRIP);
+			for( int i = 0; i < s; i++ )
+			{
+				glVertex2d( (vec->at(i)).first, (vec->at(i)).second );
+			}
+		glEnd();
+	}
+	knot1->DrawGL( pDoc, Time );
+	knot2->DrawGL( pDoc, Time );
 }
 
 void CRod::Draw(CDC * pDC, CParamView *pParamView)
@@ -97,71 +221,52 @@ void CRod::Draw(CDC * pDC, CParamView *pParamView)
 
 		double L=GetLength();
 
-		Ugl[0][0]=knot1->MoveX*pParamView->MultMove;
-		Ugl[1][0]=knot1->MoveY*pParamView->MultMove;
-		Ugl[2][0]=knot1->MoveA[FreeA1]*pParamView->MultAngl;
-		Ugl[3][0]=knot2->MoveX*pParamView->MultMove;
-		Ugl[4][0]=knot2->MoveY*pParamView->MultMove;
-		Ugl[5][0]=knot2->MoveA[FreeA2]*pParamView->MultAngl;
+		Ugl(0,0) = knot1->MoveX*pParamView->MultMove;
+		Ugl(1,0) = knot1->MoveY*pParamView->MultMove;
+		Ugl(2,0) = knot1->MoveA[FreeA1]*pParamView->MultAngl;
+		Ugl(3,0) = knot2->MoveX*pParamView->MultMove;
+		Ugl(4,0) = knot2->MoveY*pParamView->MultMove;
+		Ugl(5,0) = knot2->MoveA[FreeA2]*pParamView->MultAngl;
 
 		GetMatrT(T, 6);
 
-		Uloc=T*Ugl;//T*Ugl;
-		mM[0][0]=0;
-		mM[3][0]=L;
-
-		mM[1][1]=0;
-		mM[2][1]=0;
-		mM[4][1]=L*L*L;
-		mM[5][1]=3*L*L;
-	
-		mM[1][2]=0;
-		mM[2][2]=0;
-		mM[4][2]=L*L;
-		mM[5][2]=2*L;
-
-		mM[0][3]=1;
-		mM[3][3]=1;
-
-		mM[1][4]=0;
-		mM[2][4]=1;
-		mM[4][4]=L;
-		mM[5][4]=1;
-
-		mM[1][5]=1;
-		mM[2][5]=0;
-		mM[4][5]=1;
-		mM[5][5]=0;
+		Uloc = T*Ugl;//T*Ugl;
+		mM(0,0) = mM(5,5) = mM(2,5) = mM(1,4) = mM(1,1) = mM(2,1) = mM(1,2) = mM(2,2) = 0.0;
+		mM(3,0) = mM(4,4) = L;
+		mM(4,1) = L*L*L;
+		mM(5,1) = 3*L*L;
+		mM(4,2) = L*L;
+		mM(5,2) = 2*L;
+		mM(0,3) = mM(4,5) = mM(3,3) = mM(2,4) = mM(5,4) = mM(1,5) = 1.0;
 
 		if (!mM.SolveSystem(Uloc, A)) 
 			A.ClearData();
 		
 		CMatr T1(2,2), T_1(2,2);
 		GetMatrT(T1,2);
-		T_1=!T1;//!T1;
+		T_1 = !T1;//!T1;
 
 		double tmp1 = point2.x-point1.x, tmp2 = point2.y-point1.y;
 		double tmp3 = tmp1*tmp1, tmp4 = tmp2*tmp2;
-		double tStep=1.0/(sqrt(tmp3+tmp4)+1);
-		CCoordD c1=knot1->GetCoord();
-		CCoordD c2=knot2->GetCoord();
+		double tStep = 1.0/(sqrt(tmp3+tmp4)+1.0);
+		CCoordD c1 = knot1->GetCoord();
+		CCoordD c2 = knot2->GetCoord();
 
 		CMatr Uu(2,1), U(2,1);
-		for (double t=0;t<=1;t+=tStep)
+		for( double t = 0.0; t <= 1.0; t += tStep )
 		{
-			CCoordD c=knot1->GetCoord();
+			CCoordD c = knot1->GetCoord();
 			double tl = t*L, tl2 = tl*tl, tl3 = tl2*tl;
-			Uu[0][0]=A[0][0]*tl+A[3][0];
-			Uu[1][0]=A[1][0]*tl3+A[2][0]*tl2+A[4][0]*tl+A[5][0];
+			Uu(0,0) = A(0,0)*tl + A(3,0);
+			Uu(1,0) = A(1,0)*tl3 + A(2,0)*tl2 + A(4,0)*tl + A(5,0);
 			U=T_1*Uu;
-			CCoordD cc(
-				U[0][0]+(c2.x-c1.x)*t+c1.x,
-				U[1][0]+(c2.y-c1.y)*t+c1.y
-				);
-			POINT p=ShemeToScreen(cc, pParamView);
+			CCoordD cc(	U(0,0)+(c2.x-c1.x)*t+c1.x, U(1,0)+(c2.y-c1.y)*t+c1.y );
+			POINT p = ShemeToScreen(cc, pParamView);
 
-			if (t==0)	pDC->MoveTo(p);
-			else		pDC->LineTo(p);
+			if( t == 0 )
+				pDC->MoveTo(p);
+			else
+				pDC->LineTo(p);
 		}
 	}
 
@@ -195,6 +300,15 @@ void CRod::Draw(CDC * pDC, CParamView *pParamView)
 	pDC->SelectObject(pOld);
 }
 
+int CRod::GoDlg(CListKnot *pListKnot, bool full )
+{
+	CRodDlg dlg( pListKnot, this, full );
+	if (dlg.DoModal()==IDOK) 
+		return 1;
+	return 0;
+}
+
+/*
 CString CRod::GetStrE()
 {
 	return str_E;
@@ -205,43 +319,22 @@ CString CRod::GetStrJx()
 	return str_Jx;
 }
 
-int CRod::GoDlg(CListKnot *pListKnot, bool full )
-{
-	CRodDlg dlg( pListKnot, this, full );
-	if (dlg.DoModal()==IDOK) 
-		return 1;
-	return 0;
-}
-
-double CRod::SetM(CString & str)
-{
-	CExpression e;
-	double val;
-
-	if (!e.IsNum(str,&val))
-	{
-		str_m0=str;
-		m0=val;
-		return val;
-	}
-	return -1;
-}
-
-double CRod::GetM() const
-{
-	return m0;
-}
-
 CString CRod::GetStrM()
 {
 	return str_m0;
 }
 
-void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
+CString CRod::GetStrF()
+{
+	return str_F;
+}
+*/
+
+void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC, std::string *pMsg )
 {
 	CMatr locM, locC;
-	GetMatrM( locM );
-	GetMatrC( locC );
+	GetMatrM( locM, pMsg );
+	GetMatrC( locC, pMsg );
 
 	//Номера степеней свободы
 	int N[6];
@@ -278,31 +371,7 @@ void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 			}
 }
 
-double CRod::GetF() const
-{
-	return F;
-}
-
-CString CRod::GetStrF()
-{
-	return str_F;
-}
-
-double CRod::SetF(CString & str)
-{
-	CExpression e;
-	double val;
-
-	if (!e.IsNum(str,&val))
-	{
-		str_F=str;
-		F=val;
-		return val;
-	}
-	return -1;
-}
-
-int CRod::SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt)
+int CRod::SetMatrmP( CMatr &mP, CMatr &RezY1, CMatr &RezY2, CMatr *Y3, int i, double Tt, std::string *pMsg )
 {
 //	return 0;
 /*	CCoordD m1,m2;
@@ -338,55 +407,97 @@ int CRod::SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt)
 	return 0;
 }
 
-void CRod::Serialize(CArchive & ar)
+void CRod::Serialize( CArchive &ar, int _sv )
 {
-	CElem::Serialize(ar);
+	CElem::Serialize( ar, _sv );
 
 	if (ar.IsStoring())
 	{	// storing code
-		ar << GetStrF();
-		ar << GetStrJx();
-		ar << GetStrE();
-		ar << GetStrM();
+		//ar << GetStrF();
+		//ar << GetStrJx();
+		//ar << GetStrE();
+		//ar << GetStrM();
+		m_F.Serialize( ar );
+		m_Jx.Serialize( ar );
+		m_E.Serialize( ar );
+		m_m0.Serialize( ar );
 	}
 	else
 	{	// loading code
+		/*
 		CString F,E,Jx,M;
 		ar >> F >> Jx >> E >> M;
 		SetF(F);
 		SetJx(Jx);
 		SetE(E);
 		SetM(M);
+		*/
+		m_F.Serialize( ar );
+		m_Jx.Serialize( ar );
+		m_E.Serialize( ar );
+		m_m0.Serialize( ar );
 	}
 }
 
-bool CRod::SetCommonProperties( CElem* elem )
+bool CRod::SetCommonProperties( const CElem* elem )
 {
-	CRod *pRod = dynamic_cast<CRod*>(elem);
+	//CRod *pRod = dynamic_cast<CRod*>(elem);
+	const CRod *pRod = static_cast<const CRod*>(elem);
 	if( !pRod )	return false;
 
-	str_E = pRod->str_E;
-	str_Jx = pRod->str_Jx;
-	str_m0 = pRod->str_m0;
-	str_F = pRod->str_F;
-	E = pRod->E;
-	Jx = pRod->Jx;
-	m0 = pRod->m0;
-	F = pRod->F;
+	//str_E = pRod->str_E;
+	//str_Jx = pRod->str_Jx;
+	//str_m0 = pRod->str_m0;
+	//str_F = pRod->str_F;
+	//E = pRod->E;
+	//Jx = pRod->Jx;
+	//m0 = pRod->m0;
+	//F = pRod->F;
+	m_F.InitBy( pRod->m_F );
+	m_E.InitBy( pRod->m_E );
+	m_m0.InitBy( pRod->m_m0 );
+	m_Jx.InitBy( pRod->m_Jx );
 
 	return true;
 }
 
-void CRod::GetMatrM( CMatr &matr ) const
+void CRod::GetMatrM( CMatr &matr, std::string *pMsg )
 {
 	matr.ReSize( 6, 6 );
 	CMatr T( 6, 6 );
 	GetMatrT( T, 6 );
 
 	double m = GetM();
-	double F = GetF();
-	double E = GetE();
-	double J = GetJx();
+	double F = GetF( false );
+	double E = GetE( false );
+	double J = GetJx( false );
+	if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+	{
+		ShemeExprErr err = m_Jx.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_Jx.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_m0.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_m0.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_E.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_E.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_F.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_F.GetFullErrorMsg(err);
+			return;
+		}
+	}
 	double L = GetLength();
 
 //матрица масс
@@ -456,21 +567,48 @@ void CRod::GetMatrM( CMatr &matr ) const
 	matr = !T*matr*T;
 }
 
-void CRod::GetMatrD( CMatr &matr ) const
+void CRod::GetMatrD( CMatr &matr, std::string *pMsg )
 {
 	matr.ReSize( 6, 6 );
 }
 
-void CRod::GetMatrC( CMatr &matr ) const
+void CRod::GetMatrC( CMatr &matr, std::string *pMsg )
 {
 	matr.ReSize( 6, 6 );
 	CMatr T( 6, 6 );
 	GetMatrT( T, 6 );
 
 	double m = GetM();
-	double F = GetF();
-	double E = GetE();
-	double J = GetJx();
+	double F = GetF( false );
+	double E = GetE( false );
+	double J = GetJx( false );
+	if( m_pSheme && m_pSheme->m_bValidateExpr && pMsg )
+	{
+		ShemeExprErr err = m_Jx.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_Jx.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_m0.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_m0.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_F.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_F.GetFullErrorMsg(err);
+			return;
+		}
+		err = m_E.GetRunErrorCode();
+		if( err != SEE_NOERR )
+		{
+			(*pMsg) = m_E.GetFullErrorMsg(err);
+			return;
+		}
+	}
 	double L = GetLength();
 
 //матрица жёсткости
@@ -537,4 +675,11 @@ void CRod::GetMatrC( CMatr &matr ) const
 
 	matr.CopyDownToUp();
 	matr = !T*matr*T;
+}
+
+CString CRod::GetName() const
+{
+	CString name;
+	name.Format("Стержень №%d (E=%s,F=%s,Jx=%s,m0=%s)", GetNumber(), m_E.GetExpr().c_str(), m_F.GetExpr().c_str(), m_Jx.GetExpr().c_str(), m_m0.GetExpr().c_str() );
+	return name;
 }

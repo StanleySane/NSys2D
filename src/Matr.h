@@ -9,24 +9,29 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include "StdAfxMy.h"
+
 class AlgolMatr;
 
 class CMatr  
 {
+	void InitBy( const CMatr& );
 private:
-	double **Data;
+	//м-ца хранится в векторе по строкам
+	double *m_Data;
 public:
-	int Eigen_QR(CMatr *T);
-	int Eigen(CMatr *T);
+	static double m_UnValid;//переменная, ссылка на которую 
+	//возвращает оператор () и ф-ция GetAt при выходе за пределы массива.
+
+	int Eigen_QR( CMatr *T );
+	int Eigen( CMatr *T );
 	////////////////////////////////////////////////////
-	int GetEigenVecs( CMatr &M, EV_METHOD EVm );
-	void ConvertToAlgolMatr( AlgolMatr &AM );
-	void ConvertToCMatr( AlgolMatr AM );
+	int GetEigenVecs( CMatr&, EV_METHOD );
+	void ConvertToAlgolMatr( AlgolMatr& );
+	void ConvertToCMatr( const AlgolMatr& );
 	////////////////////////////////////////////////////
-//	CMatr QRSolvingEigenProblem();
-//	CMatr& TreeDiagForm();
-	double* GetRow(int i);
-	void CopyVectTo(CMatr &matr, int num);
+	double* GetRow( int i );
+	void CopyVectTo( const CMatr&, int );
 	CMatr operator - (CMatr &matr);
 	CMatr operator * (double num);
 	CMatr operator + (CMatr &matr);
@@ -36,17 +41,39 @@ public:
 	CMatr GetInvert(int &flag, int iMethod = 1 );
 	void CopyDownToUp();
 	void SaveToFile(char *name);
-	CMatr &operator = (CMatr &matr);
 	CMatr operator * (CMatr &matr);
-	CMatr(CMatr &matr);
 	void ClearData();
-	void ReSize(int ny, int nx);
+	bool ReSize( int r, int c );
 	void Clear();
-	int IsEmpty();
+	bool IsEmpty();
 	CMatr operator ! ();
-	double* operator [] (int n);
-	int SizeX,SizeY;
-	 CMatr(int ny, int nx);
+
+	//ВНИМАНИЕ!!! Оператором [] настоятельно не рекомендуется пользоваться
+	//Безопаснее использовать GetAt или оператор ().
+	double* operator [](int n);
+
+	//Перед тем как получить доступ по индексам рекомендуется
+	//удостовериться в допустимости этих индексов ф-цией IsValidPos.
+	bool IsValidPos( int r, int c ) const;
+	int GetIndex( int r, int c ) const;
+
+	double& operator()( int r, int c );
+	const double& operator()( int r, int c ) const;
+	double& GetAt( int, int );
+	const double& GetAt( int, int ) const;
+
+	int SizeX;//число столбцов
+	int SizeY;//число строк
+	//внимание !!! использовать напрямую величины SizeX и SizeY
+	//крайне не рекомендуется. Используйте Rows() и Cols().
+	int Rows() const
+	{	return SizeY;	}
+	int Cols() const
+	{	return SizeX;	}
+
+	CMatr& operator = ( const CMatr& );
+	CMatr( const CMatr& );
+	CMatr( int, int );
 	CMatr();
 	virtual ~CMatr();
 

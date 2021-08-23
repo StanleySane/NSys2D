@@ -77,6 +77,7 @@ IDR_SHEMETYPE           ICON    DISCARDABLE     "res\\icon2.ico"
 IDR_FORMSTYPE           ICON    DISCARDABLE     "res\\idr_form.ico"
 IDR_SCRIPT              ICON    DISCARDABLE     "res\\idr_scri.ico"
 IDR_OUTPUT              ICON    DISCARDABLE     "res\\idr_outp.ico"
+IDR_MOVIE               ICON    DISCARDABLE     "res\\idr_movi.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -101,6 +102,7 @@ IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\bitmap3.bmp"
 IDB_BITMAP2             BITMAP  DISCARDABLE     "res\\bmp00008.bmp"
 IDR_SCRIPT              BITMAP  DISCARDABLE     "res\\script.bmp"
 IDR_OUTPUT              BITMAP  DISCARDABLE     "res\\output.bmp"
+IDR_MOVIE               BITMAP  DISCARDABLE     "res\\movie.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -152,7 +154,10 @@ BEGIN
         MENUITEM "Конвертировать в...",         ID_CONVERT_TO
         MENUITEM SEPARATOR
         MENUITEM "Список элементов...",         ID_LISTELEM
+        MENUITEM "Переменные...",               ID_SHEME_VARS
         MENUITEM "Степени свободы ...",         ID_FREE_NUMS
+        MENUITEM SEPARATOR
+        MENUITEM "Описание...",                 ID_DESCRIPT
         MENUITEM SEPARATOR
         POPUP "Группа"
         BEGIN
@@ -177,11 +182,13 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Автокорректировка",           ID_AUTOCORRECT
+        MENUITEM "Всплывающие подсказки",       ID_TOOL_TIPS
     END
     POPUP "&Расчеты"
     BEGIN
         MENUITEM "Интегрирование...\tF9",       ID_CALC
         MENUITEM "Вычисление собств. частот",   ID_FREEFORM_CALC
+        MENUITEM "Анимация",                    ID_MAKE_MOVIE
         MENUITEM SEPARATOR
         MENUITEM "Параметры анализа схемы...",  ID_SHEME_PARAMS
         MENUITEM SEPARATOR
@@ -204,8 +211,6 @@ BEGIN
         MENUITEM "&Каскадом",                   ID_WINDOW_CASCADE
         MENUITEM "&Расположить",                ID_WINDOW_TILE_HORZ
         MENUITEM "&Свернуть",                   ID_WINDOW_ARRANGE
-        MENUITEM SEPARATOR
-        MENUITEM "Открыть скрипт",              ID_OPEN_SCRIPT
     END
     POPUP "&Помощь"
     BEGIN
@@ -448,26 +453,25 @@ BEGIN
     DEFPUSHBUTTON   "Закрыть",IDOK,182,106,50,14
 END
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 231, 126
+IDD_ABOUTBOX DIALOGEX 0, 0, 254, 131
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "О программе"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    CTEXT           "NSys2D версия 3.0                     Copyright (C) 1999-2002",
-                    IDC_STATIC,31,7,187,8,SS_NOPREFIX
-    DEFPUSHBUTTON   "OK",IDOK,191,107,32,14,WS_GROUP
-    LTEXT           "Митрофанов С.Б.",IDC_STATIC,30,84,67,8
-    LTEXT           "группа 94-ДПМП",IDC_STATIC,116,84,66,8
-    LTEXT           "Брянский государственный технический университет",
-                    IDC_STATIC,31,60,193,8
-    CTEXT           "Программный комплекс МКЭ для исследования стационарных колебаний плоских систем с нелинейными дискретными элементами",
-                    IDC_STATIC,31,24,187,33,0,WS_EX_CLIENTEDGE
-    LTEXT           "E-mail: sergey@msb.bryansk.ru",IDC_STATIC,30,113,144,8
-    LTEXT           "Буравилин С.С.",IDC_STATIC,30,94,64,8
-    LTEXT           "группа 96-ДПМП",IDC_STATIC,116,94,65,10
-    LTEXT           "Кафедра динамика и прочность машин",IDC_STATIC,60,70,
-                    140,8
+    CTEXT           "NSys2D версия 3.1                     Copyright (C) 1999-2002",
+                    IDC_STATIC,31,8,187,8,SS_NOPREFIX
+    DEFPUSHBUTTON   "OK",IDOK,5,113,245,14,WS_GROUP
+    LTEXT           "Митрофанов С.Б.\tгруппа 94-ДПМП  (e-mail: sergey@msb.bryansk.ru)",
+                    IDC_STATIC,5,99,245,8
+    CTEXT           "Брянский государственный технический университет",
+                    IDC_STATIC,5,63,245,8
+    CTEXT           "Программный комплекс МКЭ для исследования стационарных колебаний плоских систем с нелинейными дискретными элементами с поддержкой встроенного языка программирования",
+                    IDC_STATIC,5,29,245,31,0,WS_EX_CLIENTEDGE
+    LTEXT           "Буравилин С.С.    \tгруппа 96-ДПМП",IDC_STATIC,5,89,245,
+                    8
+    CTEXT           "Кафедра динамика и прочность машин",IDC_STATIC,5,73,245,
+                    8
 END
 
 IDD_DIALOGPRECALC DIALOG DISCARDABLE  0, 0, 183, 136
@@ -576,12 +580,14 @@ BEGIN
     CONTROL         "t",IDC_RADIO14,"Button",BS_AUTORADIOBUTTON,26,152,25,10
 END
 
-IDD_PROGRESSDIALOG DIALOG DISCARDABLE  0, 0, 274, 52
+IDD_PROGRESSDIALOG DIALOG DISCARDABLE  0, 0, 274, 91
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
 CAPTION "Интегрирование"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "Отмена",IDCANCEL,112,31,50,14
+    DEFPUSHBUTTON   "Отмена",IDCANCEL,112,70,50,14
+    EDITTEXT        IDC_DETAILS,7,25,260,40,ES_MULTILINE | ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_BORDER
     CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,
                     7,7,260,14
 END
@@ -591,46 +597,46 @@ STYLE WS_CHILD | WS_DISABLED | WS_CAPTION
 CAPTION "Силовое возмущение"
 FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "       Px ( x, x', t )",IDC_STATIC,7,3,204,68
-    GROUPBOX        "       Py ( x, x', t )",IDC_STATIC,7,75,204,68
-    CONTROL         "",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,3,
-                    8,8
+    GROUPBOX        "",IDC_STATIC,7,3,204,68
+    GROUPBOX        "",IDC_STATIC,7,75,204,68
+    CONTROL         "Px ( x, x', t )",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,4,41,8
     CONTROL         "Показать",IDC_CHECK3,"Button",BS_AUTOCHECKBOX | 
                     BS_NOTIFY | WS_TABSTOP,56,3,49,10
-    LTEXT           "A =",IDC_STATIC,88,17,11,8,NOT WS_GROUP
-    LTEXT           "w =",IDC_STATIC,129,17,11,8,NOT WS_GROUP
-    LTEXT           "fi =",IDC_STATIC,170,18,9,8,NOT WS_GROUP
-    LTEXT           "A =",IDC_STATIC,87,89,11,8,NOT WS_GROUP
-    LTEXT           "w =",IDC_STATIC,129,89,11,8,NOT WS_GROUP
-    LTEXT           "fi=",IDC_STATIC,171,89,8,8,NOT WS_GROUP
     CONTROL         "Px = A sin ( w t + fi)",IDC_RADIO1,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,16,75,10
+    CONTROL         "Px ( x, x1, t ) =",IDC_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,12,35,56,10
+    CONTROL         "Случайное",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,12,54,51,10
     EDITTEXT        IDC_EDIT1,101,15,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT2,142,15,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT3,181,15,25,12,ES_AUTOHSCROLL
-    CONTROL         "Px ( x, x1, t ) =",IDC_RADIO2,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,35,56,10
     EDITTEXT        IDC_EDIT5,72,34,134,12,ES_AUTOHSCROLL
-    CONTROL         "Случайное",IDC_RADIO5,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,12,54,51,10
     PUSHBUTTON      "Параметры...",IDC_SPECTRPX,72,51,60,14
     PUSHBUTTON      "Расширенные...",IDC_CSPECPX,140,51,63,14
-    CONTROL         "",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,
-                    75,8,8
+    LTEXT           "A =",IDC_STATIC,88,17,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,17,11,8,NOT WS_GROUP
+    LTEXT           "fi =",IDC_STATIC,170,18,9,8,NOT WS_GROUP
+    CONTROL         "Py ( x, x', t )",IDC_CHECK2,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,14,76,41,8
     CONTROL         "Показать",IDC_CHECK4,"Button",BS_AUTOCHECKBOX | 
                     BS_NOTIFY | WS_TABSTOP,56,75,49,10
     CONTROL         "Py = A sin (w t + fi)",IDC_RADIO3,"Button",
                     BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,88,73,10
+    CONTROL         "Py ( x, x1, t ) =",IDC_RADIO4,"Button",
+                    BS_AUTORADIOBUTTON | WS_TABSTOP,12,107,58,10
+    CONTROL         "Случайное",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | 
+                    WS_TABSTOP,12,126,51,10
     EDITTEXT        IDC_EDIT6,101,87,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT7,143,87,25,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_EDIT8,181,87,25,12,ES_AUTOHSCROLL
-    CONTROL         "Py ( x, x1, t ) =",IDC_RADIO4,"Button",
-                    BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,12,107,58,10
     EDITTEXT        IDC_EDIT10,72,106,134,12,ES_AUTOHSCROLL
-    CONTROL         "Случайное",IDC_RADIO6,"Button",BS_AUTORADIOBUTTON | 
-                    WS_GROUP | WS_TABSTOP,12,126,51,10
     PUSHBUTTON      "Параметры...",IDC_SPECTRPY,72,124,60,14,WS_GROUP
     PUSHBUTTON      "Расширенные...",IDC_CSPECPY,140,124,63,14
+    LTEXT           "A =",IDC_STATIC,87,89,11,8,NOT WS_GROUP
+    LTEXT           "w =",IDC_STATIC,129,89,11,8,NOT WS_GROUP
+    LTEXT           "fi=",IDC_STATIC,171,89,8,8,NOT WS_GROUP
 END
 
 IDD_KNOTPAGE4 DIALOGEX 0, 0, 217, 148
@@ -736,17 +742,6 @@ BEGIN
     LTEXT           "Координата",IDC_STATIC,98,116,43,8
     GROUPBOX        "Производная",IDC_STATIC,7,147,78,44
     GROUPBOX        "Возмущение",IDC_STATIC,91,147,78,44
-END
-
-IDD_FREQVIEW DIALOG DISCARDABLE  0, 0, 139, 102
-STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Собственные частоты системы"
-FONT 8, "MS Sans Serif"
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,82,7,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,82,24,50,14
-    LISTBOX         IDC_LIST1,7,7,67,88,NOT LBS_NOTIFY | 
-                    LBS_NOINTEGRALHEIGHT | WS_VSCROLL
 END
 
 IDD_KNOTSPECTR DIALOG DISCARDABLE  0, 0, 319, 218
@@ -887,14 +882,14 @@ BEGIN
     GROUPBOX        "Время",IDC_STATIC,6,2,145,43
 END
 
-IDD_FORMS_BAR DIALOG DISCARDABLE  0, 0, 192, 18
+IDD_FORMS_BAR DIALOG DISCARDABLE  0, 0, 272, 18
 STYLE WS_CHILD
 FONT 8, "MS Sans Serif"
 BEGIN
     LTEXT           "Частота колебаний",IDC_STATIC,5,1,70,8
     LTEXT           "Период колебаний",IDC_STATIC,5,9,65,8
-    LTEXT           "(данные отсутствуют)",IDC_BAR_FREQ,80,1,104,8
-    LTEXT           "(данные отсутствуют)",IDC_BAR_T,80,9,104,8
+    LTEXT           "(данные отсутствуют)",IDC_BAR_FREQ,80,1,190,8
+    LTEXT           "(данные отсутствуют)",IDC_BAR_T,80,9,190,8
 END
 
 IDD_DIALOGHARDROD DIALOG DISCARDABLE  0, 0, 199, 201
@@ -932,39 +927,51 @@ BEGIN
     PUSHBUTTON      "Новый узел...",IDC_BUTNEWKNOT,141,178,53,14
 END
 
-IDD_EV_METHODS DIALOG DISCARDABLE  0, 0, 374, 141
+IDD_EV_METHODS DIALOG DISCARDABLE  0, 0, 364, 171
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Параметры анализа схемы"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,195,105,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,260,105,50,14
+    DEFPUSHBUTTON   "OK",IDOK,190,151,55,14
+    PUSHBUTTON      "Cancel",IDCANCEL,280,151,55,14
     GROUPBOX        "Метод поиска собств.значений и форм",IDC_STATIC,10,5,
                     175,130
     CONTROL         "Метод Якоби с понижением нормы для матриц общего вида.",
-                    IDC_RADIO_JACOBY,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    IDC_RADIO_JACOBY,"Button",BS_AUTORADIOBUTTON | BS_LEFT | 
                     BS_VCENTER | BS_MULTILINE | WS_GROUP,15,20,160,15
     CONTROL         "QR-алгоритм для полных матриц с приведением исходной матрицы к верхней форме Хессенберга.",
-                    IDC_RADIO_QR_ELM,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    IDC_RADIO_QR_ELM,"Button",BS_AUTORADIOBUTTON | BS_LEFT | 
                     BS_VCENTER | BS_MULTILINE,15,40,160,25
     CONTROL         "Что и предыдущий, но с применением накопления скалярного произведения с повышенной точностью.",
-                    IDC_RADIO_QR_DIR,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    IDC_RADIO_QR_DIR,"Button",BS_AUTORADIOBUTTON | BS_LEFT | 
                     BS_VCENTER | BS_MULTILINE,15,70,160,25
     CONTROL         "С помощью элементарных ортогональных преобразований с сохранением числа обусловленности отдельных собственных значений.",
-                    IDC_RADIO_QR_ORT,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    IDC_RADIO_QR_ORT,"Button",BS_AUTORADIOBUTTON | BS_LEFT | 
                     BS_VCENTER | BS_MULTILINE,15,100,160,30
-    GROUPBOX        "Метод учёта жёстких стержней",IDC_STATIC,190,5,170,95
-    CONTROL         "Без ""разноса"" масс.",IDC_RADIO_HARDMETHOD_0,"Button",
-                    BS_AUTORADIOBUTTON | BS_CENTER | BS_VCENTER | 
-                    BS_MULTILINE | WS_GROUP,200,15,150,10
+    GROUPBOX        "Метод учёта жёстких стержней",IDC_STATIC,190,5,165,80
+    CONTROL         "Абсолютно жёсткий КЭ с модификацией степеней свободы.",
+                    IDC_RADIO_HARDMETHOD_0,"Button",BS_AUTORADIOBUTTON | 
+                    BS_LEFT | BS_VCENTER | BS_MULTILINE | WS_GROUP,195,18,
+                    150,15
     CONTROL         "С учётом расположения нескольких жёст.стержней подряд: равномерный ""разнос"" масс по стержням.",
                     IDC_RADIO_HARDMETHOD_1,"Button",BS_AUTORADIOBUTTON | 
-                    BS_CENTER | BS_VCENTER | BS_MULTILINE,200,30,150,25
-    CONTROL         "Обычный балочный КЭ, но с удалением ""лишних"" степеней свободы.",
+                    BS_LEFT | BS_VCENTER | BS_MULTILINE | WS_DISABLED,195,36,
+                    150,23
+    CONTROL         "Обычный гибкий балочный КЭ с модификацией степеней свободы.",
                     IDC_RADIO_HARDMETHOD_2,"Button",BS_AUTORADIOBUTTON | 
-                    BS_CENTER | BS_VCENTER | BS_MULTILINE,200,60,150,15
-    CONTROL         "Конденсация матрицы масс.",IDC_CHECK_CONDMASS,"Button",
-                    BS_AUTOCHECKBOX | WS_TABSTOP,200,85,150,10
+                    BS_LEFT | BS_VCENTER | BS_MULTILINE,195,61,150,17
+    CONTROL         "Проверка расходимости интегрирования.",
+                    IDC_CHECK_INTEGR_TEST,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,10,137,164,9
+    GROUPBOX        "Метод инвертирования матриц",IDC_STATIC,190,90,165,55
+    CONTROL         "Обычное решение системы уравнений.",IDC_RADIO_INVERT_0,
+                    "Button",BS_AUTORADIOBUTTON | BS_LEFT | BS_VCENTER | 
+                    BS_MULTILINE | WS_GROUP,195,102,155,10
+    CONTROL         "Обращение положительно определённой симметричной матрицы методом Холецкого разложения на множители.",
+                    IDC_RADIO_INVERT_1,"Button",BS_AUTORADIOBUTTON | BS_LEFT | 
+                    BS_VCENTER | BS_MULTILINE,195,115,155,25
+    CONTROL         "Проверка вычисления выражений",IDC_CHECK_VALIDATE_EXPR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,150,165,10
 END
 
 IDD_VIEW_STYLES DIALOGEX 0, 0, 369, 126
@@ -974,12 +981,11 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,10,105,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,130,105,50,14
-    GROUPBOX        "Параметры вывода собственных частот",IDC_STATIC,188,5,
-                    170,60
+    GROUPBOX        "Параметры вывода текста",IDC_STATIC,188,5,170,60
     CONTROL         "Выводить собств.частоты в графическом окне.",
                     IDC_TEXT_OUT,"Button",BS_AUTOCHECKBOX | BS_CENTER | 
                     BS_VCENTER | BS_MULTILINE | WS_TABSTOP,198,20,150,15
-    LTEXT           "Шрифт для вывода частот:",IDC_STATIC,198,40,105,8
+    LTEXT           "Шрифт для вывода текста:",IDC_STATIC,198,40,105,8
     LTEXT           "(нету данных)",IDC_FREE_FONT,198,50,105,10,0,
                     WS_EX_CLIENTEDGE
     PUSHBUTTON      "Шрифт...",IDC_BUTTON_FREE_FONT,313,45,40,15
@@ -999,8 +1005,11 @@ BEGIN
                     WS_EX_CLIENTEDGE
     PUSHBUTTON      "Шрифт...",IDC_BUTTON_NUM_ELEMS_FONT,135,75,40,15
     LTEXT           "Минимальное значение видимого поворота массы на собственных формах:",
-                    IDC_STATIC,189,70,120,25
-    EDITTEXT        IDC_EDIT_ZERO_ROT,314,85,45,10,ES_AUTOHSCROLL
+                    IDC_STATIC,188,70,120,25
+    EDITTEXT        IDC_EDIT_ZERO_ROT,313,85,45,10,ES_AUTOHSCROLL
+    CONTROL         "Выводить информацию о ходе интегрирования",
+                    IDC_RICH_CALC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,188,
+                    96,177,10
 END
 
 IDD_GROUP_NEW DIALOG DISCARDABLE  0, 0, 174, 91
@@ -1109,6 +1118,96 @@ BEGIN
                     ES_READONLY
 END
 
+IDD_MOVIE_STYLES DIALOG DISCARDABLE  0, 0, 154, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Параметры анимации"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,5,75,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,100,75,50,14
+    LTEXT           "Шаг таймера (в милисекундах)",IDC_STATIC,5,5,110,10
+    EDITTEXT        IDC_EDIT_TIMER_ELAPSE,120,5,25,10,ES_AUTOHSCROLL
+    LTEXT           "Начальный момент времени:",IDC_STATIC,5,20,110,10
+    EDITTEXT        IDC_EDIT_START_TIME,120,20,25,10,ES_AUTOHSCROLL
+    CONTROL         "Рисовать связи",IDC_CHECK_SHOW_KNOTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,5,35,140,8
+END
+
+IDD_SHEME_VARS DIALOG DISCARDABLE  0, 0, 339, 176
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Глобальные переменные"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Закрыть",IDOK,5,156,45,14
+    CONTROL         "List1",IDC_VARS_LIST,"SysListView32",LVS_REPORT | 
+                    LVS_SINGLESEL | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,5,
+                    5,330,145
+    PUSHBUTTON      "Добавить...",IDC_ADD_VAR,63,156,65,14
+    PUSHBUTTON      "Обновить",IDC_RECALC,201,156,65,14
+    PUSHBUTTON      "Редактировать...",IDC_EDIT_VAR,132,156,65,14
+    PUSHBUTTON      "Удалить",IDC_DEL_VAR,270,156,65,14
+END
+
+IDD_SHEME_VAR_NEW DIALOG DISCARDABLE  0, 0, 239, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Ввод переменной"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_NAME,65,5,170,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_EXPR,5,35,230,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,5,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,65,55,50,14
+    LTEXT           "Имя переменной:",IDC_STATIC,5,6,60,10
+    LTEXT           "Выражение:",IDC_STATIC,5,21,60,10
+END
+
+IDD_DESCRIPTION DIALOG DISCARDABLE  0, 0, 249, 126
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Описание схемы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_DESCRIPTION,5,5,240,95,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | 
+                    WS_VSCROLL | WS_HSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,5,107,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,60,107,50,14
+END
+
+IDD_GRAPHS_PROPERTIES DIALOG DISCARDABLE  0, 0, 249, 126
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Дополнительные графики"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Закрыть",IDOK,4,106,50,14
+    LISTBOX         IDC_GRAPH_LIST,4,5,240,95,LBS_OWNERDRAWFIXED | 
+                    LBS_NOINTEGRALHEIGHT | LBS_DISABLENOSCROLL | WS_VSCROLL | 
+                    WS_HSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Редактировать...",IDC_GRAPH_EDIT,95,106,65,14
+    PUSHBUTTON      "Новый...",IDC_GRAPH_NEW,166,106,36,14
+    PUSHBUTTON      "Удалить",IDC_GRAPH_DEL,208,106,36,14
+END
+
+IDD_GRAPH_EDIT DIALOGEX 0, 0, 239, 76
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Редактирование графика"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_CAPTION,50,5,70,12,ES_AUTOHSCROLL
+    EDITTEXT        IDC_GRAPH_SCALE,170,5,65,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Загрузить...",IDC_GRAPH_LOAD,185,20,50,15
+    PUSHBUTTON      "Изменить...",IDC_EDIT_GRAPH_COLOR,60,35,50,15
+    DEFPUSHBUTTON   "OK",IDOK,5,55,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,60,55,50,14
+    LTEXT           "Название:",IDC_STATIC,5,7,40,8
+    LTEXT           "Имя файла:",IDC_STATIC,5,20,45,10
+    EDITTEXT        IDC_GRAPH_FILE_NAME,50,20,130,10,ES_AUTOHSCROLL | 
+                    ES_READONLY | NOT WS_BORDER,WS_EX_STATICEDGE
+    LTEXT           "Цвет:",IDC_STATIC,6,37,25,10
+    LTEXT           "Множитель:",IDC_STATIC,125,7,45,8
+    CONTROL         "clr",IDC_GRAPH_COLOR,"Button",BS_OWNERDRAW | BS_FLAT | 
+                    WS_TABSTOP,35,35,20,15
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1168,9 +1267,9 @@ BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 224
+        RIGHTMARGIN, 247
         TOPMARGIN, 7
-        BOTTOMMARGIN, 119
+        BOTTOMMARGIN, 124
     END
 
     IDD_DIALOGPRECALC, DIALOG
@@ -1210,7 +1309,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 267
         TOPMARGIN, 7
-        BOTTOMMARGIN, 45
+        BOTTOMMARGIN, 84
     END
 
     IDD_KNOTPAGE3, DIALOG
@@ -1235,14 +1334,6 @@ BEGIN
         RIGHTMARGIN, 169
         TOPMARGIN, 2
         BOTTOMMARGIN, 210
-    END
-
-    IDD_FREQVIEW, DIALOG
-    BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 132
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 95
     END
 
     IDD_KNOTSPECTR, DIALOG
@@ -1280,7 +1371,7 @@ BEGIN
     IDD_FORMS_BAR, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 185
+        RIGHTMARGIN, 265
         TOPMARGIN, 7
         BOTTOMMARGIN, 11
     END
@@ -1297,9 +1388,9 @@ BEGIN
     IDD_EV_METHODS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 367
+        RIGHTMARGIN, 357
         TOPMARGIN, 7
-        BOTTOMMARGIN, 134
+        BOTTOMMARGIN, 164
     END
 
     IDD_VIEW_STYLES, DIALOG
@@ -1356,6 +1447,54 @@ BEGIN
         RIGHTMARGIN, 167
         TOPMARGIN, 7
         BOTTOMMARGIN, 34
+    END
+
+    IDD_MOVIE_STYLES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 147
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+
+    IDD_SHEME_VARS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 332
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 169
+    END
+
+    IDD_SHEME_VAR_NEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 232
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
+    END
+
+    IDD_DESCRIPTION, DIALOG
+    BEGIN
+        LEFTMARGIN, 5
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
+
+    IDD_GRAPHS_PROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
+
+    IDD_GRAPH_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 232
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 69
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1444,15 +1583,15 @@ END
 // Toolbar
 //
 
-IDR_GRAPHTYPE TOOLBAR DISCARDABLE  16, 15
+IDR_GRAPHTYPE TOOLBAR DISCARDABLE  16, 16
 BEGIN
     BUTTON      ID_AUTOSIZE
-    SEPARATOR
     BUTTON      ID_GETCOORD
     SEPARATOR
-    BUTTON      ID_LOADGRAPH2
     BUTTON      ID_SAVEREZ
-    BUTTON      ID_GRAPH2
+    SEPARATOR
+    BUTTON      ID_GRAPH_PROP
+    BUTTON      ID_MAIN_GRAPH
     SEPARATOR
     BUTTON      ID_CALCMAT
 END
@@ -1498,7 +1637,7 @@ END
 IDR_SCRIPT TOOLBAR DISCARDABLE  16, 16
 BEGIN
     BUTTON      ID_FILE_NEW
-    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_SCRIPT_FILE_OPEN
     BUTTON      ID_FILE_SAVE
     SEPARATOR
     BUTTON      ID_COMPILE_SCRIPT
@@ -1512,6 +1651,25 @@ BEGIN
     BUTTON      ID_OUTPUT_BREAK
 END
 
+IDR_MOVIE TOOLBAR DISCARDABLE  16, 15
+BEGIN
+    BUTTON      ID_MOVIE_PREV_STEP
+    BUTTON      ID_MOVIE_RUN
+    BUTTON      ID_MOVIE_PAUSE
+    BUTTON      ID_MOVIE_STOP
+    BUTTON      ID_MOVIE_NEXT_STEP
+    SEPARATOR
+    BUTTON      ID_MOVIE_AUTO_SCALE
+    BUTTON      ID_MOVIE_SCALE_INC
+    BUTTON      ID_MOVIE_SCALE_DEC
+    BUTTON      ID_MOVIE_MOVE_UP
+    BUTTON      ID_MOVIE_MOVE_DOWN
+    BUTTON      ID_MOVIE_MOVE_LEFT
+    BUTTON      ID_MOVIE_MOVE_RIGHT
+    SEPARATOR
+    BUTTON      ID_MOVIE_PARAMS
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -1520,8 +1678,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 3,0,0,0
- PRODUCTVERSION 3,0,0,0
+ FILEVERSION 3,1,0,0
+ PRODUCTVERSION 3,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1536,14 +1694,15 @@ BEGIN
     BEGIN
         BLOCK "041904b0"
         BEGIN
-            VALUE "CompanyName", "DSM BSTU\0"
+            VALUE "Comments", "Программный комплекс МКЭ для исследования стационарных колебаний плоских систем с нелинейными дискретными элементами\0"
+            VALUE "CompanyName", "Кафедра ДПМ БГТУ\0"
             VALUE "FileDescription", "NSys2D MFC Application\0"
-            VALUE "FileVersion", "3, 0, 0, 0\0"
+            VALUE "FileVersion", "3, 1, 0, 0\0"
             VALUE "InternalName", "NSys2D\0"
-            VALUE "LegalCopyright", "Copyright (C) 1999-2000\0"
+            VALUE "LegalCopyright", "Copyright (C) 1999-2002\0"
             VALUE "OriginalFilename", "NSys2D.EXE\0"
             VALUE "ProductName", "NSys2D Application\0"
-            VALUE "ProductVersion", "3, 0, 0, 0\0"
+            VALUE "ProductVersion", "3, 1, 0, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1557,17 +1716,34 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Accelerator
+//
+
+IDR_MOVIE ACCELERATORS DISCARDABLE 
+BEGIN
+    VK_ADD,         ID_MOVIE_SCALE_INC,     VIRTKEY, CONTROL, NOINVERT
+    VK_DOWN,        ID_MOVIE_MOVE_DOWN,     VIRTKEY, NOINVERT
+    VK_LEFT,        ID_MOVIE_MOVE_LEFT,     VIRTKEY, NOINVERT
+    VK_RIGHT,       ID_MOVIE_MOVE_RIGHT,    VIRTKEY, NOINVERT
+    VK_SUBTRACT,    ID_MOVIE_SCALE_DEC,     VIRTKEY, CONTROL, NOINVERT
+    VK_UP,          ID_MOVIE_MOVE_UP,       VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
 STRINGTABLE PRELOAD DISCARDABLE 
 BEGIN
-    IDR_MAINFRAME           "NSys2D 3.0"
+    IDR_MAINFRAME           "NSys2D 3.1"
     IDR_SHEMETYPE           "\nSheme\nSheme\nSheme Files (*.shm)\n.shm\nSheme.Document\nSheme Document"
     IDR_GRAPHTYPE           "\n\n\n\n.rez\n\nGraphic Document For NSys2D"
     IDR_FORMSTYPE           "\n\n\n\n\n\n\n\n"
-    IDS_SIGNATURE           "NSys2D Sheme Document v3.0"
+    IDS_SIGNATURE           "NSys2D Sheme Document v3.1"
     IDS_GROUP_SIGNATURE     "NSys2D ShemeGroupsFile v3.0"
+    IDS_SIGNATURE_30        "NSys2D Sheme Document v3.0"
 END
 
 STRINGTABLE PRELOAD DISCARDABLE 
@@ -1588,10 +1764,10 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_FILE_NEW             "Создать новый документ\nНовый документ"
-    ID_FILE_OPEN            "Открыть существующий документ\nОткрыть"
+    ID_FILE_NEW             "Создать новый документ\nНовый документ (Ctrl+N)"
+    ID_FILE_OPEN            "Открыть существующий документ\nОткрыть (Ctrl+O)"
     ID_FILE_CLOSE           "Закрыть активный документ\nЗакрыть"
-    ID_FILE_SAVE            "Сохранить документ\nСохранить"
+    ID_FILE_SAVE            "Сохранить документ\nСохранить (Ctrl+S)"
     ID_FILE_SAVE_AS         "Сохранить активный документ с новым именем\nСохранить как"
     ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
     ID_FILE_PRINT_SETUP     "Изменение настроек печати\nНастройка печати"
@@ -1735,7 +1911,7 @@ BEGIN
     ID_SETMASS              "Установить текущий элемент масса\nМасса"
     ID_ADDMASS              "Добавить в схему точечную массу."
     ID_LISTELEM             "Вывести список элементов."
-    ID_CALC                 "Выполнить интегрирование\nИнтегрирование"
+    ID_CALC                 "Выполнить интегрирование\nИнтегрирование (Ctrl+F9)"
     ID_HORSUB               "Уменьшить по горизонтали\nУменьшить по горизонтали"
     ID_VERTSUB              "Уменьшить по вертикали\nУменьшить по вертикали"
     ID_DELELEM              "Удалить элемент\nУдалить элемент"
@@ -1819,12 +1995,41 @@ BEGIN
     ID_OUTPUT_FILE_SAVE     "Сохранить результат\nСохранить"
     ID_OUTPUT_BREAK         "Прервать выполнение\nПрервать"
     ID_FREE_NUMS            "Просмотреть номера степеней свободы в узлах"
+    ID_SCRIPT_CLOSE_VIEW    "Закрыть окно вывода\nЗакрыть окно вывода"
+    ID_MOVIE_RUN            "Запустить\nЗапустить"
+    ID_MAKE_MOVIE           "Анимация\nАнимация"
+    ID_MOVIE_STOP           "Остановить\nОстановить"
 END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
     IDR_SCRIPT              "\nScript\nScript\nScript Files (*.scr)\n.scr\nScript.Document\nScript Document"
     IDR_OUTPUT              "\n\n\n\n.rez\n\nOutput For NSys2D Script"
+    IDR_MOVIE               "\n\n\n\n\n\nMovie For NSys2D Sheme"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_MOVIE_PARAMS         "Параметры анимации\nПараметры"
+    ID_MOVIE_SCALE_INC      "Увеличить\nУвеличить (Ctrl+'+')"
+    ID_MOVIE_SCALE_DEC      "Уменьшить\nУменьшить (Ctrl+'-')"
+    ID_MOVIE_NEXT_STEP      "Следующий шаг\nСледующий шаг"
+    ID_MOVIE_PREV_STEP      "Предыдущий шаг\nПредыдущий шаг"
+    ID_MOVIE_MOVE_RIGHT     "Сдвинуть вправо\nСдвинуть вправо (Right)"
+    ID_MOVIE_MOVE_LEFT      "Сдвинуть влево\nСдвинуть влево (Left)"
+    ID_MOVIE_AUTO_SCALE     "Автоформат\nАвтоформат"
+    ID_MOVIE_MOVE_UP        "Сдвинуть вверх\nСдвинуть вверх (Up)"
+    ID_MOVIE_MOVE_DOWN      "Сдвинуть вниз\nСдвинуть вниз (Down)"
+    ID_MOVIE_PAUSE          "Пауза\nПауза"
+    ID_SHEME_VARS           "Список глобальных переменных схемы"
+    ID_DESCRIPT             "Краткое описание схемы"
+    ID_GRAPH_PROP           "Свойства дполнительных графиков\nДополнительные графики"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_MAIN_GRAPH           "Вкл./Выкл. главный график\nВкл./Выкл. главный график"
+    ID_TOOL_TIPS            "Флаг о выводе всплывающих подсказок"
 END
 
 #endif    // Russian resources
@@ -1851,6 +2056,7 @@ BEGIN
     "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
     "P",            ID_FILE_PRINT,          VIRTKEY, CONTROL, NOINVERT
     "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    VK_F4,          ID_ACCEL32874,          VIRTKEY, CONTROL, NOINVERT
     VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
     VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
     VK_F9,          ID_CALC,                VIRTKEY, NOINVERT

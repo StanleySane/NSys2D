@@ -16,7 +16,7 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CComplexSpectr::CComplexSpectr()
+CComplexSpectr::CComplexSpectr( CSheme *p ):Sp(p)
 {
 
 }
@@ -34,22 +34,22 @@ BOOL CComplexSpectr::operator ==(CComplexSpectr & cs)
 	else	return false;
 }
 
-void CComplexSpectr::Serialize(CArchive & ar)
+void CComplexSpectr::Serialize( CArchive &ar, int sv )
 {
 	if (ar.IsStoring())
 	{	// storing code
 		ar << Free1 << Free2;
-		Sp.Serialize(ar);
-		pKn1->Serialize(ar);
-		pKn2->Serialize(ar);
+		Sp.Serialize( ar, sv );
+		pKn1->Serialize( ar, sv );
+		pKn2->Serialize( ar, sv );
 	}
 	else
 	{	// loading code
 		ar >> Free1 >> Free2;
-		Sp.Serialize(ar);
+		Sp.Serialize( ar, sv );
 		pKn1=new CKnot;
 		pKn2=new CKnot;
-		pKn1->Serialize(ar);
-		pKn2->Serialize(ar);
+		pKn1->Serialize( ar, sv );
+		pKn2->Serialize( ar, sv );
 	}
 }

@@ -6,9 +6,9 @@
 #endif // _MSC_VER >= 1000
 // OutputView.h : header file
 //
-#include "OutputBuffer.h"
 
 class CScriptDoc;
+class COutputFrame;
 /////////////////////////////////////////////////////////////////////////////
 // COutputView view
 
@@ -20,17 +20,12 @@ protected:
 
 // Attributes
 public:
-	CEvent m_Break;
-	CWinThread *m_pOut;
 	CString m_Text;//текст скрипта
 	CString m_Output;//текст вывода
-	COutputBuffer m_Buf;
-	bool *m_pIsExecuting;
 // Operations
 public:
-	void StopThread();
 	void Show( const CString& );
-	void Run( const CString& );
+	void Run( const CString&, COutputFrame* );
 	CScriptDoc* GetDocument();
 
 // Overrides
@@ -54,8 +49,6 @@ protected:
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnDestroy();
 	afx_msg void OnOutputFileSave();
-	afx_msg void OnOutputBreak();
-	afx_msg void OnUpdateOutputBreak(CCmdUI* pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

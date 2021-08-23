@@ -24,6 +24,10 @@ class CNSys2DApp : public CWinApp
 public:
 	CNSys2DApp();
 
+	static double M_PI, M_PI_2;
+	static double InitPI();
+	static double InitPI_2();
+
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CNSys2DApp)

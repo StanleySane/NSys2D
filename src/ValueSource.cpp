@@ -10,6 +10,9 @@
 #include"ArrayHeader.h"
 #include"ValueHeader.h"
 #include"AlgolMatr.h"
+#include"Knot.h"
+#include"Elem.h"
+
 #include"MatrPtr.h"
 #include"RodPtr.h"
 #include"HardRodPtr.h"
@@ -17,7 +20,7 @@
 #include"DemferPtr.h"
 #include"MassPtr.h"
 #include"KnotPtr.h"
-//#include"ShemePtr.h"
+#include"ShemePtr.h"
 
 #include<cmath>
 using namespace std;
@@ -63,9 +66,9 @@ void Value::Destruct()
 	case TYPE_KNOT:
 		delete m_pKnot;
 		break;
-//	case TYPE_SHEME:
-//		delete m_pSheme;
-//		break;
+	case TYPE_SHEME:
+		delete m_pSheme;
+		break;
 	default:
 		if( Array::IsArray(m_tType) )
 			delete m_pArray;
@@ -364,6 +367,28 @@ void Value::SetKnot( const KnotPtr &v )
 	}
 }
 
+void Value::SetSheme( const ShemePtr &v )
+{
+	if( m_tType != TYPE_SHEME )
+	{
+		Destruct();
+		m_tType = TYPE_SHEME;
+		try
+		{
+			m_pSheme = new ShemePtr(v);
+		}
+		catch( bad_alloc& )
+		{
+			m_pSheme = NULL;
+			m_tType = TYPE_UNKNOWN;
+		}
+	}
+	else
+	{
+		*m_pSheme = v;
+	}
+}
+
 bool Value::GetBool() const
 {
 	ASSERT( m_tType == TYPE_BOOL );
@@ -448,6 +473,12 @@ KnotPtr* Value::GetKnot() const
 	return m_pKnot;
 }
 
+ShemePtr* Value::GetSheme() const
+{
+	ASSERT( m_tType == TYPE_SHEME );
+	return m_pSheme;
+}
+
 void Value::InitBy( const Value &v )
 {
 	switch( v.m_tType )
@@ -491,11 +522,14 @@ void Value::InitBy( const Value &v )
 	case TYPE_KNOT:
 		SetKnot( *v.m_pKnot );
 		break;
+	case TYPE_SHEME:
+		SetSheme( *v.m_pSheme );
+		break;
 	default:
 		if( Array::IsArray(v.m_tType) )
 			SetArray( *v.m_pArray );
-		else
-			ASSERT(FALSE);
+		//else
+		//	ASSERT(FALSE);
 	}
 }
 
@@ -542,6 +576,9 @@ bool Value::SetType( TypeID t )
 	case TYPE_KNOT:
 		SetKnot( KnotPtr() );
 		break;
+	case TYPE_SHEME:
+		SetSheme( ShemePtr() );
+		break;
 	case TYPE_UNKNOWN:
 		Destruct();
 		return true;
@@ -574,7 +611,7 @@ std::string Value::StringVariant() const
 		break;
 	case TYPE_DOUBLE:
 		{
-			str = FormatString("%.11lf", m_vDouble );
+			str = FormatString("%.16g", m_vDouble );
 		}
 		break;
 	case TYPE_STRING:
@@ -616,24 +653,26 @@ std::string Value::StringVariant() const
 		}
 		break;
 	case TYPE_ROD:
-		str = string("ELEMENT-ROD");
+		str = string( static_cast<LPCTSTR>(m_pRod->GetElem()->GetName()) );
 		break;
 	case TYPE_HARDROD:
-		str = string("ELEMENT-HARDROD");
+		str = string( static_cast<LPCTSTR>(m_pHardRod->GetElem()->GetName()) );
 		break;
 	case TYPE_SPRING:
-		str = string("ELEMENT-SPRING");
+		str = string( static_cast<LPCTSTR>(m_pSpring->GetElem()->GetName()) );
 		break;
 	case TYPE_DEMFER:
-		str = string("ELEMENT-DEMFER");
+		str = string( static_cast<LPCTSTR>(m_pDemfer->GetElem()->GetName()) );
 		break;
 	case TYPE_MASS:
-		str = string("ELEMENT-MASS");
+		str = string( static_cast<LPCTSTR>(m_pMass->GetElem()->GetName()) );
 		break;
 	case TYPE_KNOT:
-		str = string("ELEMENT-KNOT");
+		str = string( static_cast<LPCTSTR>(m_pKnot->GetKnot()->GetName()) );
 		break;
-//	case TYPE_SHEME:
+	case TYPE_SHEME:
+		str = m_pSheme->GetName();
+		break;
 	default:
 		ASSERT(FALSE);
 	}//switch
@@ -754,7 +793,7 @@ bool Value::ConvertTo( TypeID t )
 			case TYPE_STRING:
 				{
 					//double->string
-					SetString( FormatString("%.21lf", m_vDouble ) );
+					SetString( FormatString("%.16g", m_vDouble ) );
 				}
 				break;
 			case TYPE_INT:
@@ -1706,7 +1745,7 @@ const Value operator + ( const Value &res1, const Value &res2 )
 			{
 				if( res2.m_tType == TYPE_STRING )
 				{
-					res.SetString( FormatString("%.21lf", res1.m_vDouble) + *res2.m_pString );
+					res.SetString( FormatString("%.16g", res1.m_vDouble) + *res2.m_pString );
 					return res;
 				}
 				else
@@ -1749,7 +1788,7 @@ const Value operator + ( const Value &res1, const Value &res2 )
 					if( res2.m_tType == TYPE_DOUBLE )
 					{
 						//string+double
-						res.SetString( *res1.m_pString + FormatString("%.21lf", res2.m_vDouble) );
+						res.SetString( *res1.m_pString + FormatString("%.16g", res2.m_vDouble) );
 						return res;
 					}
 					else

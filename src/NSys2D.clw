@@ -2,28 +2,28 @@
 
 [General Info]
 Version=1
-LastClass=CFreqViewDlg
-LastTemplate=CEditView
+LastClass=CShemeView
+LastTemplate=CButton
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "NSys2D.h"
 ODLFile=NSys2D.odl
 LastPage=0
 
-ClassCount=54
+ClassCount=57
 Class1=CNSys2DApp
 Class2=CShemeDoc
 Class3=CShemeView
 Class4=CMainFrame
 Class7=CGraphFrame
-Class8=CGraphDoc
+Class8=CScriptDoc
 
-ResourceCount=65
+ResourceCount=73
 Resource1=IDD_KNOTPAGE3
 Resource2=IDR_SHEMETYPE1
 Resource3=IDR_NSYS2DTYPE
 Resource4=IDR_FORMSTYPE
 Resource5=IDD_KNOTSPECTR
-Class9=CGraphView
+Class9=CScriptFrame
 Class5=CAboutDlg
 Class6=CShemeFrame
 Resource6=IDD_DIALOGROD
@@ -43,9 +43,9 @@ Resource12=IDD_DIALOGSPRING
 Class17=CMassDlg
 Resource13=IDD_FREQVIEW
 Class18=CElemDlg
-Class19=CListBoxElem
+Class19=CScriptView
 Class20=CPreCalcDlg
-Class21=CTabCtrlCoord
+Class21=CMeshElemDlg
 Resource14=IDD_PROGRESSDIALOG
 Class22=CKnotPropertySheet
 Class23=CKnotPropertyFrame
@@ -64,14 +64,14 @@ Class30=CGraphicView
 Resource20=IDD_COMPLEXSPECTR
 Class31=CFreqDlg
 Resource21=IDD_KNOTPAGE4
-Class32=CFreqView
-Class33=CFreqViewDlg
+Class32=COutputFrame
+Class33=COutputView
 Class34=CFormsView
 Resource22=IDD_KNOTPAGE1
 Class35=CFormsFrame
 Resource23=IDD_DIALOGDEMF
-Resource24=IDR_SHEMETYPE (Russian)
-Class36=CKnotPropertyPage5
+Resource24=IDD_SHEME_VARS (Russian)
+Class36=CConvertToDlg
 Class37=CKnotSpectr
 Resource25=IDD_SPECTRDLG
 Class38=CComplexSpectrDlg
@@ -80,57 +80,68 @@ Class39=CSpectrDlg
 Resource27=IDD_ABOUTBOX
 Class40=CGraphTimeDlg
 Resource28=IDR_SHEMETYPE
-Resource29=IDD_DIALOGMASS (Russian)
-Resource30=IDD_GROUP_EDIT (Russian)
-Resource31=IDD_FREQDLG (Russian)
-Resource32=IDR_SCRIPT (Russian)
-Resource33=IDD_DIALOG_GROUP_SHOW (Russian)
-Resource34=IDD_CONVERT_TO (Russian)
-Resource35=IDD_KNOTPAGE2 (Russian)
-Resource36=IDR_OUTPUT (Russian)
-Resource37=IDR_POPUPMENUSHEME (Russian)
-Resource38=IDD_DIALOGHARDROD (Russian)
-Resource39=IDR_MAINFRAME (Russian)
-Resource40=IDD_DIALOGSPRING (Russian)
-Resource41=IDD_DIALOGPRECALC (Russian)
-Resource42=IDD_SPECTRDLG (Russian)
-Resource43=IDD_FORMS_BAR (Russian)
-Resource44=IDD_DIALOGTYPEGRAPH (Russian)
-Resource45=IDD_PROGRESSDIALOG (Russian)
-Resource46=IDD_KNOTPAGE3 (Russian)
-Resource47=IDD_KNOTPAGE4 (Russian)
+Resource29=IDD_DESCRIPTION (Russian)
+Resource30=IDD_KNOTPAGE2 (Russian)
+Resource31=IDR_MAINFRAME (Russian)
+Resource32=IDD_DIALOG4 (Russian)
+Resource33=IDD_ABOUTBOX (Russian)
+Resource34=IDD_GROUP_LIST (Russian)
+Resource35=IDD_GROUP_NEW (Russian)
+Resource36=IDR_MOVIE (Russian)
+Resource37=IDD_KNOTSPECTR (Russian)
+Resource38=IDD_DIALOGMASS (Russian)
+Resource39=IDR_SHEMETYPE (Russian)
+Resource40=IDD_MOVIE_STYLES (Russian)
+Resource41=IDR_MAINFRAME (English (U.S.))
+Resource42=IDD_DIALOGROD (Russian)
+Resource43=IDD_DIALOGSPRING (Russian)
+Resource44=IDR_OUTPUT (Russian)
+Resource45=IDD_DIALOGELEM (Russian)
+Resource46=IDD_VIEW_STYLES (Russian)
+Resource47=IDR_POPUPMENUSHEME (Russian)
 Resource48=IDD_FREQVIEW (Russian)
-Resource49=IDD_KNOTSPECTR (Russian)
-Resource50=IDD_KNOTPAGE1 (Russian)
-Resource51=IDD_GROUP_NEW (Russian)
-Resource52=IDD_GROUP_LIST (Russian)
-Resource53=IDD_DIALOGELEM (Russian)
-Resource54=IDD_DIALOG_MESH_ELEM (Russian)
-Resource55=IDD_DIALOGCOORD (Russian)
+Resource49=IDR_FORMSTYPE (Russian)
+Resource50=IDR_GRAPHTYPE (Russian)
+Resource51=IDD_DIALOGPRECALC (Russian)
+Resource52=IDD_COMPLEXSPECTR (Russian)
+Resource53=IDD_DIALOG_MESH_ELEM (Russian)
+Resource54=IDD_PROGRESSDIALOG (Russian)
+Resource55=IDD_TIME_DLG (Russian)
 Class41=CHardRodDlg
 Class42=CEVMDialog
-Resource56=IDR_GRAPHTYPE (Russian)
+Resource56=IDD_KNOTPAGE4 (Russian)
 Class43=CViewStyles
-Resource57=IDR_MAINFRAME (English (U.S.))
+Resource57=IDD_GRAPHS_PROPERTIES (Russian)
 Class44=CNewGroupDlg
-Resource58=IDR_FORMSTYPE (Russian)
+Resource58=IDD_SPECTRDLG (Russian)
 Class45=CGroupListDlg
-Resource59=IDD_DIALOG4 (Russian)
+Resource59=IDD_DIALOGDEMF (Russian)
 Class46=CGroupEditDlg
-Resource60=IDD_DIALOGDEMF (Russian)
+Resource60=IDD_DIALOGTYPEGRAPH (Russian)
 Class47=CGroupPreviewDlg
-Resource61=IDD_VIEW_STYLES (Russian)
-Class48=CMeshElemDlg
-Resource62=IDD_DIALOGROD (Russian)
-Class49=CConvertToDlg
-Class50=CScriptView
-Class51=CScriptFrame
-Resource63=IDD_COMPLEXSPECTR (Russian)
-Class52=CScriptDoc
-Class53=COutputFrame
-Class54=COutputView
-Resource64=IDD_EV_METHODS (Russian)
-Resource65=IDD_ABOUTBOX (Russian)
+Resource61=IDD_FREQDLG (Russian)
+Resource62=IDD_GRAPH_EDIT (Russian)
+Resource63=IDD_DIALOGCOORD (Russian)
+Resource64=IDD_SHEME_VAR_NEW (Russian)
+Resource65=IDD_CONVERT_TO (Russian)
+Class48=CMovieFrame
+Class49=CMovieView
+Resource66=IDD_KNOTPAGE1 (Russian)
+Class50=CMovieParams
+Resource67=IDR_SCRIPT (Russian)
+Resource68=IDD_DIALOGHARDROD (Russian)
+Class51=CShemeVars
+Resource69=IDD_FORMS_BAR (Russian)
+Class52=ShemeVarNewDlg
+Resource70=IDD_KNOTPAGE3 (Russian)
+Class53=CDescriptionDlg
+Resource71=IDD_GROUP_EDIT (Russian)
+Class54=CGraphProp
+Class55=CGraphListBox
+Resource72=IDD_DIALOG_GROUP_SHOW (Russian)
+Class56=CGraphDlg
+Class57=CColorButton
+Resource73=IDD_EV_METHODS (Russian)
 
 [CLS:CNSys2DApp]
 Type=0
@@ -146,13 +157,13 @@ ImplementationFile=ShemeDoc.cpp
 Filter=W
 BaseClass=CDocument
 VirtualFilter=DC
-LastObject=ID_FILE_SAVE_AS
+LastObject=CShemeDoc
 
 [CLS:CShemeView]
 Type=0
 HeaderFile=ShemeView.h
 ImplementationFile=ShemeView.cpp
-Filter=C
+Filter=T
 BaseClass=CScrollView
 VirtualFilter=VWC
 LastObject=CShemeView
@@ -181,7 +192,7 @@ Type=0
 HeaderFile=NSys2D.cpp
 ImplementationFile=NSys2D.cpp
 Filter=D
-LastObject=CAboutDlg
+LastObject=IDOK
 
 [DLG:IDD_ABOUTBOX]
 Type=1
@@ -278,10 +289,11 @@ Command1=ID_FILE_NEW
 Command2=ID_FILE_OPEN
 Command3=ID_FILE_PRINT
 Command4=ID_FILE_SAVE
-Command5=ID_NEXT_PANE
-Command6=ID_PREV_PANE
-Command7=ID_CALC
-CommandCount=7
+Command5=ID_ACCEL32874
+Command6=ID_NEXT_PANE
+Command7=ID_PREV_PANE
+Command8=ID_CALC
+CommandCount=8
 
 [CLS:CGraphFrame]
 Type=0
@@ -291,23 +303,6 @@ BaseClass=CMDIChildWnd
 Filter=C
 LastObject=CGraphFrame
 VirtualFilter=mfWC
-
-[CLS:CGraphDoc]
-Type=0
-HeaderFile=GraphDoc.h
-ImplementationFile=GraphDoc.cpp
-BaseClass=CDocument
-Filter=N
-LastObject=CGraphDoc
-
-[CLS:CGraphView]
-Type=0
-HeaderFile=GraphView.h
-ImplementationFile=GraphView.cpp
-BaseClass=CScrollView
-Filter=C
-LastObject=CGraphView
-VirtualFilter=VWC
 
 [MNU:IDR_SHEMETYPE]
 Type=1
@@ -395,7 +390,7 @@ ImplementationFile=RodDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=IDC_COMBO3
+LastObject=IDC_EDIT4
 
 [CLS:CKnotDlg]
 Type=0
@@ -403,7 +398,7 @@ HeaderFile=KnotDlg.h
 ImplementationFile=KnotDlg.cpp
 BaseClass=CDialog
 Filter=D
-LastObject=CKnotDlg
+LastObject=IDC_EDIT2
 VirtualFilter=dWC
 
 [CLS:CComboBoxElem]
@@ -419,6 +414,7 @@ HeaderFile=ComboBox_FixedType.h
 ImplementationFile=ComboBox_FixedType.cpp
 BaseClass=CComboBox
 Filter=W
+LastObject=CComboBox_FixedType
 
 [CLS:CComboBox_ConnectType]
 Type=0
@@ -433,7 +429,7 @@ HeaderFile=DemfDlg.h
 ImplementationFile=DemfDlg.cpp
 BaseClass=CDialog
 Filter=D
-LastObject=IDC_COMBO2
+LastObject=CDemfDlg
 VirtualFilter=dWC
 
 [DLG:IDD_DIALOGDEMF]
@@ -499,7 +495,7 @@ ImplementationFile=SpringDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=IDC_RADIO1
+LastObject=CSpringDlg
 
 [DLG:IDD_DIALOGMASS]
 Type=1
@@ -555,15 +551,6 @@ Filter=D
 VirtualFilter=dWC
 LastObject=CElemDlg
 
-[CLS:CListBoxElem]
-Type=0
-HeaderFile=ListBoxElem.h
-ImplementationFile=ListBoxElem.cpp
-BaseClass=CListBox
-Filter=W
-LastObject=CListBoxElem
-VirtualFilter=bWC
-
 [DLG:IDD_DIALOGPRECALC]
 Type=1
 Class=CPreCalcDlg
@@ -590,15 +577,6 @@ Filter=D
 VirtualFilter=dWC
 LastObject=CPreCalcDlg
 
-[CLS:CTabCtrlCoord]
-Type=0
-HeaderFile=TabCtrlCoord.h
-ImplementationFile=TabCtrlCoord.cpp
-BaseClass=CTabCtrl
-Filter=D
-VirtualFilter=UWC
-LastObject=CTabCtrlCoord
-
 [CLS:CKnotPropertySheet]
 Type=0
 HeaderFile=KnotPropertySheet.h
@@ -613,6 +591,7 @@ Type=0
 HeaderFile=KnotPropertyFrame.h
 ImplementationFile=KnotPropertyFrame.cpp
 BaseClass=CMiniFrameWnd
+Filter=T
 
 [CLS:CKnotPropertyPage1]
 Type=0
@@ -630,7 +609,7 @@ ImplementationFile=KnotPropertyPage1.cpp
 BaseClass=CPropertyPage
 Filter=D
 VirtualFilter=idWC
-LastObject=IDC_EDIT3
+LastObject=CKnotPropertyPage2
 
 [DLG:IDD_KNOTPAGE1]
 Type=1
@@ -717,7 +696,7 @@ ImplementationFile=ProgressDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=CProgressDlg
+LastObject=IDC_DETAILS
 
 [DLG:IDD_KNOTPAGE3]
 Type=1
@@ -760,7 +739,7 @@ HeaderFile=KnotPropertyPage1.h
 ImplementationFile=KnotPropertyPage1.cpp
 BaseClass=CPropertyPage
 Filter=D
-LastObject=IDC_RADIO3
+LastObject=IDC_CHECK1
 VirtualFilter=idWC
 
 [DLG:IDD_KNOTPAGE4]
@@ -861,28 +840,11 @@ ImplementationFile=FreqDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=IDC_RADIO14
-
-[CLS:CFreqView]
-Type=0
-HeaderFile=FreqView.h
-ImplementationFile=FreqView.cpp
-BaseClass=CDialog
-Filter=D
-LastObject=CFreqView
-
-[CLS:CFreqViewDlg]
-Type=0
-HeaderFile=FreqViewDlg.h
-ImplementationFile=FreqViewDlg.cpp
-BaseClass=CDialog
-Filter=W
-LastObject=CFreqViewDlg
-VirtualFilter=dWC
+LastObject=CFreqDlg
 
 [DLG:IDD_FREQVIEW]
 Type=1
-Class=CFreqViewDlg
+Class=?
 ControlCount=3
 Control1=IDOK,button,1342242817
 Control2=IDCANCEL,button,1342242816
@@ -943,14 +905,6 @@ Command22=ID_WINDOW_TILE_HORZ
 Command23=ID_WINDOW_ARRANGE
 Command24=ID_APP_ABOUT
 CommandCount=24
-
-[CLS:CKnotPropertyPage5]
-Type=0
-HeaderFile=KnotPropertyPage5.h
-ImplementationFile=KnotPropertyPage5.cpp
-BaseClass=CPropertyPage
-Filter=D
-LastObject=CKnotPropertyPage5
 
 [DLG:IDD_KNOTSPECTR]
 Type=1
@@ -1095,11 +1049,11 @@ ImplementationFile=GraphTimeDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=CGraphTimeDlg
+LastObject=IDC_EDIT1
 
 [DLG:IDD_FREQVIEW (Russian)]
 Type=1
-Class=CFreqViewDlg
+Class=?
 ControlCount=3
 Control1=IDOK,button,1342242817
 Control2=IDCANCEL,button,1342242816
@@ -1132,33 +1086,36 @@ Command21=ID_DELELEM
 Command22=ID_MESH_ELEM
 Command23=ID_CONVERT_TO
 Command24=ID_LISTELEM
-Command25=ID_FREE_NUMS
-Command26=ID_GROUP_CLICK_ELEMS
-Command27=ID_GROUP_CLICK_KNOTS
-Command28=ID_ELEMGROUP_DEL
-Command29=ID_ELEMGROUP_PROP
-Command30=ID_GROUP_CONVERT_TO
-Command31=ID_ALL_RODS
-Command32=ID_ALL_HARDRODS
-Command33=ID_ALL_DEMF
-Command34=ID_ALL_SPRINGS
-Command35=ID_ALL_MASSES
-Command36=ID_AUTOCORRECT
-Command37=ID_CALC
-Command38=ID_FREEFORM_CALC
-Command39=ID_SHEME_PARAMS
-Command40=ID_ADDGRAPH
-Command41=ID_FREQ_CALC
-Command42=ID_SPECTR_CALC
-Command43=ID_GROUP_NEW
-Command44=ID_GROUP_LIST
-Command45=ID_GROUP_PREVIEW
-Command46=ID_WINDOW_CASCADE
-Command47=ID_WINDOW_TILE_HORZ
-Command48=ID_WINDOW_ARRANGE
-Command49=ID_OPEN_SCRIPT
-Command50=ID_APP_ABOUT
-CommandCount=50
+Command25=ID_SHEME_VARS
+Command26=ID_FREE_NUMS
+Command27=ID_DESCRIPT
+Command28=ID_GROUP_CLICK_ELEMS
+Command29=ID_GROUP_CLICK_KNOTS
+Command30=ID_ELEMGROUP_DEL
+Command31=ID_ELEMGROUP_PROP
+Command32=ID_GROUP_CONVERT_TO
+Command33=ID_ALL_RODS
+Command34=ID_ALL_HARDRODS
+Command35=ID_ALL_DEMF
+Command36=ID_ALL_SPRINGS
+Command37=ID_ALL_MASSES
+Command38=ID_AUTOCORRECT
+Command39=ID_TOOL_TIPS
+Command40=ID_CALC
+Command41=ID_FREEFORM_CALC
+Command42=ID_MAKE_MOVIE
+Command43=ID_SHEME_PARAMS
+Command44=ID_ADDGRAPH
+Command45=ID_FREQ_CALC
+Command46=ID_SPECTR_CALC
+Command47=ID_GROUP_NEW
+Command48=ID_GROUP_LIST
+Command49=ID_GROUP_PREVIEW
+Command50=ID_WINDOW_CASCADE
+Command51=ID_WINDOW_TILE_HORZ
+Command52=ID_WINDOW_ARRANGE
+Command53=ID_APP_ABOUT
+CommandCount=53
 
 [MNU:IDR_POPUPMENUSHEME (Russian)]
 Type=1
@@ -1302,18 +1259,15 @@ Control4=IDOK,button,1342242817
 [DLG:IDD_ABOUTBOX (Russian)]
 Type=1
 Class=CAboutDlg
-ControlCount=11
+ControlCount=8
 Control1=IDC_STATIC,static,1342177283
 Control2=IDC_STATIC,static,1342308481
 Control3=IDOK,button,1342373889
 Control4=IDC_STATIC,static,1342308352
-Control5=IDC_STATIC,static,1342308352
-Control6=IDC_STATIC,static,1342308352
-Control7=IDC_STATIC,static,1342308353
-Control8=IDC_STATIC,static,1342308352
-Control9=IDC_STATIC,static,1342308352
-Control10=IDC_STATIC,static,1342308352
-Control11=IDC_STATIC,static,1342308352
+Control5=IDC_STATIC,static,1342308353
+Control6=IDC_STATIC,static,1342308353
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_STATIC,static,1342308353
 
 [DLG:IDD_DIALOGPRECALC (Russian)]
 Type=1
@@ -1397,9 +1351,10 @@ Control24=IDC_RADIO14,button,1342177289
 [DLG:IDD_PROGRESSDIALOG (Russian)]
 Type=1
 Class=CProgressDlg
-ControlCount=2
+ControlCount=3
 Control1=IDCANCEL,button,1342242817
-Control2=IDC_PROGRESS1,msctls_progress32,1350565888
+Control2=IDC_DETAILS,edit,1342244996
+Control3=IDC_PROGRESS1,msctls_progress32,1350565888
 
 [DLG:IDD_KNOTPAGE3 (Russian)]
 Type=1
@@ -1409,32 +1364,32 @@ Control1=IDC_STATIC,button,1342177287
 Control2=IDC_STATIC,button,1342177287
 Control3=IDC_CHECK1,button,1342242819
 Control4=IDC_CHECK3,button,1342259203
-Control5=IDC_STATIC,static,1342177280
-Control6=IDC_STATIC,static,1342177280
-Control7=IDC_STATIC,static,1342177280
-Control8=IDC_STATIC,static,1342177280
-Control9=IDC_STATIC,static,1342177280
-Control10=IDC_STATIC,static,1342177280
-Control11=IDC_RADIO1,button,1342373897
-Control12=IDC_EDIT1,edit,1350631552
-Control13=IDC_EDIT2,edit,1350631552
-Control14=IDC_EDIT3,edit,1350631552
-Control15=IDC_RADIO2,button,1342373897
-Control16=IDC_EDIT5,edit,1350631552
-Control17=IDC_RADIO5,button,1342373897
-Control18=IDC_SPECTRPX,button,1342242816
-Control19=IDC_CSPECPX,button,1342242816
-Control20=IDC_CHECK2,button,1342242819
-Control21=IDC_CHECK4,button,1342259203
-Control22=IDC_RADIO3,button,1342373897
-Control23=IDC_EDIT6,edit,1350631552
-Control24=IDC_EDIT7,edit,1350631552
-Control25=IDC_EDIT8,edit,1350631552
-Control26=IDC_RADIO4,button,1342373897
-Control27=IDC_EDIT10,edit,1350631552
-Control28=IDC_RADIO6,button,1342373897
-Control29=IDC_SPECTRPY,button,1342373888
-Control30=IDC_CSPECPY,button,1342242816
+Control5=IDC_RADIO1,button,1342373897
+Control6=IDC_RADIO2,button,1342242825
+Control7=IDC_RADIO5,button,1342242825
+Control8=IDC_EDIT1,edit,1350631552
+Control9=IDC_EDIT2,edit,1350631552
+Control10=IDC_EDIT3,edit,1350631552
+Control11=IDC_EDIT5,edit,1350631552
+Control12=IDC_SPECTRPX,button,1342242816
+Control13=IDC_CSPECPX,button,1342242816
+Control14=IDC_STATIC,static,1342177280
+Control15=IDC_STATIC,static,1342177280
+Control16=IDC_STATIC,static,1342177280
+Control17=IDC_CHECK2,button,1342242819
+Control18=IDC_CHECK4,button,1342259203
+Control19=IDC_RADIO3,button,1342373897
+Control20=IDC_RADIO4,button,1342242825
+Control21=IDC_RADIO6,button,1342242825
+Control22=IDC_EDIT6,edit,1350631552
+Control23=IDC_EDIT7,edit,1350631552
+Control24=IDC_EDIT8,edit,1350631552
+Control25=IDC_EDIT10,edit,1350631552
+Control26=IDC_SPECTRPY,button,1342373888
+Control27=IDC_CSPECPY,button,1342242816
+Control28=IDC_STATIC,static,1342177280
+Control29=IDC_STATIC,static,1342177280
+Control30=IDC_STATIC,static,1342177280
 
 [DLG:IDD_KNOTPAGE4 (Russian)]
 Type=1
@@ -1623,9 +1578,9 @@ Type=1
 Class=?
 Command1=ID_AUTOSIZE
 Command2=ID_GETCOORD
-Command3=ID_LOADGRAPH2
-Command4=ID_SAVEREZ
-Command5=ID_GRAPH2
+Command3=ID_SAVEREZ
+Command4=ID_GRAPH_PROP
+Command5=ID_MAIN_GRAPH
 Command6=ID_CALCMAT
 CommandCount=6
 
@@ -1714,29 +1669,33 @@ ImplementationFile=EVMDialog.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=IDC_RADIO_HARDMETHOD_0
+LastObject=CEVMDialog
 
 [DLG:IDD_EV_METHODS (Russian)]
 Type=1
 Class=CEVMDialog
-ControlCount=12
+ControlCount=16
 Control1=IDOK,button,1342242817
 Control2=IDCANCEL,button,1342242816
 Control3=IDC_STATIC,button,1342177287
-Control4=IDC_RADIO_JACOBY,button,1342320393
-Control5=IDC_RADIO_QR_ELM,button,1342189321
-Control6=IDC_RADIO_QR_DIR,button,1342189321
-Control7=IDC_RADIO_QR_ORT,button,1342189321
+Control4=IDC_RADIO_JACOBY,button,1342319881
+Control5=IDC_RADIO_QR_ELM,button,1342188809
+Control6=IDC_RADIO_QR_DIR,button,1342188809
+Control7=IDC_RADIO_QR_ORT,button,1342188809
 Control8=IDC_STATIC,button,1342177287
-Control9=IDC_RADIO_HARDMETHOD_0,button,1342320393
-Control10=IDC_RADIO_HARDMETHOD_1,button,1342189321
-Control11=IDC_RADIO_HARDMETHOD_2,button,1342189321
-Control12=IDC_CHECK_CONDMASS,button,1342242819
+Control9=IDC_RADIO_HARDMETHOD_0,button,1342319881
+Control10=IDC_RADIO_HARDMETHOD_1,button,1476406537
+Control11=IDC_RADIO_HARDMETHOD_2,button,1342188809
+Control12=IDC_CHECK_INTEGR_TEST,button,1342242819
+Control13=IDC_STATIC,button,1342177287
+Control14=IDC_RADIO_INVERT_0,button,1342319881
+Control15=IDC_RADIO_INVERT_1,button,1342188809
+Control16=IDC_CHECK_VALIDATE_EXPR,button,1342242819
 
 [DLG:IDD_VIEW_STYLES (Russian)]
 Type=1
 Class=CViewStyles
-ControlCount=18
+ControlCount=19
 Control1=IDOK,button,1342242817
 Control2=IDCANCEL,button,1342242816
 Control3=IDC_STATIC,button,1342177287
@@ -1755,6 +1714,7 @@ Control15=IDC_NUM_ELEMS,static,1342308352
 Control16=IDC_BUTTON_NUM_ELEMS_FONT,button,1342242816
 Control17=IDC_STATIC,static,1342308352
 Control18=IDC_EDIT_ZERO_ROT,edit,1350631552
+Control19=IDC_RICH_CALC,button,1342242819
 
 [CLS:CViewStyles]
 Type=0
@@ -1762,7 +1722,7 @@ HeaderFile=ViewStyles.h
 ImplementationFile=ViewStyles.cpp
 BaseClass=CDialog
 Filter=D
-LastObject=IDC_BUTTON_FREE_FONT
+LastObject=IDC_RICH_CALC
 VirtualFilter=dWC
 
 [DLG:IDD_GROUP_NEW (Russian)]
@@ -1808,7 +1768,7 @@ ImplementationFile=GroupListDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=CGroupListDlg
+LastObject=IDC_GRLIST
 
 [DLG:IDD_GROUP_EDIT (Russian)]
 Type=1
@@ -1907,7 +1867,7 @@ HeaderFile=ScriptView.h
 ImplementationFile=ScriptView.cpp
 BaseClass=CEditView
 Filter=C
-LastObject=CScriptView
+LastObject=ID_MOVIE_MOVE_UP
 VirtualFilter=VWC
 
 [CLS:CScriptFrame]
@@ -1935,7 +1895,7 @@ CommandCount=7
 Type=1
 Class=?
 Command1=ID_FILE_NEW
-Command2=ID_FILE_OPEN
+Command2=ID_SCRIPT_FILE_OPEN
 Command3=ID_FILE_SAVE
 Command4=ID_COMPILE_SCRIPT
 Command5=ID_RUN_SCRIPT
@@ -1954,7 +1914,7 @@ Type=0
 HeaderFile=OutputFrame.h
 ImplementationFile=OutputFrame.cpp
 BaseClass=CMDIChildWnd
-Filter=M
+Filter=C
 VirtualFilter=mfWC
 
 [CLS:COutputView]
@@ -1971,4 +1931,196 @@ Class=?
 Command1=ID_OUTPUT_FILE_SAVE
 Command2=ID_OUTPUT_BREAK
 CommandCount=2
+
+[TB:IDR_MOVIE (Russian)]
+Type=1
+Class=?
+Command1=ID_MOVIE_PREV_STEP
+Command2=ID_MOVIE_RUN
+Command3=ID_MOVIE_PAUSE
+Command4=ID_MOVIE_STOP
+Command5=ID_MOVIE_NEXT_STEP
+Command6=ID_MOVIE_AUTO_SCALE
+Command7=ID_MOVIE_SCALE_INC
+Command8=ID_MOVIE_SCALE_DEC
+Command9=ID_MOVIE_MOVE_UP
+Command10=ID_MOVIE_MOVE_DOWN
+Command11=ID_MOVIE_MOVE_LEFT
+Command12=ID_MOVIE_MOVE_RIGHT
+Command13=ID_MOVIE_PARAMS
+CommandCount=13
+
+[CLS:CMovieFrame]
+Type=0
+HeaderFile=MovieFrame.h
+ImplementationFile=MovieFrame.cpp
+BaseClass=CMDIChildWnd
+Filter=M
+VirtualFilter=mfWC
+
+[CLS:CMovieView]
+Type=0
+HeaderFile=MovieView.h
+ImplementationFile=MovieView.cpp
+BaseClass=CScrollView
+Filter=C
+VirtualFilter=VWC
+LastObject=CMovieView
+
+[DLG:IDD_MOVIE_STYLES (Russian)]
+Type=1
+Class=CMovieParams
+ControlCount=7
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,static,1342308352
+Control4=IDC_EDIT_TIMER_ELAPSE,edit,1350631552
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_EDIT_START_TIME,edit,1350631552
+Control7=IDC_CHECK_SHOW_KNOTS,button,1342242819
+
+[CLS:CMovieParams]
+Type=0
+HeaderFile=MovieParams.h
+ImplementationFile=MovieParams.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CMovieParams
+
+[DLG:IDD_TIME_DLG (Russian)]
+Type=1
+ControlCount=2
+Control1=IDC_STATIC,static,1342308352
+Control2=ID_CURRENT_TIME,static,1342308352
+
+[ACL:IDR_MOVIE (Russian)]
+Type=1
+Class=?
+Command1=ID_MOVIE_SCALE_INC
+Command2=ID_MOVIE_MOVE_DOWN
+Command3=ID_MOVIE_MOVE_LEFT
+Command4=ID_MOVIE_MOVE_RIGHT
+Command5=ID_MOVIE_SCALE_DEC
+Command6=ID_MOVIE_MOVE_UP
+CommandCount=6
+
+[DLG:IDD_SHEME_VARS (Russian)]
+Type=1
+Class=CShemeVars
+ControlCount=6
+Control1=IDOK,button,1342242817
+Control2=IDC_VARS_LIST,SysListView32,1350633477
+Control3=IDC_ADD_VAR,button,1342242816
+Control4=IDC_RECALC,button,1342242816
+Control5=IDC_EDIT_VAR,button,1342242816
+Control6=IDC_DEL_VAR,button,1342242816
+
+[CLS:CShemeVars]
+Type=0
+HeaderFile=ShemeVars.h
+ImplementationFile=ShemeVars.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=CShemeVars
+VirtualFilter=dWC
+
+[DLG:IDD_SHEME_VAR_NEW (Russian)]
+Type=1
+Class=ShemeVarNewDlg
+ControlCount=6
+Control1=IDC_EDIT_NAME,edit,1350631552
+Control2=IDC_EDIT_EXPR,edit,1350631552
+Control3=IDOK,button,1342242817
+Control4=IDCANCEL,button,1342242816
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+
+[CLS:ShemeVarNewDlg]
+Type=0
+HeaderFile=ShemeVarNewDlg.h
+ImplementationFile=ShemeVarNewDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=IDC_EDIT_EXPR
+
+[DLG:IDD_DESCRIPTION (Russian)]
+Type=1
+Class=CDescriptionDlg
+ControlCount=3
+Control1=IDC_EDIT_DESCRIPTION,edit,1353781444
+Control2=IDOK,button,1342242817
+Control3=IDCANCEL,button,1342242816
+
+[CLS:CDescriptionDlg]
+Type=0
+HeaderFile=DescriptionDlg.h
+ImplementationFile=DescriptionDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CDescriptionDlg
+
+[DLG:IDD_GRAPHS_PROPERTIES (Russian)]
+Type=1
+Class=CGraphProp
+ControlCount=5
+Control1=IDOK,button,1342242817
+Control2=IDC_GRAPH_LIST,listbox,1353781521
+Control3=IDC_GRAPH_EDIT,button,1342242816
+Control4=IDC_GRAPH_NEW,button,1342242816
+Control5=IDC_GRAPH_DEL,button,1342242816
+
+[CLS:CGraphProp]
+Type=0
+HeaderFile=GraphProp.h
+ImplementationFile=GraphProp.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=CGraphProp
+VirtualFilter=dWC
+
+[CLS:CGraphListBox]
+Type=0
+HeaderFile=GraphListBox.h
+ImplementationFile=GraphListBox.cpp
+BaseClass=CCheckListBox
+Filter=W
+LastObject=CGraphListBox
+VirtualFilter=bWC
+
+[DLG:IDD_GRAPH_EDIT (Russian)]
+Type=1
+Class=CGraphDlg
+ControlCount=12
+Control1=IDC_CAPTION,edit,1350631552
+Control2=IDC_GRAPH_SCALE,edit,1350631552
+Control3=IDC_GRAPH_LOAD,button,1342242816
+Control4=IDC_EDIT_GRAPH_COLOR,button,1342242816
+Control5=IDOK,button,1342242817
+Control6=IDCANCEL,button,1342242816
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_STATIC,static,1342308352
+Control9=IDC_GRAPH_FILE_NAME,edit,1342244992
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_GRAPH_COLOR,button,1342275595
+
+[CLS:CGraphDlg]
+Type=0
+HeaderFile=GraphDlg.h
+ImplementationFile=GraphDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CGraphDlg
+
+[CLS:CColorButton]
+Type=0
+HeaderFile=ColorButton.h
+ImplementationFile=ColorButton.cpp
+BaseClass=CButton
+Filter=W
+VirtualFilter=BWC
 

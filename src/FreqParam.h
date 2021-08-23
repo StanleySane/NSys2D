@@ -13,12 +13,12 @@
 class CFreqParam  
 {
 public:
-	void Serialize(CArchive & ar);
+	void Serialize( CArchive &, int );
 	CFreqParam();
 	virtual ~CFreqParam();
 
-	//Строковые значения начальной, конечной и шага частоты
-	CString strwBeg, strwEnd, strwStep;
+	//значения начальной, конечной и шага частоты
+	double m_wBeg, m_wEnd, m_wStep;
 	//Вывод результате в логарифмических координатах
 	BOOL LogCoord;
 	//Номер производной (0-нет производной;1-первая;2-вторая производная)

@@ -6,6 +6,9 @@
 #include "RodDlg.h"
 
 #include "KnotDlg.h"
+#include "Sheme.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -96,18 +99,13 @@ BOOL CRodDlg::OnInitDialog()
 		int pos1=pListKnot->FindPos(pRod->knot1)-1;
 		int pos2=pListKnot->FindPos(pRod->knot2)-1;
 
-		//CString name1=GetNameKnot(pos1,pRod->knot1->GetName());
-		//CString name2=GetNameKnot(pos2,pRod->knot2->GetName());
-
 		m_ComboBoxKnot1.SetCurSel(pos1);
 		m_ComboBoxKnot2.SetCurSel(pos2);
-//		m_ComboBoxKnot1.SelectString(0,name1);
-//		m_ComboBoxKnot2.SelectString(0,name2);
 
-		m_EditJx=pRod->GetStrJx();
-		m_EditE=pRod->GetStrE();
-		m_EditM=pRod->GetStrM();
-		m_EditF=pRod->GetStrF();
+		m_EditJx = pRod->m_Jx.GetExpr().c_str();
+		m_EditE = pRod->m_E.GetExpr().c_str();
+		m_EditM = pRod->m_m0.GetExpr().c_str();
+		m_EditF = pRod->m_F.GetExpr().c_str();
 	}
 
 	GetDlgItem(IDC_COMBO1)->EnableWindow(m_bFull);
@@ -139,44 +137,33 @@ BOOL CRodDlg::VerifyInfo()
 		}
 	}
 
-	CExpression e;
-	int ret;
-	ret=e.IsNum(m_EditF);
-	if (ret)
+	CString mes;
+	ASSERT(pRod->m_pSheme);
+	if( !pRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditF, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для F не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении F:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditJx);
-	if (ret)
+	if( !pRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditJx, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для Jx не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении Jx:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditE);
-	if (ret)
+	if( !pRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditE, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для E не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении E:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
-	ret=e.IsNum(m_EditM);
-	if (ret)
+	if( !pRod->m_pSheme->m_VarsTable.IsValidExpr( m_EditM, mes ) )
 	{
-		CString str;
-		str.LoadString(ret);
-		MessageBox(str,"Выражение для M не число"
-			,MB_OK|MB_ICONERROR);
+		mes = _T("Ошибка в выражении m:\n") + mes;
+		AfxMessageBox( mes );
 		return FALSE;
 	}
+
 	return TRUE;
 }
 
@@ -244,10 +231,14 @@ void CRodDlg::OnOK()
 	pRod->knot1=kn1;
 	pRod->knot2=kn2;
 
-	pRod->SetF(m_EditF);
-	pRod->SetJx(m_EditJx);
-	pRod->SetE(m_EditE);
-	pRod->SetM(m_EditM);
+	bool res = pRod->SetF(m_EditF);
+	ASSERT( res == true );
+	res = pRod->SetJx(m_EditJx);
+	ASSERT( res == true );
+	res = pRod->SetE(m_EditE);
+	ASSERT( res == true );
+	res = pRod->SetM(m_EditM);
+	ASSERT( res == true );
 
 	pRod->knot1->ConnectType=m_ConnectType1.GetCurSel();//m_Type1;
 	pRod->knot2->ConnectType=m_ConnectType2.GetCurSel();//m_Type2;
