@@ -18,9 +18,11 @@ static char THIS_FILE[] = __FILE__;
 
 
 CRodDlg::CRodDlg(CListKnot *plistkn,CRod *prod/*=NULL*/,
+				 bool full/*true*/,
 				 CWnd* pParent /*=NULL*/)
 	: CDialog(CRodDlg::IDD, pParent)
 {
+	m_bFull = full;
 	pRod=prod;
 	pListKnot=plistkn;
 
@@ -107,6 +109,13 @@ BOOL CRodDlg::OnInitDialog()
 		m_EditM=pRod->GetStrM();
 		m_EditF=pRod->GetStrF();
 	}
+
+	GetDlgItem(IDC_COMBO1)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_COMBO2)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_COMBO3)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_COMBO4)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_BUTNEWKNOT)->EnableWindow(m_bFull);
+
 	UpdateData(FALSE);
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -116,15 +125,18 @@ BOOL CRodDlg::OnInitDialog()
 BOOL CRodDlg::VerifyInfo()
 {
 	UpdateData();
-	
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
 
-	if (kn1==kn2) 
+	if( m_bFull )
 	{
-		MessageBox("Задано два одинаковых узла","Ошибка!"
-			,MB_OK|MB_ICONERROR);
-		return FALSE;
+		CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+
+		if (kn1==kn2) 
+		{
+			MessageBox("Задано два одинаковых узла","Ошибка!"
+				,MB_OK|MB_ICONERROR);
+			return FALSE;
+		}
 	}
 
 	CExpression e;
@@ -170,6 +182,7 @@ BOOL CRodDlg::VerifyInfo()
 
 void CRodDlg::InvalidateKnot(BOOL bSave)
 {
+	if( !m_bFull )	return;
 	int pos1=0,pos2=0;
 	
 	if (bSave)
@@ -213,8 +226,17 @@ void CRodDlg::OnOK()
 //	if (pRod->knot1) pRod->knot1->DelElemKnot(pRod->knot2);
 //	if (pRod->knot2) pRod->knot2->DelElemKnot(pRod->knot1);
 
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	CKnot *kn1, *kn2;
+	if( m_bFull )
+	{
+		kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	}
+	else
+	{
+		kn1 = pRod->knot1;
+		kn2 = pRod->knot2;
+	}
 
 	if (!pRod)
 		pRod=new CRod(kn1, kn2);

@@ -69,6 +69,7 @@ BOOL CKnotDlg::OnInitDialog()
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
+	m_FixedType.AddString("");
 	m_FixedType.SetCurSel(pKnot->FixedType);
 
 	m_EditX=pKnot->GetStrX();

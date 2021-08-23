@@ -12,12 +12,13 @@
 
 class CDemfDlg : public CDialog
 {
+	bool m_bFull;
 // Construction
 public:
 	int SetState();
 	void InvalidateKnot(BOOL bSave=FALSE);
 	BOOL VerifyInfo();
-	CDemfDlg(CListKnot *plistkn, CDemf *pdemf=NULL, CWnd* pParent = NULL);   // standard constructor
+	CDemfDlg(CListKnot *plistkn, CDemf *pdemf=NULL, bool full = true, CWnd* pParent = NULL);   // standard constructor
 	CDemf* pDemf;
 	CListKnot *pListKnot;
 

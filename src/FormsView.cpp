@@ -6,6 +6,11 @@
 #include "FormsView.h"
 #include "ShemeDoc.h"
 
+#include "Sheme.h"
+#include "EqualDegrees.h"
+
+using namespace std;
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -20,6 +25,7 @@ IMPLEMENT_DYNCREATE(CFormsView, CScrollView)
 CFormsView::CFormsView()
 {
 	ViewEnable=false;
+	m_bCalculated = false;
 
 	MultMove=1.0;
 	MultAngl=1.0;
@@ -28,6 +34,10 @@ CFormsView::CFormsView()
 
 CFormsView::~CFormsView()
 {
+	CShemeDoc* pDoc = (CShemeDoc*)GetDocument();
+	ASSERT_VALID(pDoc);
+
+	pDoc->m_bIsView = false;
 }
 
 
@@ -38,6 +48,7 @@ BEGIN_MESSAGE_MAP(CFormsView, CScrollView)
 	ON_COMMAND(ID_FREQNEXT, OnFreqnext)
 	ON_COMMAND(ID_FREQPREW, OnFreqprew)
 	ON_COMMAND(ID_UPDATEFORMS, OnUpdateforms)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
@@ -68,10 +79,10 @@ void CFormsView::OnDraw(CDC* pDC)
 	double oldAngl=pDoc->ParamView.MultAngl;
 	
 	pDoc->ParamView.Gray=true;
-	POSITION pos=pDoc->listElem.GetHeadPosition();
+	POSITION pos=pDoc->m_pSheme->listElem.GetHeadPosition();
 	while (pos)
 	{
-		CElem *elem=pDoc->listElem.GetNext(pos);
+		CElem *elem=pDoc->m_pSheme->listElem.GetNext(pos);
 		elem->Draw(pDC,&(pDoc->ParamView));
 	}
 	pDoc->ParamView.Gray=false;
@@ -79,30 +90,46 @@ void CFormsView::OnDraw(CDC* pDC)
 	pDoc->ParamView.MultMove=MultMove;
 	pDoc->ParamView.MultAngl=MultAngl;
 
-	pos=pDoc->listElem.GetHeadPosition();
+	pos=pDoc->m_pSheme->listElem.GetHeadPosition();
 	while (pos)
 	{
-		CElem *elem=pDoc->listElem.GetNext(pos);
+		CElem *elem=pDoc->m_pSheme->listElem.GetNext(pos);
 		elem->Draw(pDC,&(pDoc->ParamView));
 	}
 	pDoc->ParamView.MultMove=oldMove;
 	pDoc->ParamView.MultAngl=oldAngl;
 
+	if( m_bBar )
+	{
+		CString strFreq, strT;
+		strFreq.Format("%d(%d): %.10lg 1/рад", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm]);
+		double T=(matr_Freq[0][NumForm]!=0?2*acos(-1)/matr_Freq[0][NumForm]:0);
+		strT.Format("%d(%d): %.8lg c",     NumForm+1, matr_Freq.SizeX, T);
 
-	CFont font1;
-	font1.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
-	pDC->SetBkColor(GetSysColor(COLOR_WINDOW));
-	pDC->SetTextAlign(TA_LEFT|TA_TOP);	
-	CFont *pOldFont=pDC->SelectObject(&font1);
+		(m_DlgBar.GetDlgItem(IDC_BAR_FREQ))->SetWindowText(strFreq);
+		(m_DlgBar.GetDlgItem(IDC_BAR_T))->SetWindowText(strT);
+	}
 
-	CString str;
-	str.Format("Частота колебаний %d(%d): %.8lg 1/рад", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm]);
-	pDC->TextOut(2, 5, str);
-	double T=(matr_Freq[0][NumForm]!=0?2*acos(-1)/matr_Freq[0][NumForm]:0);
-	str.Format("Период колебаний  %d(%d): %.8lg c",     NumForm+1, matr_Freq.SizeX, T);
-	pDC->TextOut(2, 25, str);
+	if( pDoc->ParamView.m_bTextOut )
+	{
+//		CFont font1;
+//		font1.CreatePointFont(100,_T("Times New Roman"), 0);//MS Sans Serif
+		pDC->SetBkColor(GetSysColor(COLOR_WINDOW));
+		pDC->SetTextAlign(TA_LEFT|TA_TOP);	
+//		CFont *pOldFont=pDC->SelectObject(&font1);
+		CFont *pOldFont = pDC->SelectObject(&(pDoc->ParamView.m_fntFree));
+		COLORREF oldClr = pDC->SetTextColor(pDoc->ParamView.m_clrFree);
 
-	pDC->SelectObject(pOldFont);
+		CString str;
+		str.Format("Частота колебаний %d(%d): %.8lg 1/рад", NumForm+1, matr_Freq.SizeX, matr_Freq[0][NumForm]);
+		pDC->TextOut(2, 5, str);
+		double T=(matr_Freq[0][NumForm]!=0?2*acos(-1)/matr_Freq[0][NumForm]:0);
+		str.Format("Период колебаний  %d(%d): %.8lg c",     NumForm+1, matr_Freq.SizeX, T);
+		pDC->TextOut(2, 25, str);
+
+		pDC->SetTextColor(oldClr);
+		pDC->SelectObject(pOldFont);
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -129,10 +156,10 @@ void CFormsView::SetForm(int n)
 	ASSERT_VALID(pDoc);
 	// TODO: add draw code here
 
-	POSITION pos=pDoc->listKnot.GetHeadPosition();
+	POSITION pos=pDoc->m_pSheme->listKnot.GetHeadPosition();
 	while (pos)
 	{
-		CKnot *kn=pDoc->listKnot.GetNext(pos);
+		CKnot *kn=pDoc->m_pSheme->listKnot.GetNext(pos);
 		if (kn->nXRez>=0) 
 			kn->MoveX=matr_Forms[kn->nXRez][n];
 		else 
@@ -171,6 +198,7 @@ void CFormsView::OnMovesub()
 void CFormsView::OnFreqnext() 
 {
 	// TODO: Add your command handler code here
+	if( matr_Forms.SizeX == 0 )	return;
 	SetForm((NumForm+1)%matr_Forms.SizeX);
 	Invalidate();
 }
@@ -178,6 +206,7 @@ void CFormsView::OnFreqnext()
 void CFormsView::OnFreqprew() 
 {
 	// TODO: Add your command handler code here
+	if( matr_Forms.SizeX == 0 )	return;
 	SetForm((NumForm-1+matr_Forms.SizeX)%matr_Forms.SizeX);
 	Invalidate();
 }
@@ -189,15 +218,17 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	ASSERT_VALID(pDoc);
 
 	// TODO: Add your specialized code here and/or call the base class
+	if( m_bCalculated )	return;
+
 	BeginWaitCursor();
 
-	int Count=pDoc->UpdateAllFree();
+	int Count=pDoc->m_pSheme->UpdateAllFree();
 	if (!Count) 
 	{
 		EndWaitCursor();
 		return;
 	}
-	int code=pDoc->SetMatrMDC(Count);
+	int code=pDoc->m_pSheme->SetMatrMDC(Count);
 	if (code) 
 	{
 		EndWaitCursor();
@@ -205,30 +236,102 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 	}
 
 	//Копируем данные
-	matr_Forms.ReSize(pDoc->matr_C.SizeY, pDoc->matr_C.SizeY);
-	matr_Freq.ReSize (pDoc->matr_C.SizeY, pDoc->matr_C.SizeY);
-	matr_Freq=pDoc->matr_M_1*pDoc->matr_C;
+	matr_Forms.ReSize(pDoc->m_pSheme->matr_C.SizeY, pDoc->m_pSheme->matr_C.SizeY);
+	matr_Freq.ReSize (pDoc->m_pSheme->matr_C.SizeY, pDoc->m_pSheme->matr_C.SizeY);
+	matr_Freq=pDoc->m_pSheme->matr_M_1*pDoc->m_pSheme->matr_C;
 
-	//Вычисление собственных частот и форм колебений методом Якоби
+////////////////////////////////////////////
+			TRACE0("\n\nBefore solve:\n");
+			for( int r = 0; r < matr_Freq.SizeY; r++ )
+			{
+				for( int c = 0; c < matr_Freq.SizeX; c++ )
+				{
+					TRACE1("%.5lf ", matr_Freq[r][c] );
+				}
+				TRACE0("\n");
+			}
+////////////////////////////////////////////
+
 	if (Count>1)
 	{
-		code=matr_Freq.Eigen(&matr_Forms);
-		if (code<0) 
+		EV_METHOD EVm = pDoc->m_pSheme->m_EVMethod;
+
+		if( EVm == EVM_JACOBY )
 		{
-	//		AfxMessageBox( _T("Процесс нахождения собственных частот не сходится."),MB_OK|MB_ICONSTOP);
-			ViewEnable=false;
-			EndWaitCursor();
-			return;
+			//Вычисление собственных частот и форм колебаний методом Якоби
+			code=matr_Freq.Eigen(&matr_Forms);
+			if (code<0) 
+			{
+		//		AfxMessageBox( _T("Процесс нахождения собственных частот не сходится."),MB_OK|MB_ICONSTOP);
+				/**************************************************/
+				//демодификация форм если надо
+				if( pDoc->m_pSheme->m_bIsHardRod )
+				{
+					pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
+				}
+				/**************************************************/
+				ViewEnable=false;
+				EndWaitCursor();
+				return;
+			}
 		}
+		else
+		{
+			//вычисление собств.значений и форм QR-методом
+			code = matr_Freq.GetEigenVecs( matr_Forms, EVm );
+			if (code<0) 
+			{
+				/**************************************************/
+				//демодификация форм если надо
+				if( pDoc->m_pSheme->m_bIsHardRod )
+				{
+					pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
+				}
+				/**************************************************/	
+				ViewEnable=false;
+				EndWaitCursor();
+				return;
+			}
+		}//if(EVm==EVM_JACOBY)
+
+////////////////////////////////////////////
+			TRACE0("Before demodify:\n");
+			for( int r = 0; r < matr_Forms.SizeY; r++ )
+			{
+				for( int c = 0; c < matr_Forms.SizeX; c++ )
+				{
+					TRACE1("%.5lf ", matr_Forms[r][c] );
+				}
+				TRACE0("\n");
+			}
+////////////////////////////////////////////
+		/**************************************************/
+		//демодификация форм если надо
+		if( pDoc->m_pSheme->m_bIsHardRod )
+		{
+			pDoc->m_pSheme->m_pEqDeg->DeModifyMatrix( matr_Forms );
+		}
+		/**************************************************/	
+////////////////////////////////////////////
+			TRACE0("After demodify:\n");
+			for( r = 0; r < matr_Forms.SizeY; r++ )
+			{
+				for( int c = 0; c < matr_Forms.SizeX; c++ )
+				{
+					TRACE1("%.5lf ", matr_Forms[r][c] );
+				}
+				TRACE0("\n");
+			}
+////////////////////////////////////////////
 
 		//Нормирование форм
-		for (int i=0;i<matr_Forms.SizeY;i++)
+		for (int i=0;i<matr_Forms.SizeX;i++)
 		{
 			double maxU=0;
-			POSITION pos=pDoc->listKnot.GetHeadPosition();
+			POSITION pos=pDoc->m_pSheme->listKnot.GetHeadPosition();
 			while (pos)
 			{
-				CKnot *kn=pDoc->listKnot.GetNext(pos);
+				CKnot *kn=pDoc->m_pSheme->listKnot.GetNext(pos);
 				if (kn->nXRez>=0) 
 				{
 					double uu=matr_Forms[kn->nXRez][i];
@@ -256,22 +359,34 @@ void CFormsView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
 					double tmp=matr_Freq[0][i];
 					matr_Freq[0][i]=matr_Freq[0][j];
 					matr_Freq[0][j]=tmp;
-					for (int k=0;k<matr_Forms.SizeY;k++)
+					for( int k = 0; k < matr_Forms.SizeY; k++ )
 					{
 						tmp=matr_Forms[k][i];
 						matr_Forms[k][i]=matr_Forms[k][j];
 						matr_Forms[k][j]=tmp;
 					}
 				}
+////////////////////////////////////////////
+			TRACE0("After sort:\n");
+			for( r = 0; r < matr_Forms.SizeY; r++ )
+			{
+				for( int c = 0; c < matr_Forms.SizeX; c++ )
+				{
+					TRACE1("%.5lf ", matr_Forms[r][c] );
+				}
+				TRACE0("\n");
+			}
+////////////////////////////////////////////
+
 		ViewEnable=true;
 
-		if (NumForm>=matr_Forms.SizeY) NumForm=0;
+		if (NumForm>=matr_Forms.SizeX) NumForm=0;
 		SetForm(NumForm);
 		Invalidate();
 	}
 	else
 	{
-		matr_Freq[0][0]=sqrt(pDoc->matr_C[0][0]/pDoc->matr_M[0][0]);
+		matr_Freq[0][0]=sqrt(pDoc->m_pSheme->matr_C[0][0]/pDoc->m_pSheme->matr_M[0][0]);
 		matr_Forms[0][0]=30.0/pDoc->ParamView.Scale;
 		NumForm=0;
 		SetForm(NumForm);
@@ -316,4 +431,29 @@ void CFormsView::OnUpdateforms()
 {
 	// TODO: Add your command handler code here
 	OnUpdate(0,0,0);
+}
+
+int CFormsView::OnCreate(LPCREATESTRUCT lpCreateStruct) 
+{
+	if (CScrollView::OnCreate(lpCreateStruct) == -1)
+		return -1;
+
+	CShemeDoc* pDoc = (CShemeDoc*)GetDocument();
+	ASSERT_VALID(pDoc);
+	m_bBar = pDoc->m_bMakeBar;
+	
+	// TODO: Add your specialized creation code here
+	if( m_bBar )
+	{
+		if (!m_DlgBar.Create( GetOwner(),
+			IDD_FORMS_BAR,
+			CBRS_TOP|CBRS_TOOLTIPS|CBRS_FLYBY, 
+			IDD_FORMS_BAR))
+		{
+			TRACE0("Ошибка при создании панели \n");
+			return -1; 
+		}
+	}
+
+	return 0;
 }

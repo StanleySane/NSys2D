@@ -121,10 +121,22 @@ BOOL CKnotPropertyPage1::OnInitDialog()
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
 	m_FixedType.AddString("");
+	m_FixedType.AddString("");
 	m_FixedType.SetCurSel(pKnot->FixedType);
 
-	m_EditX=pKnot->GetStrX();
-	m_EditY=pKnot->GetStrY();
+	if( m_bFull )
+	{
+		m_EditX=pKnot->GetStrX();
+		m_EditY=pKnot->GetStrY();
+	}
+	else
+	{
+		m_EditX = _T("");
+		m_EditY = _T("");
+	}
+
+	GetDlgItem(IDC_EDIT1)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_EDIT2)->EnableWindow(m_bFull);
 
 	UpdateData(FALSE);
 	
@@ -1208,7 +1220,9 @@ BOOL CKnotPropertyPage4::OnKillActive()
 BOOL CKnotPropertyPage1::VerifyInfo()
 {
 	UpdateData();
-	
+
+	if( !m_bFull )	return true;
+
 	CExpression e;
 	int ret;
 	if (ret=e.IsNum(m_EditX))
@@ -1508,6 +1522,12 @@ void CKnotPropertyPage1::SetData()
 {
 	UpdateData();
 	
+	if( !m_bFull )
+	{
+		pKnot->FixedType=m_FixedType.GetCurSel();
+		return;
+	}
+
 	CExpression e;
 	int ret;
 	if (ret=e.IsNum(m_EditX))

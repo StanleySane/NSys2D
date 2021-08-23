@@ -90,15 +90,39 @@ void CDemf::Draw(CDC * pDC, CParamView * pParamView)
 		pDC->LineTo(point7.x,point7.y);
 	}
 
+	//Номер элемента
+	if( (m_Number)&&(!pParamView->Gray)&&(pParamView->m_bNumElems) )
+	{
+		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
+		pDC->SetTextAlign( TA_LEFT|TA_TOP );	
+		CFont *pOldFont = (CFont*)pDC->SelectObject(&(pParamView->m_fntElems));
+
+		CString str; 
+		str.Format("[%d]", m_Number );
+
+		COLORREF oldClr = pDC->SetTextColor(pParamView->m_clrNumElems);
+		int oldBkMode = pDC->SetBkMode(TRANSPARENT);
+
+		CCoordD k1 = knot1->GetCoord(pParamView->MultMove);
+		CCoordD k2 = knot2->GetCoord(pParamView->MultMove);
+		CPoint point = ShemeToScreen( (k1+k2)/2, pParamView );//середина между двумя узлами
+		pDC->TextOut( point.x, point.y, str );
+
+		pDC->SetBkMode(oldBkMode);
+		pDC->SetTextColor(oldClr);
+
+		pDC->SelectObject(pOldFont);
+	}
+
 	knot1->Draw(pDC,pParamView);
 	knot2->Draw(pDC,pParamView);
 
 	pDC->SelectObject(pOld);
 }
 
-int CDemf::GoDlg(CListKnot * pListKnot)
+int CDemf::GoDlg(CListKnot * pListKnot, bool full )
 {
-	CDemfDlg dlg(pListKnot, this);
+	CDemfDlg dlg( pListKnot, this, full );
 	if (dlg.DoModal()==IDOK) return 1;
 	return 0;
 }
@@ -177,7 +201,7 @@ CString CDemf::GetStrX(int i)
 	return _T("-1");
 }
 
-double CDemf::GetDemfX(int i)
+double CDemf::GetDemfX(int i) const
 {
 	switch (i)
 	{
@@ -194,8 +218,11 @@ void CDemf::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 {
 	if (type==1)
 	{
-		CMatr loc_matr(4,4),T(4,4);
+		CMatr loc_matr;
+		GetMatrD( loc_matr );
+		/*
 		double a=GetDemfX(1);
+		CMatr T( 4, 4 );
 		GetMatrT(T,4);
 
 		loc_matr[0][0]=a;
@@ -204,7 +231,7 @@ void CDemf::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 		loc_matr[0][2]=-a;
 		
 		loc_matr=!T*loc_matr*T;
-
+		*/
 		int N[4];
 		N[0]=knot1->nXRez;
 		N[1]=knot1->nYRez;
@@ -314,4 +341,54 @@ void CDemf::Serialize(CArchive & ar)
 		SetDemfX(XX,0);
 		ar >> type;
 	}
+}
+
+bool CDemf::SetCommonProperties( CElem* elem )
+{
+	CDemf *pDemf = dynamic_cast<CDemf*>(elem);
+	if( !pDemf )	return false;
+
+	a_X1 = pDemf->a_X1;
+	a_X3 = pDemf->a_X3;
+	a_X5 = pDemf->a_X5;
+	a_XS = pDemf->a_XS;
+	a_XX = pDemf->a_XX;
+	str_X1 = pDemf->str_X1;
+	str_X3 = pDemf->str_X3;
+	str_X5 = pDemf->str_X5;
+	str_XS = pDemf->str_XX;
+	str_XX = pDemf->str_XX;
+	type = pDemf->type;
+
+	return true;
+}
+
+void CDemf::GetMatrM( CMatr &m ) const
+{
+	m.ReSize( 4, 4 );
+}
+
+void CDemf::GetMatrD( CMatr &m ) const
+{
+	if( type == 1 )
+	{
+		m.ReSize( 4, 4 );
+		CMatr T( 4, 4 );
+		double a = GetDemfX(1);
+		GetMatrT( T, 4 );
+
+		m[0][0] = a;
+		m[2][2] = a;
+		m[2][0] = -a;
+		m[0][2] = -a;
+		
+		m = !T*m*T;
+	}
+	else
+		m.ReSize( 4, 4 );
+}
+
+void CDemf::GetMatrC( CMatr &m ) const
+{
+	m.ReSize( 4, 4 );
 }

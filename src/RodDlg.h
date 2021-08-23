@@ -16,6 +16,7 @@
 
 class CRodDlg : public CDialog
 {
+	bool m_bFull;
 // Construction
 public:
 	void InvalidateKnot(BOOL bSave=FALSE);
@@ -26,7 +27,7 @@ public:
 	CString strE;
 	CRod* pRod;
 	BOOL VerifyInfo();
-	CRodDlg(CListKnot *plistkn,CRod *prod=NULL,CWnd* pParent = NULL);   // standard constructor
+	CRodDlg(CListKnot *plistkn,CRod *prod=NULL,bool full = true,CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CRodDlg)

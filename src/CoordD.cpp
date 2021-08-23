@@ -35,7 +35,7 @@ CCoordD::CCoordD(double _x, double _y)
 
 int CCoordD::operator ==(CCoordD & c)
 {
-	if ((x==c.x)&&(y==c.y)) return 1;
+	if ((x==c.x)&&(y==c.y)) return 1;// ??? исправить сравнение double-ов
 	return 0;
 }
 

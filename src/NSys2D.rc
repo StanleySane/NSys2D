@@ -74,6 +74,9 @@ END
 IDR_GRAPHTYPE           ICON    DISCARDABLE     "res\\idr_grap.ico"
 IDR_MAINFRAME           ICON    DISCARDABLE     "res\\NSys2D.ico"
 IDR_SHEMETYPE           ICON    DISCARDABLE     "res\\icon2.ico"
+IDR_FORMSTYPE           ICON    DISCARDABLE     "res\\idr_form.ico"
+IDR_SCRIPT              ICON    DISCARDABLE     "res\\idr_scri.ico"
+IDR_OUTPUT              ICON    DISCARDABLE     "res\\idr_outp.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -96,6 +99,8 @@ IDB_BITMAP5             BITMAP  DISCARDABLE     "res\\bmp00007.bmp"
 IDB_BITMAP4             BITMAP  DISCARDABLE     "res\\bitmap4.bmp"
 IDB_BITMAP3             BITMAP  DISCARDABLE     "res\\bitmap3.bmp"
 IDB_BITMAP2             BITMAP  DISCARDABLE     "res\\bmp00008.bmp"
+IDR_SCRIPT              BITMAP  DISCARDABLE     "res\\script.bmp"
+IDR_OUTPUT              BITMAP  DISCARDABLE     "res\\output.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -106,7 +111,7 @@ IDR_SHEMETYPE MENU PRELOAD DISCARDABLE
 BEGIN
     POPUP "&Файл"
     BEGIN
-        MENUITEM "&Новая схема\tCtrl+N",        ID_FILE_NEW
+        MENUITEM "&Новый документ \tCtrl+N",    ID_FILE_NEW
         MENUITEM "&Открыть...\tCtrl+O",         ID_FILE_OPEN
         MENUITEM "&Закрыть",                    ID_FILE_CLOSE
         MENUITEM "&Сохранить\tCtrl+S",          ID_FILE_SAVE
@@ -126,23 +131,59 @@ BEGIN
         MENUITEM "&Инструменты",                ID_VIEW_TOOLBAR
         MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
         MENUITEM SEPARATOR
+        MENUITEM "Автомасштаб",                 ID_AUTO_SCALE
+        MENUITEM SEPARATOR
+        MENUITEM "Настройка...",                ID_VIEW_STYLES
         MENUITEM "Обновить",                    ID_REFRESH
     END
     POPUP "&Схема"
     BEGIN
-        MENUITEM "Добавить стержень...",        ID_ADDROD
-        MENUITEM "Добавить демпфер...",         ID_ADDDEMF
-        MENUITEM "Добавить упр. элемент...",    ID_ADDSPRING
-        MENUITEM "Добавить массу...",           ID_ADDMASS
+        POPUP "Добавить"
+        BEGIN
+            MENUITEM "Стержень...",                 ID_ADDROD
+            MENUITEM "Жёсткий стержень...",         ID_ADDHARDROD
+            MENUITEM "Демпфер...",                  ID_ADDDEMF
+            MENUITEM "Упругий элемент...",          ID_ADDSPRING
+            MENUITEM "Массу...",                    ID_ADDMASS
+        END
         MENUITEM SEPARATOR
         MENUITEM "Удалить элемент",             ID_DELELEM
+        MENUITEM "Разбить стержень...",         ID_MESH_ELEM
+        MENUITEM "Конвертировать в...",         ID_CONVERT_TO
         MENUITEM SEPARATOR
         MENUITEM "Список элементов...",         ID_LISTELEM
+        MENUITEM "Степени свободы ...",         ID_FREE_NUMS
+        MENUITEM SEPARATOR
+        POPUP "Группа"
+        BEGIN
+            POPUP "Набрать"
+            BEGIN
+                MENUITEM "Элементы",                    ID_GROUP_CLICK_ELEMS
+                MENUITEM "Узлы",                        ID_GROUP_CLICK_KNOTS
+            END
+            MENUITEM SEPARATOR
+            MENUITEM "Удалить...",                  ID_ELEMGROUP_DEL
+            MENUITEM "Свойства...",                 ID_ELEMGROUP_PROP
+            MENUITEM "Конвертировать в...",         ID_GROUP_CONVERT_TO
+            MENUITEM SEPARATOR
+            POPUP "Создать для всех"
+            BEGIN
+                MENUITEM "Стержней",                    ID_ALL_RODS
+                MENUITEM "Жёстких стержней",            ID_ALL_HARDRODS
+                MENUITEM "Демпферов",                   ID_ALL_DEMF
+                MENUITEM "Упругих элементов",           ID_ALL_SPRINGS
+                MENUITEM "Масс",                        ID_ALL_MASSES
+            END
+        END
+        MENUITEM SEPARATOR
+        MENUITEM "Автокорректировка",           ID_AUTOCORRECT
     END
     POPUP "&Расчеты"
     BEGIN
         MENUITEM "Интегрирование...\tF9",       ID_CALC
         MENUITEM "Вычисление собств. частот",   ID_FREEFORM_CALC
+        MENUITEM SEPARATOR
+        MENUITEM "Параметры анализа схемы...",  ID_SHEME_PARAMS
         MENUITEM SEPARATOR
         POPUP "Графики"
         BEGIN
@@ -151,11 +192,20 @@ BEGIN
             MENUITEM "Спектральная плотность...",   ID_SPECTR_CALC
         END
     END
+    POPUP "Гр&уппы"
+    BEGIN
+        MENUITEM "Новая группа",                ID_GROUP_NEW
+        MENUITEM SEPARATOR
+        MENUITEM "Список групп",                ID_GROUP_LIST
+        MENUITEM "Просмотр...",                 ID_GROUP_PREVIEW
+    END
     POPUP "&Окно"
     BEGIN
         MENUITEM "&Каскадом",                   ID_WINDOW_CASCADE
         MENUITEM "&Расположить",                ID_WINDOW_TILE_HORZ
         MENUITEM "&Свернуть",                   ID_WINDOW_ARRANGE
+        MENUITEM SEPARATOR
+        MENUITEM "Открыть скрипт",              ID_OPEN_SCRIPT
     END
     POPUP "&Помощь"
     BEGIN
@@ -167,12 +217,18 @@ IDR_POPUPMENUSHEME MENU DISCARDABLE
 BEGIN
     POPUP ""
     BEGIN
-        MENUITEM "Добавить стержень...",        ID_ADDROD
-        MENUITEM "Добавить демпфер...",         ID_ADDDEMF
-        MENUITEM "Добавить упр. элемент...",    ID_ADDSPRING
-        MENUITEM "Добавить массу...",           ID_ADDMASS
+        POPUP "Добавить"
+        BEGIN
+            MENUITEM "Стержень...",                 ID_ADDROD
+            MENUITEM "Жёсткий стержень...",         ID_ADDHARDROD
+            MENUITEM "Демпфер...",                  ID_ADDDEMF
+            MENUITEM "Упругий элемент...",          ID_ADDSPRING
+            MENUITEM "Массу...",                    ID_ADDMASS
+        END
         MENUITEM SEPARATOR
         MENUITEM "Удалить элемент",             ID_DELELEM
+        MENUITEM "Разбить стержень...",         ID_MESH_ELEM
+        MENUITEM "Конвертировать в...",         ID_CONVERT_TO
         MENUITEM SEPARATOR
         POPUP "График"
         BEGIN
@@ -204,6 +260,24 @@ BEGIN
     POPUP "&Помощь"
     BEGIN
         MENUITEM "&О программе...",             ID_APP_ABOUT
+    END
+END
+
+IDR_SCRIPT MENU DISCARDABLE 
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "&Новый документ\tCtrl+N",     ID_FILE_NEW
+        MENUITEM "&Открыть...\tCtrl+O",         ID_FILE_OPEN
+        MENUITEM "&Сохранить\tCtrl+S",          ID_FILE_SAVE
+        MENUITEM "Сохранить &как...",           ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "Recent File",                 ID_FILE_MRU_FILE1, GRAYED
+    END
+    POPUP "&Вид"
+    BEGIN
+        MENUITEM "&Инструменты",                ID_VIEW_TOOLBAR
+        MENUITEM "&Строка состояния",           ID_VIEW_STATUS_BAR
     END
 END
 
@@ -374,22 +448,26 @@ BEGIN
     DEFPUSHBUTTON   "Закрыть",IDOK,182,106,50,14
 END
 
-IDD_ABOUTBOX DIALOGEX 0, 0, 231, 107
+IDD_ABOUTBOX DIALOGEX 0, 0, 231, 126
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "О программе"
 FONT 8, "MS Sans Serif"
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,7,7,20,20
-    CTEXT           "NSys2D версия 2.5                     Copyright (C) 1999-2000",
+    CTEXT           "NSys2D версия 3.0                     Copyright (C) 1999-2002",
                     IDC_STATIC,31,7,187,8,SS_NOPREFIX
-    DEFPUSHBUTTON   "OK",IDOK,192,86,32,14,WS_GROUP
-    LTEXT           "Митрофанов С.Б.",IDC_STATIC,31,76,67,8
-    LTEXT           "группа 94-ДПМП",IDC_STATIC,117,76,66,8
+    DEFPUSHBUTTON   "OK",IDOK,191,107,32,14,WS_GROUP
+    LTEXT           "Митрофанов С.Б.",IDC_STATIC,30,84,67,8
+    LTEXT           "группа 94-ДПМП",IDC_STATIC,116,84,66,8
     LTEXT           "Брянский государственный технический университет",
                     IDC_STATIC,31,60,193,8
     CTEXT           "Программный комплекс МКЭ для исследования стационарных колебаний плоских систем с нелинейными дискретными элементами",
                     IDC_STATIC,31,24,187,33,0,WS_EX_CLIENTEDGE
-    LTEXT           "E-mail: sergey@msb.bryansk.ru",IDC_STATIC,31,92,144,8
+    LTEXT           "E-mail: sergey@msb.bryansk.ru",IDC_STATIC,30,113,144,8
+    LTEXT           "Буравилин С.С.",IDC_STATIC,30,94,64,8
+    LTEXT           "группа 96-ДПМП",IDC_STATIC,116,94,65,10
+    LTEXT           "Кафедра динамика и прочность машин",IDC_STATIC,60,70,
+                    140,8
 END
 
 IDD_DIALOGPRECALC DIALOG DISCARDABLE  0, 0, 183, 136
@@ -809,6 +887,228 @@ BEGIN
     GROUPBOX        "Время",IDC_STATIC,6,2,145,43
 END
 
+IDD_FORMS_BAR DIALOG DISCARDABLE  0, 0, 192, 18
+STYLE WS_CHILD
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT           "Частота колебаний",IDC_STATIC,5,1,70,8
+    LTEXT           "Период колебаний",IDC_STATIC,5,9,65,8
+    LTEXT           "(данные отсутствуют)",IDC_BAR_FREQ,80,1,104,8
+    LTEXT           "(данные отсутствуют)",IDC_BAR_T,80,9,104,8
+END
+
+IDD_DIALOGHARDROD DIALOG DISCARDABLE  0, 0, 199, 201
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Свойства абсолютно жёсткого стержня"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_COMBO2,16,27,72,63,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO1,16,57,72,114,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO3,113,26,72,62,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_COMBO4,113,57,72,117,CBS_DROPDOWNLIST | 
+                    CBS_OWNERDRAWFIXED | CBS_HASSTRINGS | WS_VSCROLL | 
+                    WS_TABSTOP
+    EDITTEXT        IDC_EDIT4,27,94,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT1,27,112,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT2,27,131,160,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT3,85,150,102,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,7,178,53,14
+    PUSHBUTTON      "Cancel",IDCANCEL,74,178,53,14
+    GROUPBOX        "Узел 1",IDC_STATIC,7,2,90,76
+    GROUPBOX        "Параметры",IDC_STATIC,7,80,187,91
+    LTEXT           "J=",IDC_STATIC,15,114,8,8
+    LTEXT           "E=",IDC_STATIC,15,133,8,8
+    GROUPBOX        "Узел 2",IDC_STATIC,104,2,90,76
+    LTEXT           "Тип присоединения",IDC_STATIC,15,45,68,8
+    LTEXT           "Тип присоединения",IDC_STATIC,113,45,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,18,14,68,8
+    LTEXT           "Номер/координаты",IDC_STATIC,115,14,68,8
+    LTEXT           "(масса стержня) m=",IDC_STATIC,13,152,67,8
+    LTEXT           "F=",IDC_STATIC,14,96,9,8
+    PUSHBUTTON      "Новый узел...",IDC_BUTNEWKNOT,141,178,53,14
+END
+
+IDD_EV_METHODS DIALOG DISCARDABLE  0, 0, 374, 141
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Параметры анализа схемы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,195,105,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,260,105,50,14
+    GROUPBOX        "Метод поиска собств.значений и форм",IDC_STATIC,10,5,
+                    175,130
+    CONTROL         "Метод Якоби с понижением нормы для матриц общего вида.",
+                    IDC_RADIO_JACOBY,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    BS_VCENTER | BS_MULTILINE | WS_GROUP,15,20,160,15
+    CONTROL         "QR-алгоритм для полных матриц с приведением исходной матрицы к верхней форме Хессенберга.",
+                    IDC_RADIO_QR_ELM,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    BS_VCENTER | BS_MULTILINE,15,40,160,25
+    CONTROL         "Что и предыдущий, но с применением накопления скалярного произведения с повышенной точностью.",
+                    IDC_RADIO_QR_DIR,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    BS_VCENTER | BS_MULTILINE,15,70,160,25
+    CONTROL         "С помощью элементарных ортогональных преобразований с сохранением числа обусловленности отдельных собственных значений.",
+                    IDC_RADIO_QR_ORT,"Button",BS_AUTORADIOBUTTON | BS_CENTER | 
+                    BS_VCENTER | BS_MULTILINE,15,100,160,30
+    GROUPBOX        "Метод учёта жёстких стержней",IDC_STATIC,190,5,170,95
+    CONTROL         "Без ""разноса"" масс.",IDC_RADIO_HARDMETHOD_0,"Button",
+                    BS_AUTORADIOBUTTON | BS_CENTER | BS_VCENTER | 
+                    BS_MULTILINE | WS_GROUP,200,15,150,10
+    CONTROL         "С учётом расположения нескольких жёст.стержней подряд: равномерный ""разнос"" масс по стержням.",
+                    IDC_RADIO_HARDMETHOD_1,"Button",BS_AUTORADIOBUTTON | 
+                    BS_CENTER | BS_VCENTER | BS_MULTILINE,200,30,150,25
+    CONTROL         "Обычный балочный КЭ, но с удалением ""лишних"" степеней свободы.",
+                    IDC_RADIO_HARDMETHOD_2,"Button",BS_AUTORADIOBUTTON | 
+                    BS_CENTER | BS_VCENTER | BS_MULTILINE,200,60,150,15
+    CONTROL         "Конденсация матрицы масс.",IDC_CHECK_CONDMASS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,200,85,150,10
+END
+
+IDD_VIEW_STYLES DIALOGEX 0, 0, 369, 126
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Графические параметры"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,10,105,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,130,105,50,14
+    GROUPBOX        "Параметры вывода собственных частот",IDC_STATIC,188,5,
+                    170,60
+    CONTROL         "Выводить собств.частоты в графическом окне.",
+                    IDC_TEXT_OUT,"Button",BS_AUTOCHECKBOX | BS_CENTER | 
+                    BS_VCENTER | BS_MULTILINE | WS_TABSTOP,198,20,150,15
+    LTEXT           "Шрифт для вывода частот:",IDC_STATIC,198,40,105,8
+    LTEXT           "(нету данных)",IDC_FREE_FONT,198,50,105,10,0,
+                    WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Шрифт...",IDC_BUTTON_FREE_FONT,313,45,40,15
+    GROUPBOX        "Параметры нумерации",IDC_STATIC,10,5,170,90
+    CONTROL         "Нумерация узлов",IDC_CHECK_NUM_KNOTS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,15,90,10
+    CONTROL         "Нумерация элементов",IDC_CHECK_NUM_ELEMS,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,55,95,10
+    LTEXT           "Шрифт для вывода номеров узлов:",IDC_STATIC,20,25,125,
+                    10
+    LTEXT           "Шрифт для вывода номеров элементов:",IDC_STATIC,20,65,
+                    140,10
+    LTEXT           "(нету данных)",IDC_NUM_KNOTS,20,35,105,10,0,
+                    WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Шрифт...",IDC_BUTTON_NUM_KNOTS_FONT,135,35,40,15
+    LTEXT           "(нету данных)",IDC_NUM_ELEMS,20,75,105,10,0,
+                    WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Шрифт...",IDC_BUTTON_NUM_ELEMS_FONT,135,75,40,15
+    LTEXT           "Минимальное значение видимого поворота массы на собственных формах:",
+                    IDC_STATIC,189,70,120,25
+    EDITTEXT        IDC_EDIT_ZERO_ROT,314,85,45,10,ES_AUTOHSCROLL
+END
+
+IDD_GROUP_NEW DIALOG DISCARDABLE  0, 0, 174, 91
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Новая группа"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_GROUP,5,45,165,20,ES_MULTILINE
+    EDITTEXT        IDC_EDIT_GROUP_NAME,50,5,120,10,ES_AUTOHSCROLL
+    CONTROL         "Элементы",IDC_RADIO_GROUP_TYPE,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,55,25,55,10
+    CONTROL         "Узлы",IDC_RADIO_GROUP_TYPE2,"Button",BS_AUTORADIOBUTTON,
+                    115,25,45,10
+    DEFPUSHBUTTON   "OK",IDOK,5,70,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,120,70,50,14
+    LTEXT           "Название:",IDC_STATIC,5,5,40,8
+    GROUPBOX        "",IDC_STATIC,5,15,165,25
+    LTEXT           "Тип:",IDC_STATIC,10,25,30,8
+END
+
+IDD_GROUP_LIST DIALOG DISCARDABLE  0, 0, 324, 94
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Список групп"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,5,75,45,14
+    PUSHBUTTON      "Cancel",IDCANCEL,225,75,45,14
+    LISTBOX         IDC_GRLIST,5,5,265,65,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | 
+                    WS_TABSTOP
+    PUSHBUTTON      "Удалить",IDC_BUTTON_DEL_GROUP,60,75,45,14
+    PUSHBUTTON      "Правка",IDC_BUTTON_EDIT_GROUP,115,75,45,14
+    PUSHBUTTON      "Просмотр",IDC_BUTTON_GROUP_SHOW,170,75,45,14
+    PUSHBUTTON      "Открыть",IDC_BUTTON_GROUP_OPEN,275,5,45,14
+    PUSHBUTTON      "Сохранить",IDC_BUTTON_GROUP_SAVE,275,25,45,14
+END
+
+IDD_GROUP_EDIT DIALOG DISCARDABLE  0, 0, 239, 116
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Редактирование группы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_EDIT_GROUP_INEDIT,5,20,230,20,ES_MULTILINE | 
+                    ES_AUTOHSCROLL
+    EDITTEXT        IDC_EDIT_GROUP_NAME_INEDIT,50,5,110,10
+    DEFPUSHBUTTON   "OK",IDOK,5,95,50,14
+    PUSHBUTTON      "Обновить",IDC_BUTTON_REFRESH,65,95,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,185,95,50,14
+    LTEXT           "Название:",IDC_STATIC,5,5,40,10
+    LTEXT           "Тип:",IDC_STATIC,165,5,15,10
+    EDITTEXT        IDC_EDIT_GROUP_TYPE_INEDIT,185,5,50,10,ES_READONLY
+    EDITTEXT        IDC_EDIT_GROUP_SET,5,45,230,45,ES_MULTILINE | 
+                    ES_AUTOVSCROLL | ES_READONLY | WS_VSCROLL
+    PUSHBUTTON      "Упаковать",IDC_BUTTON_PACK,125,95,50,14
+END
+
+IDD_DIALOG_GROUP_SHOW DIALOG DISCARDABLE  0, 0, 104, 26
+STYLE DS_MODALFRAME | DS_SETFOREGROUND | WS_POPUP | WS_CAPTION
+CAPTION "Идёт просмотр группы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "Продолжить работу",IDOK,5,5,95,14
+END
+
+IDD_DIALOG_MESH_ELEM DIALOGEX 0, 0, 249, 131
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Параметры разбивки"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "Несколько элементов",IDC_RADIO1,"Button",
+                    BS_AUTORADIOBUTTON | WS_GROUP,5,5,90,10
+    CONTROL         "Врезать один узел",IDC_RADIO2,"Button",
+                    BS_AUTORADIOBUTTON,5,20,90,10
+    EDITTEXT        IDC_EDIT_ELEMS_COUNT,176,5,60,10,ES_AUTOHSCROLL
+    CONTROL         "Slider1",IDC_SLIDER1,"msctls_trackbar32",TBS_BOTH | 
+                    TBS_NOTICKS | WS_TABSTOP,70,60,110,15,
+                    WS_EX_DLGMODALFRAME
+    EDITTEXT        IDC_EDIT_LEFT_LENGTH,70,80,50,10
+    EDITTEXT        IDC_EDIT_RIGHT_LENGTH,130,80,50,10
+    EDITTEXT        IDC_EDIT_LEFT_PROC,70,45,35,10,ES_READONLY
+    EDITTEXT        IDC_EDIT_RIGHT_PROC,130,45,35,10,ES_READONLY
+    DEFPUSHBUTTON   "OK",IDOK,10,110,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,190,110,50,14
+    LTEXT           "Число элементов:",IDC_STATIC,106,5,65,8
+    LTEXT           "Левый узел",IDC_STATIC,8,50,45,8
+    LTEXT           "Правый узел",IDC_STATIC,185,50,45,8
+    EDITTEXT        IDC_EDIT_LEFT_KNOT,8,60,55,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    EDITTEXT        IDC_EDIT_RIGHT_KNOT,185,60,55,12,ES_AUTOHSCROLL | 
+                    ES_READONLY
+    LTEXT           "Левая часть",IDC_STATIC,70,35,50,8
+    LTEXT           "Правая часть",IDC_STATIC,130,35,50,8
+    LTEXT           "%",IDC_STATIC,110,47,10,8
+    LTEXT           "%",IDC_STATIC,170,47,10,8
+    LTEXT           "Общая длина:",IDC_STATIC,48,95,50,8
+    EDITTEXT        IDC_EDIT_LENGTH,103,95,45,10,ES_READONLY
+END
+
+IDD_CONVERT_TO DIALOG DISCARDABLE  0, 0, 174, 41
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Конвертация элементов"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,5,20,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,120,20,50,14
+    EDITTEXT        IDC_EDIT_NEW_ELEM_TYPE,5,5,165,10,ES_AUTOHSCROLL | 
+                    ES_READONLY
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -870,7 +1170,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 224
         TOPMARGIN, 7
-        BOTTOMMARGIN, 100
+        BOTTOMMARGIN, 119
     END
 
     IDD_DIALOGPRECALC, DIALOG
@@ -976,6 +1276,87 @@ BEGIN
         TOPMARGIN, 2
         BOTTOMMARGIN, 64
     END
+
+    IDD_FORMS_BAR, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 11
+    END
+
+    IDD_DIALOGHARDROD, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 192
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 194
+        HORZGUIDE, 178
+    END
+
+    IDD_EV_METHODS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 367
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 134
+    END
+
+    IDD_VIEW_STYLES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 362
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 119
+    END
+
+    IDD_GROUP_NEW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 167
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_GROUP_LIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 317
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 87
+    END
+
+    IDD_GROUP_EDIT, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 232
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 109
+    END
+
+    IDD_DIALOG_GROUP_SHOW, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 97
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 19
+    END
+
+    IDD_DIALOG_MESH_ELEM, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 242
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 124
+    END
+
+    IDD_CONVERT_TO, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 167
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 34
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -1044,6 +1425,19 @@ BEGIN
     0
 END
 
+IDD_DIALOGHARDROD DLGINIT
+BEGIN
+    IDC_COMBO1, 0x403, 7, 0
+0xb8c6, 0xf2f1, 0xeeea, "\000" 
+    IDC_COMBO1, 0x403, 9, 0
+0xe0d8, 0xedf0, 0xf0e8, 0xeeed, "\000" 
+    IDC_COMBO4, 0x403, 7, 0
+0xb8c6, 0xf2f1, 0xeeea, "\000" 
+    IDC_COMBO4, 0x403, 9, 0
+0xe0d8, 0xedf0, 0xf0e8, 0xeeed, "\000" 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1069,6 +1463,8 @@ BEGIN
     BUTTON      ID_FILE_OPEN
     BUTTON      ID_FILE_SAVE
     SEPARATOR
+    BUTTON      ID_REFRESH
+    BUTTON      ID_BUTTON_AUTO_SIZE
     BUTTON      ID_SCALEADD
     BUTTON      ID_SCALESUB
     SEPARATOR
@@ -1076,9 +1472,14 @@ BEGIN
     SEPARATOR
     BUTTON      ID_SETNULL
     BUTTON      ID_SETROD
+    BUTTON      ID_SETHARDROD
     BUTTON      ID_SETSPRING
     BUTTON      ID_SETDEMF
     BUTTON      ID_SETMASS
+    SEPARATOR
+    BUTTON      ID_BUTTON_DEL_FREE_KNOTS
+    BUTTON      ID_BUTTON_GRCLICK_ELEMS
+    BUTTON      ID_BUTTON_GRCLICK_KNOTS
     SEPARATOR
     BUTTON      ID_APP_ABOUT
 END
@@ -1094,6 +1495,23 @@ BEGIN
     BUTTON      ID_UPDATEFORMS
 END
 
+IDR_SCRIPT TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      ID_FILE_NEW
+    BUTTON      ID_FILE_OPEN
+    BUTTON      ID_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_COMPILE_SCRIPT
+    BUTTON      ID_RUN_SCRIPT
+END
+
+IDR_OUTPUT TOOLBAR DISCARDABLE  16, 16
+BEGIN
+    BUTTON      ID_OUTPUT_FILE_SAVE
+    SEPARATOR
+    BUTTON      ID_OUTPUT_BREAK
+END
+
 
 #ifndef _MAC
 /////////////////////////////////////////////////////////////////////////////
@@ -1102,8 +1520,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 2,5,0,0
- PRODUCTVERSION 2,5,0,0
+ FILEVERSION 3,0,0,0
+ PRODUCTVERSION 3,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1118,14 +1536,14 @@ BEGIN
     BEGIN
         BLOCK "041904b0"
         BEGIN
-            VALUE "CompanyName", "\0"
+            VALUE "CompanyName", "DSM BSTU\0"
             VALUE "FileDescription", "NSys2D MFC Application\0"
-            VALUE "FileVersion", "2, 5, 0, 0\0"
+            VALUE "FileVersion", "3, 0, 0, 0\0"
             VALUE "InternalName", "NSys2D\0"
             VALUE "LegalCopyright", "Copyright (C) 1999-2000\0"
             VALUE "OriginalFilename", "NSys2D.EXE\0"
             VALUE "ProductName", "NSys2D Application\0"
-            VALUE "ProductVersion", "2, 5, 0, 0\0"
+            VALUE "ProductVersion", "3, 0, 0, 0\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -1144,10 +1562,12 @@ END
 
 STRINGTABLE PRELOAD DISCARDABLE 
 BEGIN
-    IDR_MAINFRAME           "NSys2D"
+    IDR_MAINFRAME           "NSys2D 3.0"
     IDR_SHEMETYPE           "\nSheme\nSheme\nSheme Files (*.shm)\n.shm\nSheme.Document\nSheme Document"
-    IDR_GRAPHTYPE           "\n\n\n\n\n\n\n\n"
+    IDR_GRAPHTYPE           "\n\n\n\n.rez\n\nGraphic Document For NSys2D"
     IDR_FORMSTYPE           "\n\n\n\n\n\n\n\n"
+    IDS_SIGNATURE           "NSys2D Sheme Document v3.0"
+    IDS_GROUP_SIGNATURE     "NSys2D ShemeGroupsFile v3.0"
 END
 
 STRINGTABLE PRELOAD DISCARDABLE 
@@ -1168,10 +1588,10 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    ID_FILE_NEW             "Создать новую схему\nНовая схема"
-    ID_FILE_OPEN            "Открыть существующую схему\nОткрыть"
+    ID_FILE_NEW             "Создать новый документ\nНовый документ"
+    ID_FILE_OPEN            "Открыть существующий документ\nОткрыть"
     ID_FILE_CLOSE           "Закрыть активный документ\nЗакрыть"
-    ID_FILE_SAVE            "Сохранить активную схему\nСохранить"
+    ID_FILE_SAVE            "Сохранить документ\nСохранить"
     ID_FILE_SAVE_AS         "Сохранить активный документ с новым именем\nСохранить как"
     ID_FILE_PAGE_SETUP      "Change the printing options\nPage Setup"
     ID_FILE_PRINT_SETUP     "Изменение настроек печати\nНастройка печати"
@@ -1281,6 +1701,7 @@ BEGIN
     IDC_SPRING              "Пружина"
     IDC_DEMF                "Демпфер"
     IDC_MASS                "Масса"
+    IDC_HARDROD             "Жёст.стержень"
 END
 
 STRINGTABLE DISCARDABLE 
@@ -1294,12 +1715,13 @@ BEGIN
     ID_HORADD               "Увеличить по горизонтали\nУвеличить по горизонтали"
     ID_VERTADD              "Увеличить во вертикали\nУвеличить во вертикали"
     ID_SETNULL              "Выбор элемента\nВыбор элемента"
-    ID_AUTOSIZE             "Автоматической масштабирование по размеру окна\nАвтомасштаб"
+    ID_AUTOSIZE             "Автоматическое масштабирование по размеру окна\nАвтомасштаб"
     ID_PROP                 "Получить свойства"
     ID_SAVEREZ              "Записать график в файл\nЗаписать"
-    ID_REFRESH              "Обновить изображение"
+    ID_REFRESH              "Обновить изображение\nОбновить изображение"
     ID_GETCOORD             "Вывод значений графика, попадающего в рамку\nПолучить значения"
     ID_FREQ_CALC            "Построение частотных характеристик"
+    ID_FREEFORM_CALC        "Вычислить собственные частоты и формы.\nВычисление собств. частот"
     ID_MOVEADD              "Увеличить масштаб перемещений\nУвеличить"
     ID_MOVESUB              "Уменьшить масштаб перемещений\nУменьшить"
 END
@@ -1308,7 +1730,11 @@ STRINGTABLE DISCARDABLE
 BEGIN
     ID_SCALESUB             "Уменьшить изображение\nУменьшить"
     ID_SETROD               "Установить текущий элемент стержень\nСтержень"
+    ID_ADDDEMF              "Добавить в схему демпфирующий КЭ."
+    ID_ADDSPRING            "Добавить в схему упругий КЭ."
     ID_SETMASS              "Установить текущий элемент масса\nМасса"
+    ID_ADDMASS              "Добавить в схему точечную массу."
+    ID_LISTELEM             "Вывести список элементов."
     ID_CALC                 "Выполнить интегрирование\nИнтегрирование"
     ID_HORSUB               "Уменьшить по горизонтали\nУменьшить по горизонтали"
     ID_VERTSUB              "Уменьшить по вертикали\nУменьшить по вертикали"
@@ -1318,6 +1744,7 @@ END
 STRINGTABLE DISCARDABLE 
 BEGIN
     ID_ADDGRAPH             "Вывод графика с результатами интегрирования"
+    ID_ADDROD               "Добавить в схему стержневой КЭ."
     ID_SPECTR_CALC          "Вывод графика спектральной плотности выходного сигнала"
     ID_SETSPRING            "Установить текущий элемент пружина\nПружина"
     ID_SETDEMF              "Установить текущий элемент демпфер\nДемпфер"
@@ -1332,6 +1759,72 @@ BEGIN
     ID_GRAPH2               "Включить/Выключить второй график\nВкл./Выкл. 2-й график"
     ID_UPDATEFORMS          "Обновить формы колебаний\nОбновить"
     ID_CALCMAT              "Статистическая обработка результатов\nСтатистика"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SETHARDROD           "Установить текущий элемент жёсткий стержень\nЖёсткий стержень"
+    ID_ADDHARDROD           "Добавить в схему абсолютно жёсткий КЭ."
+    ID_SHEME_PARAMS         "Настроить параметры численного анализа схемы."
+    ID_VIEW_STYLES          "Настроить параметры вывода данных."
+    ID_GROUP_LIST           "Вывести список существующих групп."
+    ID_GROUP_NEW            "Создать новую группу."
+    ID_ELEMGROUP_DEL        "Удалить группу элементов."
+    ID_ELEMGROUP_PROP       "Задать общие свойства для группы элементов или узлов."
+    ID_GROUP_PREVIEW        "Выделить на схеме выбранную группу для просмотра."
+    ID_MESH_ELEM            "Разбить выбранный стержень на конечные элементы."
+    ID_BUTTON_AUTO_SIZE     "Автоматический размер.\nАвтоматический размер"
+    ID_AUTO_SCALE           "Автомасштабирование."
+    ID_CONVERT_TO           "Конвертировать выбранный элемент в элемент другого типа."
+    ID_ALL_RODS             "Создать группу для всех стержней."
+    ID_ALL_HARDRODS         "Создать группу для всех жёстких стержней."
+    ID_ALL_DEMF             "Создать группу для всех демпферов."
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_GE_WRONG_SYMBOL     "недопустимый символ"
+    IDS_GE_WRONG_SYNTAX     "ошибка синтаксиса"
+    IDS_GE_UNKNOWN          "неизвестная ошибка"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_GE_TOMANYITEMS      "недопустимо большое число элементов группы"
+    IDS_GE_NONAME           "группа не именована"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_ALL_SPRINGS          "Создать группу для всех пружин."
+    ID_ALL_MASSES           "Создать группу для всех масс."
+    ID_GROUP_CONVERT_TO     "Конвертировать одну группу в группу элементов другого типа."
+    ID_GROUP_CLICK_ELEMS    "Набрать группу элементов мышкой."
+    ID_GROUP_CLICK_KNOTS    "Набрать группу узлов мышкой."
+    ID_BUTTON_GRCLICK_ELEMS "Набрать группу элементов мышкой.\nНабрать элементы"
+    ID_BUTTON_GRCLICK_KNOTS "Набрать группу узлов мышкой.\nНабрать узлы"
+    ID_BUTTON_DEL_FREE_KNOTS "Удалить свободные узлы.\nУдалить свободные узлы"
+    ID_AUTOCORRECT          "Флаг об автокорректировке схемы при сохранении."
+    ID_OPEN_SCRIPT          "Открыть скрипт"
+    ID_COMPILE_SCRIPT       "Компилировать скрипт\nКомпиляция"
+    ID_RUN_SCRIPT           "Запустить скрипт\nЗапуск"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    ID_SCRIPT_FILE_NEW      "Создать новый скрипт\nНовый скрипт"
+    ID_SCRIPT_FILE_OPEN     "Открыть существующий скрипт\nОткрыть"
+    ID_SCRIPT_FILE_SAVE     "Сохранить скрипт\nСохранить"
+    ID_SCRIPT_FILE_SAVE_AS  "Сохранить под другим именем\nСохранить как"
+    ID_OUTPUT_FILE_SAVE     "Сохранить результат\nСохранить"
+    ID_OUTPUT_BREAK         "Прервать выполнение\nПрервать"
+    ID_FREE_NUMS            "Просмотреть номера степеней свободы в узлах"
+END
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDR_SCRIPT              "\nScript\nScript\nScript Files (*.scr)\n.scr\nScript.Document\nScript Document"
+    IDR_OUTPUT              "\n\n\n\n.rez\n\nOutput For NSys2D Script"
 END
 
 #endif    // Russian resources

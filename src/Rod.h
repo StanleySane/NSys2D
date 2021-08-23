@@ -24,19 +24,25 @@ public:
 	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
 	double SetF(CString &str);
 	CString GetStrF();
-	double GetF();
+	double GetF() const;
 	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+
+	void GetMatrM( CMatr& ) const;
+	void GetMatrD( CMatr& ) const;
+	void GetMatrC( CMatr& ) const;
+
 	CString GetStrM();
-	double GetM();
+	double GetM() const;
 	double SetM(CString &str);
-	int GoDlg(CListKnot *pListKnot);
+	int GoDlg(CListKnot *pListKnot, bool full = true );
+	bool SetCommonProperties( CElem* elem );
 	CString GetStrJx();
 	CString GetStrE();
 	void Draw(CDC * pDC, CParamView *pParamView);
 	double SetJx(CString &str);
 	double SetE(CString &str);
-	double GetJx();
-	double GetE();
+	double GetJx() const;
+	double GetE() const;
 //	int type1,type2;
 	
 	CRod(CKnot *kn1, CKnot *kn2);

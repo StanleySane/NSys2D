@@ -61,12 +61,17 @@ public:
 	CCoordD coordStart;
 	CCoordD ScreenToSheme(CPoint &point);
 	virtual ~CShemeView();
+
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
 
 protected:
+	// m_bClickingGroup - флаг, показывающий набирается ли
+	// сейчас мышкой группа. Соответственно - надо ли делать
+	// Disable кнопки и меню.
+	bool m_bClickingGroup;
 
 // Generated message map functions
 protected:
@@ -108,6 +113,24 @@ protected:
 	afx_msg void OnUpdateFreqCalc(CCmdUI* pCmdUI);
 	afx_msg void OnSpectrCalc();
 	afx_msg void OnDestroy();
+	afx_msg void OnSetHardRod();
+	afx_msg void OnUpdateSetHardRod(CCmdUI* pCmdUI);
+	afx_msg void OnAddHardRod();
+	afx_msg void OnUpdateMeshElem(CCmdUI* pCmdUI);
+	afx_msg void OnMeshElem();
+	afx_msg void OnButtonAutoSize();
+	afx_msg void OnUpdateConvertTo(CCmdUI* pCmdUI);
+	afx_msg void OnConvertTo();
+	afx_msg void OnUpdateAdddemf(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateAddhardrod(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateAddmass(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateAddrod(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateAddspring(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateSpectrCalc(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFileClose(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFilePrint(CCmdUI* pCmdUI);
+	afx_msg void OnUpdateFilePrintSetup(CCmdUI* pCmdUI);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

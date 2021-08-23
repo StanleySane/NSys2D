@@ -23,6 +23,8 @@ public:
 	CKnotPropertyPage1();
 	~CKnotPropertyPage1();
 	CKnot *pKnot;
+	bool m_bFull;//флаг, показывающий надо-ли выводить полный
+	//диалог или достаточно общих св-в узлов
 // Dialog Data
 	//{{AFX_DATA(CKnotPropertyPage1)
 	enum { IDD = IDD_KNOTPAGE1 };

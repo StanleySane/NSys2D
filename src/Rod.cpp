@@ -33,12 +33,12 @@ CRod::~CRod()
 
 }
 
-double CRod::GetE()
+double CRod::GetE() const
 {
 	return E;
 }
 
-double CRod::GetJx()
+double CRod::GetJx() const
 {
 	return Jx;
 }
@@ -140,8 +140,9 @@ void CRod::Draw(CDC * pDC, CParamView *pParamView)
 		GetMatrT(T1,2);
 		T_1=!T1;//!T1;
 
-		double tStep=1.0/(sqrt((point2.x-point1.x)*(point2.x-point1.x)
-								+(point2.y-point1.y)*(point2.y-point1.y))+1);
+		double tmp1 = point2.x-point1.x, tmp2 = point2.y-point1.y;
+		double tmp3 = tmp1*tmp1, tmp4 = tmp2*tmp2;
+		double tStep=1.0/(sqrt(tmp3+tmp4)+1);
 		CCoordD c1=knot1->GetCoord();
 		CCoordD c2=knot2->GetCoord();
 
@@ -149,8 +150,9 @@ void CRod::Draw(CDC * pDC, CParamView *pParamView)
 		for (double t=0;t<=1;t+=tStep)
 		{
 			CCoordD c=knot1->GetCoord();
-			Uu[0][0]=A[0][0]*t*L+A[3][0];
-			Uu[1][0]=A[1][0]*pow(t*L,3)+A[2][0]*pow(t*L,2)+A[4][0]*t*L+A[5][0];
+			double tl = t*L, tl2 = tl*tl, tl3 = tl2*tl;
+			Uu[0][0]=A[0][0]*tl+A[3][0];
+			Uu[1][0]=A[1][0]*tl3+A[2][0]*tl2+A[4][0]*tl+A[5][0];
 			U=T_1*Uu;
 			CCoordD cc(
 				U[0][0]+(c2.x-c1.x)*t+c1.x,
@@ -162,6 +164,31 @@ void CRod::Draw(CDC * pDC, CParamView *pParamView)
 			else		pDC->LineTo(p);
 		}
 	}
+
+	//Номер элемента
+	if( (m_Number)&&(!pParamView->Gray)&&(pParamView->m_bNumElems) )
+	{
+		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
+		pDC->SetTextAlign( TA_LEFT|TA_TOP );	
+		CFont *pOldFont = (CFont*)pDC->SelectObject(&(pParamView->m_fntElems));
+
+		CString str; 
+		str.Format("[%d]", m_Number );
+
+		COLORREF oldClr = pDC->SetTextColor(pParamView->m_clrNumElems);
+		int oldBkMode = pDC->SetBkMode(TRANSPARENT);
+
+		CCoordD k1 = knot1->GetCoord(pParamView->MultMove);
+		CCoordD k2 = knot2->GetCoord(pParamView->MultMove);
+		CPoint point = ShemeToScreen( (k1+k2)/2, pParamView );//середина между двумя узлами
+		pDC->TextOut( point.x, point.y, str );
+
+		pDC->SetBkMode(oldBkMode);
+		pDC->SetTextColor(oldClr);
+
+		pDC->SelectObject(pOldFont);
+	}
+
 	knot1->Draw(pDC,pParamView);
 	knot2->Draw(pDC,pParamView);
 
@@ -178,9 +205,9 @@ CString CRod::GetStrJx()
 	return str_Jx;
 }
 
-int CRod::GoDlg(CListKnot *pListKnot)
+int CRod::GoDlg(CListKnot *pListKnot, bool full )
 {
-	CRodDlg dlg(pListKnot, this);
+	CRodDlg dlg( pListKnot, this, full );
 	if (dlg.DoModal()==IDOK) 
 		return 1;
 	return 0;
@@ -200,7 +227,7 @@ double CRod::SetM(CString & str)
 	return -1;
 }
 
-double CRod::GetM()
+double CRod::GetM() const
 {
 	return m0;
 }
@@ -212,14 +239,9 @@ CString CRod::GetStrM()
 
 void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 {
-	CMatr locM(6,6),locC(6,6),T(6,6);
-	GetMatrT(T,6);
-
-	double m=GetM();
-	double F=GetF();
-	double E=GetE();
-	double J=GetJx();
-	double L=GetLength();
+	CMatr locM, locC;
+	GetMatrM( locM );
+	GetMatrC( locC );
 
 	//Номера степеней свободы
 	int N[6];
@@ -230,83 +252,10 @@ void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 	N[4]=knot2->nYRez;
 	N[5]=knot2->nARez[FreeA2];
 	
-//матрица масс
-	locM[0][0]= m*L/3.0;
-	locM[3][3]= m*L/3.0;
-	locM[3][0]= m*L/6.0;
-//матрица жёсткости
-	locC[0][0]= E*F/L;
-	locC[3][3]= E*F/L;
-	locC[3][0]=-E*F/L;
-
-	//жестко закрепленный стержень по обоим краям
-//	if ((knot1->ConnectType==0)&&(knot2->ConnectType==0))
-	{
-		//матрица масс
-		locM[1][1]= m*L*13.0/35.0;
-		locM[2][1]= m*L*L*11.0/210.0;
-		locM[4][1]= m*L*9.0/70.0;
-		locM[5][1]=-m*L*L*13.0/420.0;
-
-		locM[2][2]= m*L*L*L/105.0;
-		locM[4][2]= m*L*L*13.0/420.0;
-		locM[5][2]=-m*L*L*L*1/140.0;
-
-		locM[4][4]= m*L*13.0/35.0;
-		locM[5][4]=-m*L*L*11.0/210.0;
-
-		locM[5][5]= m*L*L*L/105.0;
-	
-		//матрица жёсткости
-		locC[1][1]= 12*E*J/(L*L*L);
-		locC[2][1]= 6*E*J/(L*L);
-		locC[4][1]=-12*E*J/(L*L*L);
-		locC[5][1]= 6*E*J/(L*L);
-
-		locC[2][2]= 4*E*J/L;
-		locC[4][2]=-6*E*J/(L*L);
-		locC[5][2]= 2*E*J/L;
-		
-		locC[4][4]= 12*E*J/(L*L*L);
-		locC[5][4]=-6*E*J/(L*L);
-
-		locC[5][5]= 4*E*J/L;
-
-	}
 	//с одной стороны шарнирное опирание
 /*	if ( ((knot1->ConnectType==0)&&(knot2->ConnectType!=0))||
 		 ((knot1->ConnectType!=0)&&(knot2->ConnectType==0)) )
 	{
-		//матрица масс
-		locM[1][1]= m*L*17.0/35.0;
-		locM[2][1]= m*L*L*3.0/35.0;
-		locM[4][1]= m*L*39.0/280.0;
-		locM[5][1]=-m*L*L*19.0/420.0;
-
-		locM[2][2]= m*L*L*L*2/105.0;
-		locM[4][2]= m*L*L*11.0/280.0;
-		locM[5][2]=-m*L*L*L/84.0;
-
-		locM[4][4]= m*L*33.0/140.0;
-		locM[5][4]=-m*L*L*4.0/105.0;
-
-		locM[5][5]= m*L*L*L/105.0;
-
-		//матрица жёсткости
-		locC[1][1]= 3*E*J/(L*L*L);
-		locC[2][1]= 3*E*J/(L*L);
-		locC[4][1]=-3*E*J/(L*L*L);
-		locC[5][1]= 0;
-
-		locC[2][2]= 3*E*J/L;
-		locC[4][2]=-3*E*J/(L*L);
-		locC[5][2]= 0;
-		
-		locC[4][4]= 3*E*J/(L*L*L);
-		locC[5][4]= 0;
-
-		locC[5][5]= 4*E*J/L;
-
 		//Если первый узел шарнирно, то меняем степени свободы местами
 		if ((knot1->ConnectType!=0)&&(knot2->ConnectType==0))
 		{
@@ -318,45 +267,8 @@ void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 			N[5]=knot1->nARez[FreeA1];
 		}
 	}
-	//с обоих сторон шарнирное опирание
-	if ((knot1->ConnectType!=0)&&(knot2->ConnectType!=0))
-	{
-		//матрица масс
-		locM[1][1]= m*L/3.0;
-		locM[2][1]= m*L*L*1.0/15.0;
-		locM[4][1]= m*L/6.0;
-		locM[5][1]=-m*L*L*7.0/120.0;
+	*/
 
-		locM[2][2]= m*L*L*L*2/105.0;
-		locM[4][2]= m*L*L*7.0/120.0;
-		locM[5][2]=-m*L*L*L*31.0/1680.0;
-
-		locM[4][4]= m*L/3.0;
-		locM[5][4]=-m*L*L/15.0;
-
-		locM[5][5]= m*L*L*L*2/105.0;
-
-		//матрица жёсткости
-//		locC[1][1]= 12*E*J/(L*L*L);
-//		locC[2][1]= 6*E*J/(L*L);
-//		locC[4][1]=-12*E*J/(L*L*L);
-//		locC[5][1]= 6*E*J/(L*L);
-
-		locC[2][2]= 3*E*J/L;
-//		locC[4][2]=-6*E*J/(L*L);
-		locC[5][2]=-3*E*J/L/2.0;
-		
-//		locC[4][4]= 12*E*J/(L*L*L);
-//		locC[5][4]=-6*E*J/(L*L);
-
-		locC[5][5]= 3*E*J/L;
-	}*/
-
-	locM.CopyDownToUp();
-	locM=!T*locM*T;
-	locC.CopyDownToUp();
-	locC=!T*locC*T;
-	
 	for (int i=0;i<6;i++)
 		for(int j=0;j<6;j++)
 			if ((N[i]>=0)&&(N[j]>=0))
@@ -366,7 +278,7 @@ void CRod::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 			}
 }
 
-double CRod::GetF()
+double CRod::GetF() const
 {
 	return F;
 }
@@ -446,4 +358,183 @@ void CRod::Serialize(CArchive & ar)
 		SetE(E);
 		SetM(M);
 	}
+}
+
+bool CRod::SetCommonProperties( CElem* elem )
+{
+	CRod *pRod = dynamic_cast<CRod*>(elem);
+	if( !pRod )	return false;
+
+	str_E = pRod->str_E;
+	str_Jx = pRod->str_Jx;
+	str_m0 = pRod->str_m0;
+	str_F = pRod->str_F;
+	E = pRod->E;
+	Jx = pRod->Jx;
+	m0 = pRod->m0;
+	F = pRod->F;
+
+	return true;
+}
+
+void CRod::GetMatrM( CMatr &matr ) const
+{
+	matr.ReSize( 6, 6 );
+	CMatr T( 6, 6 );
+	GetMatrT( T, 6 );
+
+	double m = GetM();
+	double F = GetF();
+	double E = GetE();
+	double J = GetJx();
+	double L = GetLength();
+
+//матрица масс
+	matr[0][0]= m*L/3.0;
+	matr[3][3]= m*L/3.0;
+	matr[3][0]= m*L/6.0;
+
+	//жестко закрепленный стержень по обоим краям
+//	if ((knot1->ConnectType==0)&&(knot2->ConnectType==0))
+	{
+		//матрица масс
+		matr[1][1]= m*L*13.0/35.0;
+		matr[2][1]= m*L*L*11.0/210.0;
+		matr[4][1]= m*L*9.0/70.0;
+		matr[5][1]=-m*L*L*13.0/420.0;
+
+		matr[2][2]= m*L*L*L/105.0;
+		matr[4][2]= m*L*L*13.0/420.0;
+		matr[5][2]=-m*L*L*L*1/140.0;
+
+		matr[4][4]= m*L*13.0/35.0;
+		matr[5][4]=-m*L*L*11.0/210.0;
+
+		matr[5][5]= m*L*L*L/105.0;
+	
+	}
+	//с одной стороны шарнирное опирание
+/*	if ( ((knot1->ConnectType==0)&&(knot2->ConnectType!=0))||
+		 ((knot1->ConnectType!=0)&&(knot2->ConnectType==0)) )
+	{
+		//матрица масс
+		matr[1][1]= m*L*17.0/35.0;
+		matr[2][1]= m*L*L*3.0/35.0;
+		matr[4][1]= m*L*39.0/280.0;
+		matr[5][1]=-m*L*L*19.0/420.0;
+
+		matr[2][2]= m*L*L*L*2/105.0;
+		matr[4][2]= m*L*L*11.0/280.0;
+		matr[5][2]=-m*L*L*L/84.0;
+
+		matr[4][4]= m*L*33.0/140.0;
+		matr[5][4]=-m*L*L*4.0/105.0;
+
+		matr[5][5]= m*L*L*L/105.0;
+
+	}
+	//с обоих сторон шарнирное опирание
+	if ((knot1->ConnectType!=0)&&(knot2->ConnectType!=0))
+	{
+		//матрица масс
+		matr[1][1]= m*L/3.0;
+		matr[2][1]= m*L*L*1.0/15.0;
+		matr[4][1]= m*L/6.0;
+		matr[5][1]=-m*L*L*7.0/120.0;
+
+		matr[2][2]= m*L*L*L*2/105.0;
+		matr[4][2]= m*L*L*7.0/120.0;
+		matr[5][2]=-m*L*L*L*31.0/1680.0;
+
+		matr[4][4]= m*L/3.0;
+		matr[5][4]=-m*L*L/15.0;
+
+		matr[5][5]= m*L*L*L*2/105.0;
+	}*/
+
+	matr.CopyDownToUp();
+	matr = !T*matr*T;
+}
+
+void CRod::GetMatrD( CMatr &matr ) const
+{
+	matr.ReSize( 6, 6 );
+}
+
+void CRod::GetMatrC( CMatr &matr ) const
+{
+	matr.ReSize( 6, 6 );
+	CMatr T( 6, 6 );
+	GetMatrT( T, 6 );
+
+	double m = GetM();
+	double F = GetF();
+	double E = GetE();
+	double J = GetJx();
+	double L = GetLength();
+
+//матрица жёсткости
+	matr[0][0]= E*F/L;
+	matr[3][3]= E*F/L;
+	matr[3][0]=-E*F/L;
+
+	//жестко закрепленный стержень по обоим краям
+//	if ((knot1->ConnectType==0)&&(knot2->ConnectType==0))
+	{
+		//матрица жёсткости
+		matr[1][1]= 12*E*J/(L*L*L);
+		matr[2][1]= 6*E*J/(L*L);
+		matr[4][1]=-12*E*J/(L*L*L);
+		matr[5][1]= 6*E*J/(L*L);
+
+		matr[2][2]= 4*E*J/L;
+		matr[4][2]=-6*E*J/(L*L);
+		matr[5][2]= 2*E*J/L;
+		
+		matr[4][4]= 12*E*J/(L*L*L);
+		matr[5][4]=-6*E*J/(L*L);
+
+		matr[5][5]= 4*E*J/L;
+
+	}
+	//с одной стороны шарнирное опирание
+/*	if ( ((knot1->ConnectType==0)&&(knot2->ConnectType!=0))||
+		 ((knot1->ConnectType!=0)&&(knot2->ConnectType==0)) )
+	{
+		//матрица жёсткости
+		matr[1][1]= 3*E*J/(L*L*L);
+		matr[2][1]= 3*E*J/(L*L);
+		matr[4][1]=-3*E*J/(L*L*L);
+		matr[5][1]= 0;
+
+		matr[2][2]= 3*E*J/L;
+		matr[4][2]=-3*E*J/(L*L);
+		matr[5][2]= 0;
+		
+		matr[4][4]= 3*E*J/(L*L*L);
+		matr[5][4]= 0;
+
+		matr[5][5]= 4*E*J/L;
+	}
+	//с обоих сторон шарнирное опирание
+	if ((knot1->ConnectType!=0)&&(knot2->ConnectType!=0))
+	{
+		//матрица жёсткости
+//		matr[1][1]= 12*E*J/(L*L*L);
+//		matr[2][1]= 6*E*J/(L*L);
+//		matr[4][1]=-12*E*J/(L*L*L);
+//		matr[5][1]= 6*E*J/(L*L);
+
+		matr[2][2]= 3*E*J/L;
+//		matr[4][2]=-6*E*J/(L*L);
+		matr[5][2]=-3*E*J/L/2.0;
+		
+//		matr[4][4]= 12*E*J/(L*L*L);
+//		matr[5][4]=-6*E*J/(L*L);
+
+		matr[5][5]= 3*E*J/L;
+	}*/
+
+	matr.CopyDownToUp();
+	matr = !T*matr*T;
 }

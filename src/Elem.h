@@ -17,13 +17,20 @@
 class CElem : public CObjectSheme  
 {
 public:
+	void SetNumber( int num )
+	{	m_Number = num;	}
+	int GetNumber() const
+	{	return m_Number;	}
 	virtual void Serialize(CArchive& ar);
 	virtual int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
-	void GetMatrT(CMatr &V, int size=6);
-	double GetAng();
-	double GetLength();
+	void GetMatrT(CMatr &V, int size=6) const;
+	double GetAng() const;
+	double GetAngle() const;
+	double GetLength() const;
 	virtual void SetMatrMDC(CMatr &mM, CMatr &mD, CMatr &mC)=0;
-	virtual int GoDlg(CListKnot *pListKnot)=0;
+	virtual int GoDlg(CListKnot *pListKnot, bool full = true )=0;
+	virtual bool SetCommonProperties( CElem* elem ) = 0;
+
 	int SelectMode, OldMode;
 	int TypeElem;
 	CKnot* knot1;
@@ -31,6 +38,8 @@ public:
 	virtual void Draw(CDC *dc, CParamView* pParamView)=0;
 	CElem(CKnot *kn1, CKnot *kn2);
 	virtual ~CElem();
+protected:
+	int m_Number;
 
 };
 

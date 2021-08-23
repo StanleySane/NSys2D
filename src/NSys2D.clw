@@ -2,14 +2,14 @@
 
 [General Info]
 Version=1
-LastClass=CShemeDoc
-LastTemplate=CDialog
+LastClass=CFreqViewDlg
+LastTemplate=CEditView
 NewFileInclude1=#include "stdafx.h"
 NewFileInclude2=#include "NSys2D.h"
 ODLFile=NSys2D.odl
 LastPage=0
 
-ClassCount=40
+ClassCount=54
 Class1=CNSys2DApp
 Class2=CShemeDoc
 Class3=CShemeView
@@ -17,7 +17,7 @@ Class4=CMainFrame
 Class7=CGraphFrame
 Class8=CGraphDoc
 
-ResourceCount=28
+ResourceCount=65
 Resource1=IDD_KNOTPAGE3
 Resource2=IDR_SHEMETYPE1
 Resource3=IDR_NSYS2DTYPE
@@ -70,7 +70,7 @@ Class34=CFormsView
 Resource22=IDD_KNOTPAGE1
 Class35=CFormsFrame
 Resource23=IDD_DIALOGDEMF
-Resource24=IDR_MAINFRAME (English (U.S.))
+Resource24=IDR_SHEMETYPE (Russian)
 Class36=CKnotPropertyPage5
 Class37=CKnotSpectr
 Resource25=IDD_SPECTRDLG
@@ -80,6 +80,57 @@ Class39=CSpectrDlg
 Resource27=IDD_ABOUTBOX
 Class40=CGraphTimeDlg
 Resource28=IDR_SHEMETYPE
+Resource29=IDD_DIALOGMASS (Russian)
+Resource30=IDD_GROUP_EDIT (Russian)
+Resource31=IDD_FREQDLG (Russian)
+Resource32=IDR_SCRIPT (Russian)
+Resource33=IDD_DIALOG_GROUP_SHOW (Russian)
+Resource34=IDD_CONVERT_TO (Russian)
+Resource35=IDD_KNOTPAGE2 (Russian)
+Resource36=IDR_OUTPUT (Russian)
+Resource37=IDR_POPUPMENUSHEME (Russian)
+Resource38=IDD_DIALOGHARDROD (Russian)
+Resource39=IDR_MAINFRAME (Russian)
+Resource40=IDD_DIALOGSPRING (Russian)
+Resource41=IDD_DIALOGPRECALC (Russian)
+Resource42=IDD_SPECTRDLG (Russian)
+Resource43=IDD_FORMS_BAR (Russian)
+Resource44=IDD_DIALOGTYPEGRAPH (Russian)
+Resource45=IDD_PROGRESSDIALOG (Russian)
+Resource46=IDD_KNOTPAGE3 (Russian)
+Resource47=IDD_KNOTPAGE4 (Russian)
+Resource48=IDD_FREQVIEW (Russian)
+Resource49=IDD_KNOTSPECTR (Russian)
+Resource50=IDD_KNOTPAGE1 (Russian)
+Resource51=IDD_GROUP_NEW (Russian)
+Resource52=IDD_GROUP_LIST (Russian)
+Resource53=IDD_DIALOGELEM (Russian)
+Resource54=IDD_DIALOG_MESH_ELEM (Russian)
+Resource55=IDD_DIALOGCOORD (Russian)
+Class41=CHardRodDlg
+Class42=CEVMDialog
+Resource56=IDR_GRAPHTYPE (Russian)
+Class43=CViewStyles
+Resource57=IDR_MAINFRAME (English (U.S.))
+Class44=CNewGroupDlg
+Resource58=IDR_FORMSTYPE (Russian)
+Class45=CGroupListDlg
+Resource59=IDD_DIALOG4 (Russian)
+Class46=CGroupEditDlg
+Resource60=IDD_DIALOGDEMF (Russian)
+Class47=CGroupPreviewDlg
+Resource61=IDD_VIEW_STYLES (Russian)
+Class48=CMeshElemDlg
+Resource62=IDD_DIALOGROD (Russian)
+Class49=CConvertToDlg
+Class50=CScriptView
+Class51=CScriptFrame
+Resource63=IDD_COMPLEXSPECTR (Russian)
+Class52=CScriptDoc
+Class53=COutputFrame
+Class54=COutputView
+Resource64=IDD_EV_METHODS (Russian)
+Resource65=IDD_ABOUTBOX (Russian)
 
 [CLS:CNSys2DApp]
 Type=0
@@ -92,10 +143,10 @@ LastObject=CNSys2DApp
 Type=0
 HeaderFile=ShemeDoc.h
 ImplementationFile=ShemeDoc.cpp
-Filter=N
+Filter=W
 BaseClass=CDocument
 VirtualFilter=DC
-LastObject=ID_TEST
+LastObject=ID_FILE_SAVE_AS
 
 [CLS:CShemeView]
 Type=0
@@ -111,7 +162,7 @@ Type=0
 HeaderFile=MainFrm.h
 ImplementationFile=MainFrm.cpp
 Filter=T
-LastObject=ID_TEST
+LastObject=ID_FREEFORM_CALC
 BaseClass=CMDIFrameWnd
 VirtualFilter=fWC
 
@@ -121,7 +172,7 @@ Type=0
 HeaderFile=ShemeFrm.h
 ImplementationFile=ShemeFrm.cpp
 Filter=M
-LastObject=CShemeFrame
+LastObject=ID_FILE_OPEN
 BaseClass=CMDIChildWnd
 VirtualFilter=mfWC
 
@@ -130,7 +181,7 @@ Type=0
 HeaderFile=NSys2D.cpp
 ImplementationFile=NSys2D.cpp
 Filter=D
-LastObject=IDOK
+LastObject=CAboutDlg
 
 [DLG:IDD_ABOUTBOX]
 Type=1
@@ -344,7 +395,7 @@ ImplementationFile=RodDlg.cpp
 BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
-LastObject=CRodDlg
+LastObject=IDC_COMBO3
 
 [CLS:CKnotDlg]
 Type=0
@@ -382,7 +433,7 @@ HeaderFile=DemfDlg.h
 ImplementationFile=DemfDlg.cpp
 BaseClass=CDialog
 Filter=D
-LastObject=IDOK
+LastObject=IDC_COMBO2
 VirtualFilter=dWC
 
 [DLG:IDD_DIALOGDEMF]
@@ -709,7 +760,7 @@ HeaderFile=KnotPropertyPage1.h
 ImplementationFile=KnotPropertyPage1.cpp
 BaseClass=CPropertyPage
 Filter=D
-LastObject=IDC_CHECK3
+LastObject=IDC_RADIO3
 VirtualFilter=idWC
 
 [DLG:IDD_KNOTPAGE4]
@@ -1045,4 +1096,879 @@ BaseClass=CDialog
 Filter=D
 VirtualFilter=dWC
 LastObject=CGraphTimeDlg
+
+[DLG:IDD_FREQVIEW (Russian)]
+Type=1
+Class=CFreqViewDlg
+ControlCount=3
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_LIST1,listbox,1352663296
+
+[MNU:IDR_SHEMETYPE (Russian)]
+Type=1
+Class=?
+Command1=ID_FILE_NEW
+Command2=ID_FILE_OPEN
+Command3=ID_FILE_CLOSE
+Command4=ID_FILE_SAVE
+Command5=ID_FILE_SAVE_AS
+Command6=ID_FILE_PRINT_PREVIEW
+Command7=ID_FILE_PRINT
+Command8=ID_FILE_PRINT_SETUP
+Command9=ID_FILE_MRU_FILE1
+Command10=ID_APP_EXIT
+Command11=ID_VIEW_TOOLBAR
+Command12=ID_VIEW_STATUS_BAR
+Command13=ID_AUTO_SCALE
+Command14=ID_VIEW_STYLES
+Command15=ID_REFRESH
+Command16=ID_ADDROD
+Command17=ID_ADDHARDROD
+Command18=ID_ADDDEMF
+Command19=ID_ADDSPRING
+Command20=ID_ADDMASS
+Command21=ID_DELELEM
+Command22=ID_MESH_ELEM
+Command23=ID_CONVERT_TO
+Command24=ID_LISTELEM
+Command25=ID_FREE_NUMS
+Command26=ID_GROUP_CLICK_ELEMS
+Command27=ID_GROUP_CLICK_KNOTS
+Command28=ID_ELEMGROUP_DEL
+Command29=ID_ELEMGROUP_PROP
+Command30=ID_GROUP_CONVERT_TO
+Command31=ID_ALL_RODS
+Command32=ID_ALL_HARDRODS
+Command33=ID_ALL_DEMF
+Command34=ID_ALL_SPRINGS
+Command35=ID_ALL_MASSES
+Command36=ID_AUTOCORRECT
+Command37=ID_CALC
+Command38=ID_FREEFORM_CALC
+Command39=ID_SHEME_PARAMS
+Command40=ID_ADDGRAPH
+Command41=ID_FREQ_CALC
+Command42=ID_SPECTR_CALC
+Command43=ID_GROUP_NEW
+Command44=ID_GROUP_LIST
+Command45=ID_GROUP_PREVIEW
+Command46=ID_WINDOW_CASCADE
+Command47=ID_WINDOW_TILE_HORZ
+Command48=ID_WINDOW_ARRANGE
+Command49=ID_OPEN_SCRIPT
+Command50=ID_APP_ABOUT
+CommandCount=50
+
+[MNU:IDR_POPUPMENUSHEME (Russian)]
+Type=1
+Class=?
+CommandCount=0
+
+[MNU:IDR_MAINFRAME (Russian)]
+Type=1
+Class=?
+Command1=ID_FILE_NEW
+Command2=ID_FILE_OPEN
+Command3=ID_FILE_MRU_FILE1
+Command4=ID_APP_EXIT
+Command5=ID_VIEW_TOOLBAR
+Command6=ID_VIEW_STATUS_BAR
+Command7=ID_APP_ABOUT
+CommandCount=7
+
+[DLG:IDD_DIALOGCOORD (Russian)]
+Type=1
+Class=CKnotDlg
+ControlCount=9
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_EDIT1,edit,1350631552
+Control4=IDC_EDIT2,edit,1350631552
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_STATIC,button,1342177287
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_COMBO1,combobox,1344339987
+
+[DLG:IDD_DIALOGROD (Russian)]
+Type=1
+Class=CRodDlg
+ControlCount=22
+Control1=IDC_COMBO2,combobox,1344339971
+Control2=IDC_COMBO1,combobox,1344340499
+Control3=IDC_COMBO3,combobox,1344339971
+Control4=IDC_COMBO4,combobox,1344340499
+Control5=IDC_EDIT4,edit,1350631552
+Control6=IDC_EDIT1,edit,1350631552
+Control7=IDC_EDIT2,edit,1350631552
+Control8=IDC_EDIT3,edit,1350631552
+Control9=IDOK,button,1342242817
+Control10=IDCANCEL,button,1342242816
+Control11=IDC_BUTNEWKNOT,button,1342242816
+Control12=IDC_STATIC,button,1342177287
+Control13=IDC_STATIC,button,1342177287
+Control14=IDC_STATIC,static,1342308352
+Control15=IDC_STATIC,static,1342308352
+Control16=IDC_STATIC,button,1342177287
+Control17=IDC_STATIC,static,1342308352
+Control18=IDC_STATIC,static,1342308352
+Control19=IDC_STATIC,static,1342308352
+Control20=IDC_STATIC,static,1342308352
+Control21=IDC_STATIC,static,1342308352
+Control22=IDC_STATIC,static,1342308352
+
+[DLG:IDD_DIALOGDEMF (Russian)]
+Type=1
+Class=CDemfDlg
+ControlCount=25
+Control1=IDC_COMBO2,combobox,1344339971
+Control2=IDC_COMBO3,combobox,1344339971
+Control3=IDC_RADIO1,button,1342308361
+Control4=IDC_RADIO2,button,1342308361
+Control5=IDC_RADIO3,button,1342308361
+Control6=IDC_RADIO4,button,1342308361
+Control7=IDC_RADIO5,button,1342308361
+Control8=IDC_EDIT1,edit,1350762624
+Control9=IDC_EDIT2,edit,1484980352
+Control10=IDC_EDIT3,edit,1484980352
+Control11=IDC_EDIT4,edit,1484980352
+Control12=IDC_EDIT5,edit,1484980352
+Control13=IDOK,button,1342242817
+Control14=IDCANCEL,button,1342242816
+Control15=IDC_BUTNEWKNOT,button,1342242816
+Control16=IDC_STATIC,button,1342177287
+Control17=IDC_STATIC,button,1342177287
+Control18=IDC_STATIC,button,1342177287
+Control19=IDC_STATIC,static,1342308352
+Control20=IDC_STATIC,static,1342308352
+Control21=IDC_STATIC,static,1342177294
+Control22=IDC_STATIC,static,1342177294
+Control23=IDC_STATIC,static,1342177294
+Control24=IDC_STATIC,static,1342177294
+Control25=IDC_STATIC,static,1342177294
+
+[DLG:IDD_DIALOGSPRING (Russian)]
+Type=1
+Class=CSpringDlg
+ControlCount=21
+Control1=IDC_COMBO2,combobox,1344339971
+Control2=IDC_COMBO3,combobox,1344339971
+Control3=IDC_EDIT1,edit,1350631552
+Control4=IDC_EDIT2,edit,1484849280
+Control5=IDC_EDIT3,edit,1484849280
+Control6=IDC_EDIT4,edit,1484849280
+Control7=IDOK,button,1342242817
+Control8=IDCANCEL,button,1342242816
+Control9=IDC_BUTNEWKNOT,button,1342242816
+Control10=IDC_STATIC,button,1342177287
+Control11=IDC_STATIC,button,1342177287
+Control12=IDC_STATIC,button,1342177287
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_STATIC,static,1342308352
+Control15=IDC_RADIO2,button,1342308361
+Control16=IDC_RADIO3,button,1342308361
+Control17=IDC_RADIO1,button,1342308361
+Control18=IDC_STATIC,static,1342177294
+Control19=IDC_STATIC,static,1342177294
+Control20=IDC_STATIC,static,1342177294
+Control21=IDC_RADIO4,button,1342308361
+
+[DLG:IDD_DIALOGMASS (Russian)]
+Type=1
+Class=CMassDlg
+ControlCount=11
+Control1=IDC_COMBO1,combobox,1344339971
+Control2=IDC_BUTNEWKNOT,button,1342242816
+Control3=IDC_EDIT1,edit,1350631552
+Control4=IDC_EDIT2,edit,1350631552
+Control5=IDOK,button,1342242817
+Control6=IDCANCEL,button,1342242816
+Control7=65535,button,1342177287
+Control8=65535,button,1342177287
+Control9=65535,static,1342308352
+Control10=65535,static,1342308352
+Control11=65535,static,1342308352
+
+[DLG:IDD_DIALOGELEM (Russian)]
+Type=1
+Class=CElemDlg
+ControlCount=4
+Control1=IDC_LISTCONTROL,SysListView32,1350633485
+Control2=IDC_BUTTONPROP,button,1342242816
+Control3=IDC_BUTTONDEL,button,1342242816
+Control4=IDOK,button,1342242817
+
+[DLG:IDD_ABOUTBOX (Russian)]
+Type=1
+Class=CAboutDlg
+ControlCount=11
+Control1=IDC_STATIC,static,1342177283
+Control2=IDC_STATIC,static,1342308481
+Control3=IDOK,button,1342373889
+Control4=IDC_STATIC,static,1342308352
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_STATIC,static,1342308353
+Control8=IDC_STATIC,static,1342308352
+Control9=IDC_STATIC,static,1342308352
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_STATIC,static,1342308352
+
+[DLG:IDD_DIALOGPRECALC (Russian)]
+Type=1
+Class=CPreCalcDlg
+ControlCount=12
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,button,1342177287
+Control4=IDC_EDIT1,edit,1350631552
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_EDIT2,edit,1350631552
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_RADIO1,button,1342373897
+Control10=IDC_RADIO2,button,1342177289
+Control11=IDC_RADIO3,button,1342177289
+Control12=IDC_RADIO4,button,1476395017
+
+[DLG:IDD_KNOTPAGE1 (Russian)]
+Type=1
+Class=CKnotPropertyPage1
+ControlCount=7
+Control1=IDC_EDIT1,edit,1350631552
+Control2=IDC_EDIT2,edit,1350631552
+Control3=IDC_STATIC,static,1342308352
+Control4=IDC_STATIC,static,1342308352
+Control5=IDC_STATIC,button,1342177287
+Control6=IDC_STATIC,button,1342177287
+Control7=IDC_COMBO1,combobox,1344339987
+
+[DLG:IDD_KNOTPAGE2 (Russian)]
+Type=1
+Class=CKnotPropertyPage2
+ControlCount=16
+Control1=IDC_EDIT1,edit,1350631552
+Control2=IDC_EDIT2,edit,1350631552
+Control3=IDC_EDIT3,edit,1350631552
+Control4=IDC_STATIC,static,1342308352
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_EDIT5,edit,1350631552
+Control8=IDC_EDIT6,edit,1350631552
+Control9=IDC_EDIT7,edit,1350631552
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_STATIC,static,1342308352
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_STATIC,static,1342308352
+Control15=IDC_STATIC,static,1342308352
+Control16=IDC_STATIC,button,1342177287
+
+[DLG:IDD_DIALOGTYPEGRAPH (Russian)]
+Type=1
+Class=CTypeGraphDlg
+ControlCount=24
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,button,1342177287
+Control4=IDC_RADIO1,button,1342308361
+Control5=IDC_RADIO2,button,1342177289
+Control6=IDC_RADIO3,button,1342177289
+Control7=IDC_RADIO4,button,1342177289
+Control8=IDC_RADIO5,button,1342177289
+Control9=IDC_RADIO6,button,1342177289
+Control10=IDC_RADIO15,button,1342177289
+Control11=IDC_RADIO16,button,1342177289
+Control12=IDC_RADIO17,button,1342177289
+Control13=IDC_RADIO7,button,1342177289
+Control14=IDC_STATIC,button,1342177287
+Control15=IDC_RADIO8,button,1342308361
+Control16=IDC_RADIO9,button,1342177289
+Control17=IDC_RADIO10,button,1342177289
+Control18=IDC_RADIO11,button,1342177289
+Control19=IDC_RADIO12,button,1342177289
+Control20=IDC_RADIO13,button,1342177289
+Control21=IDC_RADIO18,button,1342177289
+Control22=IDC_RADIO19,button,1342177289
+Control23=IDC_RADIO20,button,1342177289
+Control24=IDC_RADIO14,button,1342177289
+
+[DLG:IDD_PROGRESSDIALOG (Russian)]
+Type=1
+Class=CProgressDlg
+ControlCount=2
+Control1=IDCANCEL,button,1342242817
+Control2=IDC_PROGRESS1,msctls_progress32,1350565888
+
+[DLG:IDD_KNOTPAGE3 (Russian)]
+Type=1
+Class=CKnotPropertyPage3
+ControlCount=30
+Control1=IDC_STATIC,button,1342177287
+Control2=IDC_STATIC,button,1342177287
+Control3=IDC_CHECK1,button,1342242819
+Control4=IDC_CHECK3,button,1342259203
+Control5=IDC_STATIC,static,1342177280
+Control6=IDC_STATIC,static,1342177280
+Control7=IDC_STATIC,static,1342177280
+Control8=IDC_STATIC,static,1342177280
+Control9=IDC_STATIC,static,1342177280
+Control10=IDC_STATIC,static,1342177280
+Control11=IDC_RADIO1,button,1342373897
+Control12=IDC_EDIT1,edit,1350631552
+Control13=IDC_EDIT2,edit,1350631552
+Control14=IDC_EDIT3,edit,1350631552
+Control15=IDC_RADIO2,button,1342373897
+Control16=IDC_EDIT5,edit,1350631552
+Control17=IDC_RADIO5,button,1342373897
+Control18=IDC_SPECTRPX,button,1342242816
+Control19=IDC_CSPECPX,button,1342242816
+Control20=IDC_CHECK2,button,1342242819
+Control21=IDC_CHECK4,button,1342259203
+Control22=IDC_RADIO3,button,1342373897
+Control23=IDC_EDIT6,edit,1350631552
+Control24=IDC_EDIT7,edit,1350631552
+Control25=IDC_EDIT8,edit,1350631552
+Control26=IDC_RADIO4,button,1342373897
+Control27=IDC_EDIT10,edit,1350631552
+Control28=IDC_RADIO6,button,1342373897
+Control29=IDC_SPECTRPY,button,1342373888
+Control30=IDC_CSPECPY,button,1342242816
+
+[DLG:IDD_KNOTPAGE4 (Russian)]
+Type=1
+Class=CKnotPropertyPage4
+ControlCount=30
+Control1=IDC_STATIC,static,1342177280
+Control2=IDC_STATIC,static,1342177280
+Control3=IDC_STATIC,static,1342177280
+Control4=IDC_STATIC,button,1342177287
+Control5=IDC_STATIC,static,1342177280
+Control6=IDC_STATIC,static,1342177280
+Control7=IDC_STATIC,static,1342177280
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_CHECK1,button,1342242819
+Control10=IDC_CHECK3,button,1342259203
+Control11=IDC_RADIO1,button,1342373897
+Control12=IDC_EDIT1,edit,1350631552
+Control13=IDC_EDIT2,edit,1350631552
+Control14=IDC_EDIT3,edit,1350631552
+Control15=IDC_RADIO2,button,1342373897
+Control16=IDC_EDIT5,edit,1350631552
+Control17=IDC_RADIO5,button,1342373897
+Control18=IDC_BUTTON1,button,1342242816
+Control19=IDC_CSPECUX,button,1342242816
+Control20=IDC_CHECK2,button,1342242819
+Control21=IDC_CHECK4,button,1342259203
+Control22=IDC_RADIO3,button,1342373897
+Control23=IDC_EDIT6,edit,1350631552
+Control24=IDC_EDIT7,edit,1350631552
+Control25=IDC_EDIT8,edit,1350631552
+Control26=IDC_RADIO4,button,1342373897
+Control27=IDC_EDIT10,edit,1350631552
+Control28=IDC_RADIO6,button,1342373897
+Control29=IDC_BUTTON2,button,1342242816
+Control30=IDC_CSPECUY,button,1342242816
+
+[DLG:IDD_FREQDLG (Russian)]
+Type=1
+Class=CFreqDlg
+ControlCount=33
+Control1=IDC_RADIO1,button,1342373897
+Control2=IDC_RADIO2,button,1342242825
+Control3=IDC_RADIO3,button,1342242825
+Control4=IDC_EDIT1,edit,1350631552
+Control5=IDC_EDIT2,edit,1350631552
+Control6=IDC_EDIT3,edit,1350631552
+Control7=IDC_CHECK1,button,1476460547
+Control8=IDC_COMBO1,combobox,1344339971
+Control9=IDC_RADIO4,button,1342373897
+Control10=IDC_RADIO5,button,1342242825
+Control11=IDC_RADIO6,button,1342242825
+Control12=IDC_COMBO2,combobox,1344339971
+Control13=IDC_RADIO7,button,1342373897
+Control14=IDC_RADIO8,button,1342242825
+Control15=IDC_RADIO9,button,1342242825
+Control16=IDC_RADIO10,button,1342373897
+Control17=IDC_RADIO11,button,1342242825
+Control18=IDC_RADIO12,button,1342242825
+Control19=IDC_RADIO13,button,1342373897
+Control20=IDC_RADIO14,button,1342242825
+Control21=IDOK,button,1342242817
+Control22=IDCANCEL,button,1342242816
+Control23=IDC_STATIC,button,1342177287
+Control24=IDC_STATIC,static,1342308352
+Control25=IDC_STATIC,static,1342308352
+Control26=IDC_STATIC,button,1342177287
+Control27=IDC_STATIC,static,1342308352
+Control28=IDC_STATIC,button,1342177287
+Control29=IDC_STATIC,button,1342177287
+Control30=IDC_STATIC,static,1342308352
+Control31=IDC_STATIC,static,1342308352
+Control32=IDC_STATIC,button,1342177287
+Control33=IDC_STATIC,button,1342177287
+
+[DLG:IDD_KNOTSPECTR (Russian)]
+Type=1
+Class=CKnotSpectr
+ControlCount=56
+Control1=IDC_RADIO1,button,1342382089
+Control2=IDC_RADIO2,button,1342251017
+Control3=IDC_RADIO3,button,1342251017
+Control4=IDC_RADIO4,button,1342251017
+Control5=IDC_RADIO5,button,1342251017
+Control6=IDC_RADIO6,button,1342242825
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_STATIC,static,1342308352
+Control9=IDC_STATIC,static,1342308352
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_STATIC,static,1342308352
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_STATIC,static,1342308352
+Control15=IDC_STATIC,static,1342308352
+Control16=IDC_STATIC,static,1342308352
+Control17=IDC_STATIC,static,1342308352
+Control18=IDC_STATIC,static,1342308352
+Control19=IDC_STATIC,static,1342308352
+Control20=IDC_EDIT1,edit,1350631552
+Control21=IDC_EDIT2,edit,1350631552
+Control22=IDC_EDIT3,edit,1350631552
+Control23=IDC_EDIT4,edit,1350631552
+Control24=IDC_EDIT5,edit,1350631552
+Control25=IDC_EDIT6,edit,1350631552
+Control26=IDC_EDIT7,edit,1350631552
+Control27=IDC_EDIT8,edit,1350631552
+Control28=IDC_EDIT9,edit,1350631552
+Control29=IDC_EDIT10,edit,1350631552
+Control30=IDC_EDIT11,edit,1350631552
+Control31=IDC_EDIT12,edit,1350631552
+Control32=IDC_EDIT13,edit,1350631552
+Control33=IDC_EDIT14,edit,1350631552
+Control34=IDC_STATIC,button,1342177287
+Control35=IDC_EDIT15,edit,1350631552
+Control36=IDC_EDIT16,edit,1350631552
+Control37=IDC_STATIC,static,1342308352
+Control38=IDC_STATIC,static,1342308352
+Control39=IDC_STATIC,button,1342177287
+Control40=IDC_RADIO7,button,1342373897
+Control41=IDC_RADIO8,button,1342242825
+Control42=IDC_EDIT17,edit,1350631552
+Control43=IDC_STATIC,button,1342177287
+Control44=IDC_EDIT19,edit,1350631552
+Control45=IDC_STATIC,static,1342308352
+Control46=IDC_EDIT18,edit,1350631552
+Control47=IDC_STATIC,static,1342308352
+Control48=IDOK,button,1342242817
+Control49=IDCANCEL,button,1342242816
+Control50=IDC_STATIC,static,1342177294
+Control51=IDC_STATIC,static,1342177294
+Control52=IDC_STATIC,static,1342177294
+Control53=IDC_STATIC,static,1342177294
+Control54=IDC_STATIC,static,1342177294
+Control55=IDC_CHECK1,button,1342242819
+Control56=IDC_STATIC,static,1342308352
+
+[DLG:IDD_COMPLEXSPECTR (Russian)]
+Type=1
+Class=CComplexSpectrDlg
+ControlCount=9
+Control1=IDC_COMBO1,combobox,1344339971
+Control2=IDC_COMBO2,combobox,1344339971
+Control3=IDC_BUTTON2,button,1342242817
+Control4=IDC_BUTTON3,button,1342242816
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_BUTTON1,button,1342242816
+Control8=IDOK,button,1342242816
+Control9=IDC_MSFLEXGRID1,{6262D3A0-531B-11CF-91F6-C2863C385E30},1342242816
+
+[DLG:IDD_SPECTRDLG (Russian)]
+Type=1
+Class=CSpectrDlg
+ControlCount=15
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_COMBO1,combobox,1344339971
+Control4=IDC_COMBO2,combobox,1344339971
+Control5=IDC_STATIC,button,1342177287
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_EDIT1,edit,1350631552
+Control9=IDC_EDIT2,edit,1350631552
+Control10=IDC_STATIC,static,1342308352
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_STATIC,button,1342177287
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_EDIT3,edit,1350631552
+Control15=IDC_CHECK1,button,1476460547
+
+[DLG:IDD_DIALOG4 (Russian)]
+Type=1
+Class=CGraphTimeDlg
+ControlCount=9
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,static,1342308352
+Control4=IDC_EDIT1,edit,1350631552
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_EDIT2,edit,1350631552
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_EDIT3,edit,1350631552
+Control9=IDC_STATIC,button,1342177287
+
+[TB:IDR_GRAPHTYPE (Russian)]
+Type=1
+Class=?
+Command1=ID_AUTOSIZE
+Command2=ID_GETCOORD
+Command3=ID_LOADGRAPH2
+Command4=ID_SAVEREZ
+Command5=ID_GRAPH2
+Command6=ID_CALCMAT
+CommandCount=6
+
+[TB:IDR_MAINFRAME (Russian)]
+Type=1
+Class=?
+Command1=ID_FILE_NEW
+Command2=ID_FILE_OPEN
+Command3=ID_FILE_SAVE
+Command4=ID_REFRESH
+Command5=ID_BUTTON_AUTO_SIZE
+Command6=ID_SCALEADD
+Command7=ID_SCALESUB
+Command8=ID_CALC
+Command9=ID_SETNULL
+Command10=ID_SETROD
+Command11=ID_SETHARDROD
+Command12=ID_SETSPRING
+Command13=ID_SETDEMF
+Command14=ID_SETMASS
+Command15=ID_BUTTON_DEL_FREE_KNOTS
+Command16=ID_BUTTON_GRCLICK_ELEMS
+Command17=ID_BUTTON_GRCLICK_KNOTS
+Command18=ID_APP_ABOUT
+CommandCount=18
+
+[TB:IDR_FORMSTYPE (Russian)]
+Type=1
+Class=?
+Command1=ID_FREQPREW
+Command2=ID_FREQNEXT
+Command3=ID_MOVEADD
+Command4=ID_MOVESUB
+Command5=ID_UPDATEFORMS
+CommandCount=5
+
+[DLG:IDD_FORMS_BAR (Russian)]
+Type=1
+Class=?
+ControlCount=4
+Control1=IDC_STATIC,static,1342308352
+Control2=IDC_STATIC,static,1342308352
+Control3=IDC_BAR_FREQ,static,1342308352
+Control4=IDC_BAR_T,static,1342308352
+
+[DLG:IDD_DIALOGHARDROD (Russian)]
+Type=1
+Class=CHardRodDlg
+ControlCount=22
+Control1=IDC_COMBO2,combobox,1344339971
+Control2=IDC_COMBO1,combobox,1344340499
+Control3=IDC_COMBO3,combobox,1344339971
+Control4=IDC_COMBO4,combobox,1344340499
+Control5=IDC_EDIT4,edit,1350631552
+Control6=IDC_EDIT1,edit,1350631552
+Control7=IDC_EDIT2,edit,1350631552
+Control8=IDC_EDIT3,edit,1350631552
+Control9=IDOK,button,1342242817
+Control10=IDCANCEL,button,1342242816
+Control11=IDC_STATIC,button,1342177287
+Control12=IDC_STATIC,button,1342177287
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_STATIC,static,1342308352
+Control15=IDC_STATIC,button,1342177287
+Control16=IDC_STATIC,static,1342308352
+Control17=IDC_STATIC,static,1342308352
+Control18=IDC_STATIC,static,1342308352
+Control19=IDC_STATIC,static,1342308352
+Control20=IDC_STATIC,static,1342308352
+Control21=IDC_STATIC,static,1342308352
+Control22=IDC_BUTNEWKNOT,button,1342242816
+
+[CLS:CHardRodDlg]
+Type=0
+HeaderFile=HardRodDlg.h
+ImplementationFile=HardRodDlg.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=IDC_BUTNEWKNOT
+VirtualFilter=dWC
+
+[CLS:CEVMDialog]
+Type=0
+HeaderFile=EVMDialog.h
+ImplementationFile=EVMDialog.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=IDC_RADIO_HARDMETHOD_0
+
+[DLG:IDD_EV_METHODS (Russian)]
+Type=1
+Class=CEVMDialog
+ControlCount=12
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,button,1342177287
+Control4=IDC_RADIO_JACOBY,button,1342320393
+Control5=IDC_RADIO_QR_ELM,button,1342189321
+Control6=IDC_RADIO_QR_DIR,button,1342189321
+Control7=IDC_RADIO_QR_ORT,button,1342189321
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_RADIO_HARDMETHOD_0,button,1342320393
+Control10=IDC_RADIO_HARDMETHOD_1,button,1342189321
+Control11=IDC_RADIO_HARDMETHOD_2,button,1342189321
+Control12=IDC_CHECK_CONDMASS,button,1342242819
+
+[DLG:IDD_VIEW_STYLES (Russian)]
+Type=1
+Class=CViewStyles
+ControlCount=18
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_STATIC,button,1342177287
+Control4=IDC_TEXT_OUT,button,1342254851
+Control5=IDC_STATIC,static,1342308352
+Control6=IDC_FREE_FONT,static,1342308352
+Control7=IDC_BUTTON_FREE_FONT,button,1342242816
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_CHECK_NUM_KNOTS,button,1342242819
+Control10=IDC_CHECK_NUM_ELEMS,button,1342242819
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_STATIC,static,1342308352
+Control13=IDC_NUM_KNOTS,static,1342308352
+Control14=IDC_BUTTON_NUM_KNOTS_FONT,button,1342242816
+Control15=IDC_NUM_ELEMS,static,1342308352
+Control16=IDC_BUTTON_NUM_ELEMS_FONT,button,1342242816
+Control17=IDC_STATIC,static,1342308352
+Control18=IDC_EDIT_ZERO_ROT,edit,1350631552
+
+[CLS:CViewStyles]
+Type=0
+HeaderFile=ViewStyles.h
+ImplementationFile=ViewStyles.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=IDC_BUTTON_FREE_FONT
+VirtualFilter=dWC
+
+[DLG:IDD_GROUP_NEW (Russian)]
+Type=1
+Class=CNewGroupDlg
+ControlCount=9
+Control1=IDC_EDIT_GROUP,edit,1350631428
+Control2=IDC_EDIT_GROUP_NAME,edit,1350631552
+Control3=IDC_RADIO_GROUP_TYPE,button,1342308361
+Control4=IDC_RADIO_GROUP_TYPE2,button,1342177289
+Control5=IDOK,button,1342242817
+Control6=IDCANCEL,button,1342242816
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_STATIC,button,1342177287
+Control9=IDC_STATIC,static,1342308352
+
+[CLS:CNewGroupDlg]
+Type=0
+HeaderFile=NewGroupDlg.h
+ImplementationFile=NewGroupDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CNewGroupDlg
+
+[DLG:IDD_GROUP_LIST (Russian)]
+Type=1
+Class=CGroupListDlg
+ControlCount=8
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_GRLIST,listbox,1352728833
+Control4=IDC_BUTTON_DEL_GROUP,button,1342242816
+Control5=IDC_BUTTON_EDIT_GROUP,button,1342242816
+Control6=IDC_BUTTON_GROUP_SHOW,button,1342242816
+Control7=IDC_BUTTON_GROUP_OPEN,button,1342242816
+Control8=IDC_BUTTON_GROUP_SAVE,button,1342242816
+
+[CLS:CGroupListDlg]
+Type=0
+HeaderFile=GroupListDlg.h
+ImplementationFile=GroupListDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CGroupListDlg
+
+[DLG:IDD_GROUP_EDIT (Russian)]
+Type=1
+Class=CGroupEditDlg
+ControlCount=10
+Control1=IDC_EDIT_GROUP_INEDIT,edit,1350631556
+Control2=IDC_EDIT_GROUP_NAME_INEDIT,edit,1350631424
+Control3=IDOK,button,1342242817
+Control4=IDC_BUTTON_REFRESH,button,1342242816
+Control5=IDCANCEL,button,1342242816
+Control6=IDC_STATIC,static,1342308352
+Control7=IDC_STATIC,static,1342308352
+Control8=IDC_EDIT_GROUP_TYPE_INEDIT,edit,1350633472
+Control9=IDC_EDIT_GROUP_SET,edit,1352730692
+Control10=IDC_BUTTON_PACK,button,1342242816
+
+[CLS:CGroupEditDlg]
+Type=0
+HeaderFile=GroupEditDlg.h
+ImplementationFile=GroupEditDlg.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=CGroupEditDlg
+VirtualFilter=dWC
+
+[DLG:IDD_DIALOG_GROUP_SHOW (Russian)]
+Type=1
+Class=CGroupPreviewDlg
+ControlCount=1
+Control1=IDOK,button,1342242817
+
+[CLS:CGroupPreviewDlg]
+Type=0
+HeaderFile=GroupPreviewDlg.h
+ImplementationFile=GroupPreviewDlg.cpp
+BaseClass=CDialog
+Filter=D
+LastObject=CGroupPreviewDlg
+VirtualFilter=dWC
+
+[DLG:IDD_DIALOG_MESH_ELEM (Russian)]
+Type=1
+Class=CMeshElemDlg
+ControlCount=21
+Control1=IDC_RADIO1,button,1342308361
+Control2=IDC_RADIO2,button,1342177289
+Control3=IDC_EDIT_ELEMS_COUNT,edit,1350631552
+Control4=IDC_SLIDER1,msctls_trackbar32,1342242840
+Control5=IDC_EDIT_LEFT_LENGTH,edit,1350631424
+Control6=IDC_EDIT_RIGHT_LENGTH,edit,1350631424
+Control7=IDC_EDIT_LEFT_PROC,edit,1350633472
+Control8=IDC_EDIT_RIGHT_PROC,edit,1350633472
+Control9=IDOK,button,1342242817
+Control10=IDCANCEL,button,1342242816
+Control11=IDC_STATIC,static,1342308352
+Control12=IDC_STATIC,static,1342308352
+Control13=IDC_STATIC,static,1342308352
+Control14=IDC_EDIT_LEFT_KNOT,edit,1350633600
+Control15=IDC_EDIT_RIGHT_KNOT,edit,1350633600
+Control16=IDC_STATIC,static,1342308352
+Control17=IDC_STATIC,static,1342308352
+Control18=IDC_STATIC,static,1342308352
+Control19=IDC_STATIC,static,1342308352
+Control20=IDC_STATIC,static,1342308352
+Control21=IDC_EDIT_LENGTH,edit,1350633472
+
+[CLS:CMeshElemDlg]
+Type=0
+HeaderFile=MeshElemDlg.h
+ImplementationFile=MeshElemDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CMeshElemDlg
+
+[DLG:IDD_CONVERT_TO (Russian)]
+Type=1
+Class=CConvertToDlg
+ControlCount=3
+Control1=IDOK,button,1342242817
+Control2=IDCANCEL,button,1342242816
+Control3=IDC_EDIT_NEW_ELEM_TYPE,edit,1350633600
+
+[CLS:CConvertToDlg]
+Type=0
+HeaderFile=ConvertToDlg.h
+ImplementationFile=ConvertToDlg.cpp
+BaseClass=CDialog
+Filter=D
+VirtualFilter=dWC
+LastObject=CConvertToDlg
+
+[CLS:CScriptView]
+Type=0
+HeaderFile=ScriptView.h
+ImplementationFile=ScriptView.cpp
+BaseClass=CEditView
+Filter=C
+LastObject=CScriptView
+VirtualFilter=VWC
+
+[CLS:CScriptFrame]
+Type=0
+HeaderFile=ScriptFrame.h
+ImplementationFile=ScriptFrame.cpp
+BaseClass=CMDIChildWnd
+Filter=M
+VirtualFilter=mfWC
+LastObject=CScriptFrame
+
+[MNU:IDR_SCRIPT (Russian)]
+Type=1
+Class=?
+Command1=ID_FILE_NEW
+Command2=ID_FILE_OPEN
+Command3=ID_FILE_SAVE
+Command4=ID_FILE_SAVE_AS
+Command5=ID_FILE_MRU_FILE1
+Command6=ID_VIEW_TOOLBAR
+Command7=ID_VIEW_STATUS_BAR
+CommandCount=7
+
+[TB:IDR_SCRIPT (Russian)]
+Type=1
+Class=?
+Command1=ID_FILE_NEW
+Command2=ID_FILE_OPEN
+Command3=ID_FILE_SAVE
+Command4=ID_COMPILE_SCRIPT
+Command5=ID_RUN_SCRIPT
+CommandCount=5
+
+[CLS:CScriptDoc]
+Type=0
+HeaderFile=ScriptDoc.h
+ImplementationFile=ScriptDoc.cpp
+BaseClass=CDocument
+Filter=N
+VirtualFilter=DC
+
+[CLS:COutputFrame]
+Type=0
+HeaderFile=OutputFrame.h
+ImplementationFile=OutputFrame.cpp
+BaseClass=CMDIChildWnd
+Filter=M
+VirtualFilter=mfWC
+
+[CLS:COutputView]
+Type=0
+HeaderFile=OutputView.h
+ImplementationFile=OutputView.cpp
+BaseClass=CEditView
+Filter=C
+VirtualFilter=VWC
+
+[TB:IDR_OUTPUT (Russian)]
+Type=1
+Class=?
+Command1=ID_OUTPUT_FILE_SAVE
+Command2=ID_OUTPUT_BREAK
+CommandCount=2
 

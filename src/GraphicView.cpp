@@ -5,7 +5,11 @@
 #include "NSys2D.h"
 #include "GraphicView.h"
 #include "ShemeDoc.h"
-#include "fstream.h"
+
+#include<fstream>
+#include "Sheme.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -138,41 +142,41 @@ void CGraphicView::OnDraw(CDC* pDC)
 	//выбор нужных массивов из результатов расчета
 	if (pKnot)
 	{
-		SizeX=pDoc->matr_RezY1.SizeX;
+		SizeX=pDoc->m_pSheme->matr_RezY1.SizeX;
 		if (pT) delete pT;
 		pT=0;
 		if ((TypeX==9)||(TypeY==9))
 		{
 			pT=new double[SizeX];
 			for (int r=0;r<SizeX;r++) 
-				pT[r]=r*pDoc->ParamIntegr.Step;
+				pT[r]=r*pDoc->m_pSheme->ParamIntegr.Step;
 		}
 
 		switch (TypeX)
 		{
-		case 0: pRowX=(pKnot->nXRez>=0?pDoc->matr_RezY1.GetRow(pKnot->nXRez):0);	break;
-		case 1: pRowX=(pKnot->nYRez>=0?pDoc->matr_RezY1.GetRow(pKnot->nYRez):0);	break;
-		case 2: pRowX=(pKnot->nARez[0]>=0?pDoc->matr_RezY1.GetRow(pKnot->nARez[0]):0); break;
-		case 3: pRowX=(pKnot->nXRez>=0?pDoc->matr_RezY2.GetRow(pKnot->nXRez):0);	break;
-		case 4: pRowX=(pKnot->nYRez>=0?pDoc->matr_RezY2.GetRow(pKnot->nYRez):0);	break;
-		case 5: pRowX=(pKnot->nARez[0]>=0?pDoc->matr_RezY2.GetRow(pKnot->nARez[0]):0); break;
-		case 6: pRowX=((pKnot->nXRez>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nXRez):0);	break;
-		case 7: pRowX=((pKnot->nYRez>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nYRez):0);	break;
-		case 8: pRowX=((pKnot->nARez[0]>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nARez[0]):0); break;
+		case 0: pRowX=(pKnot->nXRez>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nXRez):0);	break;
+		case 1: pRowX=(pKnot->nYRez>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nYRez):0);	break;
+		case 2: pRowX=(pKnot->nARez[0]>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nARez[0]):0); break;
+		case 3: pRowX=(pKnot->nXRez>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nXRez):0);	break;
+		case 4: pRowX=(pKnot->nYRez>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nYRez):0);	break;
+		case 5: pRowX=(pKnot->nARez[0]>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nARez[0]):0); break;
+		case 6: pRowX=((pKnot->nXRez>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nXRez):0);	break;
+		case 7: pRowX=((pKnot->nYRez>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nYRez):0);	break;
+		case 8: pRowX=((pKnot->nARez[0]>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nARez[0]):0); break;
 		case 9: pRowX=pT; break;
 		}
 		
 		switch (TypeY)
 		{
-		case 0: pRowY=(pKnot->nXRez>=0?pDoc->matr_RezY1.GetRow(pKnot->nXRez):0);	break;
-		case 1: pRowY=(pKnot->nYRez>=0?pDoc->matr_RezY1.GetRow(pKnot->nYRez):0);	break;
-		case 2: pRowY=(pKnot->nARez[0]>=0?pDoc->matr_RezY1.GetRow(pKnot->nARez[0]):0); break;
-		case 3: pRowY=(pKnot->nXRez>=0?pDoc->matr_RezY2.GetRow(pKnot->nXRez):0);	break;
-		case 4: pRowY=(pKnot->nYRez>=0?pDoc->matr_RezY2.GetRow(pKnot->nYRez):0);	break;
-		case 5: pRowY=(pKnot->nARez[0]>=0?pDoc->matr_RezY2.GetRow(pKnot->nARez[0]):0); break;
-		case 6: pRowY=((pKnot->nXRez>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nXRez):0);	break;
-		case 7: pRowY=((pKnot->nYRez>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nYRez):0);	break;
-		case 8: pRowY=((pKnot->nARez[0]>=0)&&(pDoc->matr_RezY3.SizeX>2)?pDoc->matr_RezY3.GetRow(pKnot->nARez[0]):0); break;
+		case 0: pRowY=(pKnot->nXRez>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nXRez):0);	break;
+		case 1: pRowY=(pKnot->nYRez>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nYRez):0);	break;
+		case 2: pRowY=(pKnot->nARez[0]>=0?pDoc->m_pSheme->matr_RezY1.GetRow(pKnot->nARez[0]):0); break;
+		case 3: pRowY=(pKnot->nXRez>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nXRez):0);	break;
+		case 4: pRowY=(pKnot->nYRez>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nYRez):0);	break;
+		case 5: pRowY=(pKnot->nARez[0]>=0?pDoc->m_pSheme->matr_RezY2.GetRow(pKnot->nARez[0]):0); break;
+		case 6: pRowY=((pKnot->nXRez>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nXRez):0);	break;
+		case 7: pRowY=((pKnot->nYRez>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nYRez):0);	break;
+		case 8: pRowY=((pKnot->nARez[0]>=0)&&(pDoc->m_pSheme->matr_RezY3.SizeX>2)?pDoc->m_pSheme->matr_RezY3.GetRow(pKnot->nARez[0]):0); break;
 		case 9: pRowY=pT; break;
 		}
 	}
@@ -263,7 +267,8 @@ void CGraphicView::OnDraw(CDC* pDC)
 
 			if (fabs(x)>(StepX*1E-5))
 			{
-				str.Format("%.*lf", -pr+1, x);
+				if( fabs(x) > 1e10 )	str.Format("%.*e", -pr+1, x);
+				else	str.Format("%.*lf", -pr+1, x);
 				int realwidth=pDC->GetTextExtent(str).cx;
 				if ( (realwidth<nwidth) || (count%(realwidth/nwidth+1)==0) )
 					pDC->TextOut(p1.x, c_text.y-1, str);
@@ -291,7 +296,8 @@ void CGraphicView::OnDraw(CDC* pDC)
 
 			if (fabs(y)>(StepY*1E-5))
 			{
-				str.Format("%.*lf", -pr+1, y);
+				if( fabs(y) > 1e10 )	str.Format("%.*e", -pr+1, y);
+				else	str.Format("%.*lf", -pr+1, y);
 				pDC->TextOut(c_text.x+2, p1.y, str);
 			}
 
@@ -759,6 +765,7 @@ void CGraphicView::OnSaverez()
 	if (dlg.DoModal()==IDOK)
 	{
 		fstream out(dlg.GetPathName(),ios::out);
+		out << SizeX << endl;
 		for (int i=0;i<SizeX;i++)
 			out << pRowX[i] << " " << pRowY[i] << endl;
 	}
@@ -884,7 +891,10 @@ void CGraphicView::OnCalcmat()
 	{
 		matt+=pRowY[i];
 	}
-	matt/=SizeX;
+
+	if( SizeX == 0 )	matt = 0;
+	else	matt /= SizeX;
+
 	for (int j=0;j<SizeX;j++)
 	{
 		disp+=(pRowY[j]-matt)*(pRowY[j]-matt);
@@ -892,6 +902,9 @@ void CGraphicView::OnCalcmat()
 	disp/=SizeX-1;
 	CString str;
 
-	str.Format("Математическое ожидание =%.10lg\nДисперсия               =%.10lg\nСреднеквадр. отклонение =%.10lg",matt,disp,sqrt(disp));
+	if( (fabs(matt) > 1e10)||(fabs(disp) > 1e10) )
+		str.Format("Математическое ожидание =%.*e\nДисперсия               =%.*e\nСреднеквадр. отклонение =%.*e",matt,disp,sqrt(disp));
+	else
+		str.Format("Математическое ожидание =%.10lg\nДисперсия               =%.10lg\nСреднеквадр. отклонение =%.10lg",matt,disp,sqrt(disp));
 	MessageBox(str,"Статистики");
 }

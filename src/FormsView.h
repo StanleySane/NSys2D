@@ -23,6 +23,16 @@ public:
 	double MultAngl;
 	int NumForm;
 	BOOL ViewEnable;
+	//панель заголовка окна
+	CDialogBar m_DlgBar;
+	//выводить ли значения частот в заголовке ?
+	bool m_bBar;
+
+	//флаг о том, что собств.формы уже подсчитаны
+	//сделано для предотвращения ненужного пересчитывания
+	//при создании объекта CFormsView;
+	bool m_bCalculated;
+
 // Operations
 public:
 	void SetForm(int n);
@@ -53,6 +63,7 @@ protected:
 	afx_msg void OnFreqnext();
 	afx_msg void OnFreqprew();
 	afx_msg void OnUpdateforms();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

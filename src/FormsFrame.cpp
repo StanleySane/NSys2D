@@ -46,7 +46,6 @@ int CFormsFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		TRACE0("Failed to create toolbar\n");
 		return -1;      // fail to create
 	}
-
 	// TODO: Remove this if you don't want tool tips or a resizeable toolbar
 	m_wndToolBar.SetBarStyle(m_wndToolBar.GetBarStyle() |
 		CBRS_TOOLTIPS | CBRS_FLYBY | CBRS_SIZE_DYNAMIC);
@@ -67,3 +66,4 @@ BOOL CFormsFrame::PreCreateWindow(CREATESTRUCT& cs)
 	
 	return CMDIChildWnd::PreCreateWindow(cs);
 }
+

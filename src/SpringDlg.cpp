@@ -18,9 +18,12 @@ static char THIS_FILE[] = __FILE__;
 
 
 CSpringDlg::CSpringDlg(CListKnot *plistkn,
-				   CSpring *psprn/*=NULL*/, CWnd* pParent /*=NULL*/)
+				   CSpring *psprn/*=NULL*/,
+				   bool full/*true*/,
+				   CWnd* pParent /*=NULL*/)
 	: CDialog(CSpringDlg::IDD, pParent)
 {
+	m_bFull = full;
 	pListKnot=plistkn;
 	pSprn=psprn;
 	//{{AFX_DATA_INIT(CSpringDlg)
@@ -76,6 +79,7 @@ void CSpringDlg::OnButnewknot()
 
 void CSpringDlg::InvalidateKnot(BOOL bSave/*=NULL*/)
 {
+	if( !m_bFull )	return;
 	int pos1=0,pos2=0;
 	
 	if (bSave)
@@ -138,6 +142,11 @@ BOOL CSpringDlg::OnInitDialog()
 		m_Radio_X5=(pSprn->type==5?0:-1);
 		m_Radio_XX=(pSprn->type==0?0:-1);
 	}
+
+	GetDlgItem(IDC_COMBO2)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_COMBO3)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_BUTNEWKNOT)->EnableWindow(m_bFull);
+
 	SetState();
 	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -149,8 +158,17 @@ void CSpringDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	CKnot *kn1, *kn2;
+	if( m_bFull )
+	{
+		kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	}
+	else
+	{
+		kn1 = pSprn->knot1;
+		kn2 = pSprn->knot2;
+	}
 
 	if (!pSprn)
 		pSprn=new CSpring(kn1, kn2);
@@ -228,15 +246,18 @@ int CSpringDlg::SetState()
 BOOL CSpringDlg::VerifyInfo()
 {
 	UpdateData();
-	
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
 
-	if (kn1==kn2) 
+	if( m_bFull )
 	{
-		MessageBox("Задано два одинаковых узла","Ошибка!"
-			,MB_OK|MB_ICONERROR);
-		return FALSE;
+		CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+
+		if (kn1==kn2) 
+		{
+			MessageBox("Задано два одинаковых узла","Ошибка!"
+				,MB_OK|MB_ICONERROR);
+			return FALSE;
+		}
 	}
 
 	CExpression e;

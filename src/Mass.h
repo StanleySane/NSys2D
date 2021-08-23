@@ -17,16 +17,22 @@ public:
 	virtual void Serialize(CArchive & ar);
 	void SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i);
 	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+
+	void GetMatrM( CMatr& ) const;
+	void GetMatrD( CMatr& ) const;
+	void GetMatrC( CMatr& ) const;
+
 	CString GetStrJp();
 	CString GetStrM();
-	double GetJp();
-	double GetM();
+	double GetJp() const;
+	double GetM() const;
 	double SetMassJp(CString strJp);
 	double SetMassM(CString strm);
 	CString str_M;
 	CString str_Jp;
 	double M,Jp;
-	int GoDlg(CListKnot * pListKnot);
+	int GoDlg(CListKnot * pListKnot, bool full = true );
+	bool SetCommonProperties( CElem* elem );
 	void Draw(CDC * pDC, CParamView * pParamView);
 	CMass(CKnot *kn1);
 	virtual ~CMass();

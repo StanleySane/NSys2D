@@ -16,9 +16,12 @@ static char THIS_FILE[] = __FILE__;
 
 
 CMassDlg::CMassDlg(CListKnot *plistkn,
-				   CMass *pmass/*=NULL*/, CWnd* pParent /*=NULL*/)
+				   CMass *pmass/*=NULL*/,
+				   bool full/*true*/,
+				   CWnd* pParent /*=NULL*/)
 	: CDialog(CMassDlg::IDD, pParent)
 {
+	m_bFull = full;
 	pListKnot=plistkn;
 	pMass=pmass;
 	//{{AFX_DATA_INIT(CMassDlg)
@@ -66,6 +69,10 @@ BOOL CMassDlg::OnInitDialog()
 		m_EditM=pMass->GetStrM();
 		m_EditJp=pMass->GetStrJp();
 	}
+
+	GetDlgItem(IDC_COMBO1)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_BUTNEWKNOT)->EnableWindow(m_bFull);
+
 	UpdateData(FALSE);
 	
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -74,6 +81,7 @@ BOOL CMassDlg::OnInitDialog()
 
 void CMassDlg::InvalidateKnot(BOOL bSave)
 {
+	if( !m_bFull )	return;
 	int pos1=0;
 	
 	if (bSave)
@@ -103,7 +111,15 @@ void CMassDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 
-	CKnot *kn=pListKnot->GetKnotPos(m_ComboBoxKnot.GetCurSel());
+	CKnot *kn;
+	if( m_bFull )
+	{
+		kn = pListKnot->GetKnotPos(m_ComboBoxKnot.GetCurSel());
+	}
+	else
+	{
+		kn = pMass->knot1;
+	}
 
 	if (!pMass)
 		pMass=new CMass(kn);
@@ -121,11 +137,14 @@ BOOL CMassDlg::VerifyInfo()
 {
 	UpdateData();
 	
-	if (m_ComboBoxKnot.GetCurSel()==CB_ERR) 
+	if( m_bFull )
 	{
-		MessageBox("Не выбран узел","Ошибка!"
-			,MB_OK|MB_ICONERROR);
-		return FALSE;
+		if (m_ComboBoxKnot.GetCurSel()==CB_ERR) 
+		{
+			MessageBox("Не выбран узел","Ошибка!"
+				,MB_OK|MB_ICONERROR);
+			return FALSE;
+		}
 	}
 
 	CExpression e;

@@ -3,8 +3,10 @@
 
 #include "stdafx.h"
 #include "NSys2D.h"
+#include "CoordD.h"
 
 #include "ShemeFrm.h"
+#include "ShemeDoc.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -20,14 +22,16 @@ IMPLEMENT_DYNCREATE(CShemeFrame, CMDIChildWnd)
 BEGIN_MESSAGE_MAP(CShemeFrame, CMDIChildWnd)
 	//{{AFX_MSG_MAP(CShemeFrame)
 	ON_WM_CREATE()
+	ON_UPDATE_COMMAND_UI(ID_INDICATOR_NUM, OnUpdateIndicatorNum )
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
 {
-	ID_SEPARATOR//,           // status line indicator
-//	ID_SEPARATOR
+	ID_SEPARATOR,           // status line indicator
+	ID_INDICATOR_NUM
 };
+extern CCoordD MousePos;
 
 /////////////////////////////////////////////////////////////////////////////
 // CShemeFrame construction/destruction
@@ -35,7 +39,7 @@ static UINT indicators[] =
 CShemeFrame::CShemeFrame()
 {
 	// TODO: add member initialization code here
-	
+	MousePos = CCoordD(0.0,0.0);	
 }
 
 CShemeFrame::~CShemeFrame()
@@ -51,6 +55,13 @@ BOOL CShemeFrame::PreCreateWindow(CREATESTRUCT& cs)
 	cs.cy=250;
 
 	return CMDIChildWnd::PreCreateWindow(cs);
+}
+
+void CShemeFrame::OnUpdateIndicatorNum( CCmdUI *pCmdUI )
+{
+	CString str;
+	str.Format("%.3lf,%.3lf", MousePos.x, MousePos.y );
+	pCmdUI->SetText(str);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -79,19 +90,14 @@ int CShemeFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 		return -1;
 	
 	// TODO: Add your specialized creation code here
-/*	if (!m_wndStatusBar.Create(this) ||
+	if (!m_wndStatusBar.Create(this) ||
 		!m_wndStatusBar.SetIndicators(indicators,
 		  sizeof(indicators)/sizeof(UINT)))
 	{
 		TRACE0("Failed to create status bar\n");
 		return -1;      // fail to create
 	}
-	m_wndStatusBar.SetPaneInfo(
-		0,
-		m_wndStatusBar.GetItemID(0),
-		SBPS_NOBORDERS,
-		85);
-	m_wndStatusBar.SetPaneStyle(0,SBPS_NORMAL);*/
+	m_wndStatusBar.SetPaneInfo(1, ID_INDICATOR_NUM, SBPS_STRETCH, 20 );
 
 
 /*	int f=m_wndStatusBar.GetPaneStyle(0);
@@ -103,3 +109,4 @@ int CShemeFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	
 	return 0;
 }
+

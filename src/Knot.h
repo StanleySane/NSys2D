@@ -33,6 +33,7 @@ private:
 	double Uxp,Uyp,Uap;
 
 public:
+	void SetCommonProperties( CKnot *pKnot );
 	int SetKinematicPos(CMatr &matr_RezY1, CMatr &matr_RezY2, int  i, double Tt);
 	void DrawPower(CDC * pDC,  POINT & point, CParamView* pParamView);
 	void EndIntegr();
@@ -78,8 +79,10 @@ public:
 	double GetUx(double Tt, int p=0);
 	void SetFixedKnotMDC(CMatr & mM, CMatr & mD, CMatr & mC);
 	void operator = (CKnot &knot);
+
 	void DrawFixed(CDC *pDC, POINT &point, CParamView *pParamView);
-	int GoDlg(/*CListKnot *pListKnot, CListSpectr *pListSpectr*/);
+	void DrawFreeNums( CDC*, POINT&, CParamView* );
+	int GoDlg( bool full = true/*CListKnot *pListKnot, CListSpectr *pListSpectr*/);
 	CPoint GetScreenCoord(CParamView* pParamView);
 	CString GetStrY();
 	CString GetStrX();
@@ -116,7 +119,7 @@ public:
 
 	void Draw(CDC * pDC, CParamView* pParamView);
 	int SetCoord(CString strx, CString stry);
-	CCoordD GetCoord(double MultMove=0);
+	CCoordD GetCoord(double multmove=0);
 	CKnot();
 	CKnot(CString strx, CString stry);
 	virtual ~CKnot();

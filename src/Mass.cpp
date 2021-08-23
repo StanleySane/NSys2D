@@ -45,20 +45,60 @@ void CMass::Draw(CDC * pDC, CParamView * pParamView)
 	pOldbrush=(CBrush*)pDC->SelectObject(&brush);
 
 	const int rad=6;
+	double tmp = fabs(knot1->MoveA[0]);
 
-	CRect rect(point.x-rad, point.y-rad, point.x+rad, point.y+rad);
-	
-	pDC->FillRect(&rect, &brush);
-	//pDC->Ellipse(point.x-rad,point.y-rad,point.x+rad,point.y+rad);
+	if( (fabs(pParamView->MultAngl) <= pParamView->m_ZeroRot)||
+		(tmp <= pParamView->m_ZeroRot) )
+	{
+		CRect rect(point.x-rad, point.y-rad, point.x+rad, point.y+rad);
+		pDC->FillRect(&rect, &brush);
+		//pDC->Ellipse(point.x-rad,point.y-rad,point.x+rad,point.y+rad);
+	}
+	else
+	{
+		if( tmp > pParamView->m_ZeroRot )
+		{
+			int rad2 = rad/2, rad3 = int(double(rad)*1.4);
+			CPoint polygon[4] = { CPoint(point.x-rad2,point.y+rad3), 
+									CPoint(point.x+rad3,point.y+rad2),
+									CPoint(point.x+rad2,point.y-rad3),
+									CPoint(point.x-rad3,point.y-rad2) };
+			CRgn rgn;
+			rgn.CreatePolygonRgn( polygon, 4, WINDING);
+			pDC->FillRgn( &rgn, &brush );
+		}			
+	}
+
+	//Номер элемента
+	if( (m_Number)&&(!pParamView->Gray)&&(pParamView->m_bNumElems) )
+	{
+		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
+		pDC->SetTextAlign( TA_LEFT|TA_TOP );	
+		CFont *pOldFont = (CFont*)pDC->SelectObject(&(pParamView->m_fntElems));
+
+		CString str; 
+		str.Format("[%d]", m_Number );
+
+		COLORREF oldClr = pDC->SetTextColor(pParamView->m_clrNumElems);
+		int oldBkMode = pDC->SetBkMode(TRANSPARENT);
+
+		pDC->TextOut( point.x+2, point.y+2, str );
+
+		pDC->SetBkMode(oldBkMode);
+		pDC->SetTextColor(oldClr);
+
+		pDC->SelectObject(pOldFont);
+	}
+
 	knot1->Draw(pDC,pParamView);
 	
 	pDC->SelectObject(pOldbrush);
 	pDC->SelectObject(pOld);
 }
 
-int CMass::GoDlg(CListKnot * pListKnot)
+int CMass::GoDlg(CListKnot * pListKnot, bool full )
 {
-	CMassDlg dlg(pListKnot, this);
+	CMassDlg dlg( pListKnot, this, full );
 	if (dlg.DoModal()==IDOK) return 1;
 	return 0;
 }
@@ -92,12 +132,12 @@ double CMass::SetMassJp(CString strJp)
 
 }
 
-double CMass::GetM()
+double CMass::GetM() const
 {
 	return M;
 }
 
-double CMass::GetJp()
+double CMass::GetJp() const
 {
 	return Jp;
 }
@@ -114,19 +154,13 @@ CString CMass::GetStrJp()
 
 void CMass::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 {
-	CMatr loc_matr(3,3);
+	CMatr loc_matr;
+	GetMatrM( loc_matr );
 
-	double m=GetM();
-	double Jp=GetJp();
-	
-	loc_matr[0][0]=m;
-	loc_matr[1][1]=m;
-	loc_matr[2][2]=Jp;
-		
 	int N[3];
-	N[0]=knot1->nXRez;
-	N[1]=knot1->nYRez;
-	N[2]=knot1->nARez[0];
+	N[0] = knot1->nXRez;
+	N[1] = knot1->nYRez;
+	N[2] = knot1->nARez[0];
 
 	int maxn=3;
 //	if (knot1->ConnectType!=0) maxn=2;
@@ -158,4 +192,39 @@ void CMass::Serialize(CArchive & ar)
 		SetMassM(M);
 		SetMassJp(Jp);
 	}
+}
+
+bool CMass::SetCommonProperties( CElem* elem )
+{
+	CMass *pMass = dynamic_cast<CMass*>(elem);
+	if( !pMass )	return false;
+
+	str_M = pMass->str_M;
+	str_Jp = pMass->str_Jp;
+	M = pMass->M;
+	Jp = pMass->Jp;
+
+	return true;
+}
+
+void CMass::GetMatrM( CMatr &matr ) const
+{
+	matr.ReSize( 3, 3 );
+
+	double m = GetM();
+	double Jp = GetJp();
+	
+	matr[0][0] = m;
+	matr[1][1] = m;
+	matr[2][2] = Jp;
+}
+
+void CMass::GetMatrD( CMatr &matr ) const
+{
+	matr.ReSize( 3, 3 );
+}
+
+void CMass::GetMatrC( CMatr &matr ) const
+{
+	matr.ReSize( 3, 3 );
 }

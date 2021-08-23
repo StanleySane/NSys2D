@@ -21,9 +21,11 @@ class CKnotPropertySheet : public CPropertySheet
 // Construction
 public:
 	CKnotPropertySheet(CKnot *pKn, 
-					   CWnd* pWndParent);
+					   CWnd* pWndParent,
+					   bool full );
 // Attributes
 public:
+	bool m_bFull;
 	CKnot	*pKnot;
 	CKnotPropertyPage1 m_Page1;
 	CKnotPropertyPage2 m_Page2;

@@ -33,9 +33,9 @@ CSpring::~CSpring()
 
 }
 
-int CSpring::GoDlg(CListKnot * pListKnot)
+int CSpring::GoDlg(CListKnot * pListKnot, bool full )
 {
-	CSpringDlg dlg(pListKnot, this);
+	CSpringDlg dlg( pListKnot, this, full );
 	if (dlg.DoModal()==IDOK) return 1;
 	return 0;
 }
@@ -101,6 +101,30 @@ void CSpring::Draw(CDC * pDC, CParamView * pParamView)
 		}
 		pDC->LineTo(point1.x+int(vect.x*(norm-len1)),point1.y+int(vect.y*(norm-len1) ) );
 		pDC->LineTo(point2);
+	}
+
+	//Номер элемента
+	if( (m_Number)&&(!pParamView->Gray)&&(pParamView->m_bNumElems) )
+	{
+		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
+		pDC->SetTextAlign( TA_LEFT|TA_TOP );	
+		CFont *pOldFont = (CFont*)pDC->SelectObject(&(pParamView->m_fntElems));
+
+		CString str; 
+		str.Format("[%d]", m_Number );
+
+		COLORREF oldClr = pDC->SetTextColor(pParamView->m_clrNumElems);
+		int oldBkMode = pDC->SetBkMode(TRANSPARENT);
+
+		CCoordD k1 = knot1->GetCoord(pParamView->MultMove);
+		CCoordD k2 = knot2->GetCoord(pParamView->MultMove);
+		CPoint point = ShemeToScreen( (k1+k2)/2, pParamView );//середина между двумя узлами
+		pDC->TextOut( point.x, point.y, str );
+
+		pDC->SetBkMode(oldBkMode);
+		pDC->SetTextColor(oldClr);
+
+		pDC->SelectObject(pOldFont);
 	}
 
 	knot1->Draw(pDC,pParamView);
@@ -169,22 +193,22 @@ double CSpring::SetSprnXX(CString str)
 //	return -1;
 }
 
-double CSpring::GetSprnX1()
+double CSpring::GetSprnX1() const
 {
 	return a_X1;
 }
 
-double CSpring::GetSprnX3()
+double CSpring::GetSprnX3() const
 {
 	return a_X3;
 }
 
-double CSpring::GetSprnX5()
+double CSpring::GetSprnX5() const
 {
 	return a_X5;
 }
 
-double CSpring::GetSprnXX()
+double CSpring::GetSprnXX() const
 {
 	return a_XX;
 }
@@ -212,18 +236,10 @@ CString CSpring::GetStrXX()
 
 void CSpring::SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC)
 {
-	if (type==1)
+	if( type == 1 )
 	{
-		CMatr loc_matr(4,4),T(4,4);
-		double c=GetSprnX1();
-		GetMatrT(T,4);
-
-		loc_matr[0][0]=c;
-		loc_matr[2][2]=c;
-		loc_matr[2][0]=-c;
-		loc_matr[0][2]=-c;
-		
-		loc_matr=!T*loc_matr*T;
+		CMatr loc_matr;
+		GetMatrC( loc_matr );
 
 		int N[4];
 		N[0]=knot1->nXRez;
@@ -317,5 +333,51 @@ void CSpring::Serialize(CArchive & ar)
 		SetSprnX5(X5);
 		SetSprnXX(XX);
 		ar >> type;
+	}
+}
+
+bool CSpring::SetCommonProperties( CElem* elem )
+{
+	CSpring *pSpr = dynamic_cast<CSpring*>(elem);
+	if( !pSpr )	return false;
+
+	a_X1 = pSpr->a_X1;
+	a_X3 = pSpr->a_X3;
+	a_X5 = pSpr->a_X5;
+	a_XX = pSpr->a_XX;
+	str_X1 = pSpr->str_X1;
+	str_X3 = pSpr->str_X3;
+	str_X5 = pSpr->str_X5;
+	str_XX = pSpr->str_XX;
+	type = pSpr->type;
+
+	return true;
+}
+
+void CSpring::GetMatrM( CMatr &matr ) const
+{
+	matr.ReSize( 4, 4 );
+}
+
+void CSpring::GetMatrD( CMatr &matr ) const
+{
+	matr.ReSize( 4, 4 );
+}
+
+void CSpring::GetMatrC( CMatr &matr ) const
+{
+	matr.ReSize( 4, 4 );
+	if( type == 1)
+	{
+		CMatr T( 4, 4 );
+		double c = GetSprnX1();
+		GetMatrT( T, 4 );
+
+		matr[0][0] = c;
+		matr[2][2] = c;
+		matr[2][0] = -c;
+		matr[0][2] = -c;
+		
+		matr = !T*matr*T;
 	}
 }

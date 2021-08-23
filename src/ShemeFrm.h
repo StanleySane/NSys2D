@@ -15,6 +15,9 @@ class CShemeFrame : public CMDIChildWnd
 public:
 	CShemeFrame();
 
+protected:
+	CStatusBar  m_wndStatusBar;
+
 // Attributes
 public:
 
@@ -41,6 +44,7 @@ public:
 protected:
 	//{{AFX_MSG(CShemeFrame)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	afx_msg void OnUpdateIndicatorNum(CCmdUI *pCmdUI);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -43,7 +43,7 @@ int CKnotPropertyFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	if (CMiniFrameWnd::OnCreate(lpCreateStruct) == -1)
 		return -1;
 	
-	m_pModelessPropSheet = new CKnotPropertySheet(0,this);
+	m_pModelessPropSheet = new CKnotPropertySheet(0,this,true);
 	if (!m_pModelessPropSheet->Create(this, 
 		WS_CHILD | WS_VISIBLE, 0))
 	{

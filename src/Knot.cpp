@@ -8,6 +8,7 @@
 //#include "KnotDlg.h"
 
 #include "KnotPropertySheet.h"
+#include<algorithm>
 	
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -63,11 +64,49 @@ void CKnot::Draw(CDC * pDC, CParamView* pParamView)
 {
 	POINT point=ShemeToScreen(GetCoord(pParamView->MultMove),pParamView);
 
+	bool bGray = (pParamView->Gray)?true:false;
+	bool bDraw = !pParamView->m_vecSelNumbers.empty();
+
+	if( pParamView->m_iClickedObjects == 2 )	bGray = false;
+
+	int iOldMode;
+	if( bDraw )
+	{
+		if( bDraw )	iOldMode = SelectMode;
+		//если рисуются одни элементы, то узлы рисовать не надо
+		SelectMode = 0;
+		bGray = true;
+
+		if( (pParamView->m_bSelType==false)||(pParamView->m_iClickedObjects!=1) )
+		{
+			//рисуются одни узлы
+			ARRAY::iterator it = std::find( pParamView->m_vecSelNumbers.begin(),
+									pParamView->m_vecSelNumbers.end(), Num );
+			if( it != pParamView->m_vecSelNumbers.end() )
+			{
+				//этот узел рисуется
+				if( ((pParamView->m_iClickedObjects==0)&&(pParamView->m_bSelType==false))
+					||(pParamView->m_iClickedObjects==2) )
+				{
+					SelectMode = 1;
+					bGray = false;
+				}
+			}
+			else
+			{
+				if( pParamView->m_iClickedObjects == 2 )
+				{
+					bGray = false;
+				}
+			}
+		}
+	}
+
 	const int diam=3;	
 	COLORREF col;
 	col=(SelectMode?RGB(250,0,0):RGB(0,0,250));
 
-	if (pParamView->Gray)
+	if (bGray)
 		col=RGB(200,200,200);
 
 	CPen pen(PS_SOLID|PS_GEOMETRIC,1,col);
@@ -82,31 +121,43 @@ void CKnot::Draw(CDC * pDC, CParamView* pParamView)
 		//иначе цвет окна
 	    else col2=pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW);
 
-	if (pParamView->Gray)
-		col2=RGB(200,200,200);
+	if( bGray )	col2 = RGB(200,200,200);
 	
 	CBrush brush(col2);
 	pOldbrush=(CBrush*)pDC->SelectObject(&brush);
 
-	//Номер узла
-	if ( (Num)&&(!pParamView->Gray) )
+	//Номер узла надо выводить и при рисовании одних только
+	//узлов и при рисовании элементов, если элемент содержит
+	//данный узел
+	if ( (Num)&&((!pParamView->Gray)||(!bGray))&&(pParamView->m_bNumKnots) )
 	{
-		CFont font1;
-		font1.CreatePointFont(100,_T("Arial"), 0);//MS Sans Serif//75
+
+//		CFont font1;
+//		font1.CreatePointFont(100,_T("Arial"), 0);//MS Sans Serif//75
 		pDC->SetBkColor(pDC->IsPrinting()?RGB(255,255,255):GetSysColor(COLOR_WINDOW));
 		pDC->SetTextAlign(TA_RIGHT|TA_BOTTOM);	
-		CFont *pOldFont=(CFont*)pDC->SelectObject(&font1);
+//		CFont *pOldFont=(CFont*)pDC->SelectObject(&font1);
+		CFont *pOldFont = (CFont*)pDC->SelectObject(&(pParamView->m_fntKnot));
 
-		CString str; str.Format("%d",Num);
+		CString str; 
+		str.Format("%d",Num);
+
+		COLORREF oldClr = pDC->SetTextColor(pParamView->m_clrNumKnots);
+		int oldBkMode = pDC->SetBkMode(TRANSPARENT);
 		pDC->TextOut(point.x-2,point.y-2,str);
+		pDC->SetBkMode(oldBkMode);
+		pDC->SetTextColor(oldClr);
 
 		pDC->SelectObject(pOldFont);
 	}
 
 	//Стрелочки (приложение возмущения)
 	if (!pParamView->Gray) DrawPower(pDC, point, pParamView);
+	//рисуем номера степеней свободы:
+	if( pParamView->m_bFreeNums )
+		DrawFreeNums( pDC, point, pParamView );
 	//Закрепление
-	if ((FixedType)&&(!pParamView->Gray) ) DrawFixed(pDC,point,pParamView);
+	if ((FixedType)&&( (!pParamView->Gray)||(!bGray) ) ) DrawFixed(pDC,point,pParamView);
 
 	if ( (FixedType!=4) || ((FixedType==4)&&(SelectMode)) )
 		pDC->Ellipse(point.x-diam,point.y-diam,point.x+diam,point.y+diam);
@@ -114,6 +165,8 @@ void CKnot::Draw(CDC * pDC, CParamView* pParamView)
 	pDC->SelectObject(pOldbrush);
 
 	pDC->SelectObject(pOld);
+
+	if( bDraw )	SelectMode = iOldMode;
 }
 
 CString CKnot::GetName(UINT num/*=0*/)
@@ -141,10 +194,12 @@ CPoint CKnot::GetScreenCoord(CParamView* pParamView)
 	return (CPoint)ShemeToScreen(GetCoord(pParamView->MultMove),pParamView);//-pParamView->pos;
 }
 
-int CKnot::GoDlg()
+int CKnot::GoDlg( bool full /*true*/)
 {
-	CKnotPropertySheet *pdlg=new CKnotPropertySheet(this, 0);
-	if (pdlg->DoModal()==IDOK) 
+	//full показывает надо ли выводить полный диалог
+	//или достаточно вывода общих св-в узлов
+	CKnotPropertySheet *pdlg = new CKnotPropertySheet(this, 0, full );
+	if( pdlg->DoModal() == IDOK )
 	{
 		return 1;	
 	}
@@ -230,7 +285,8 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 					point.x+rad,point.y+rad);
 
 			break;
-	case 4: 
+	case 4:
+		{
 			double ang=-acos(-1)/2.0;
 			if (FriendCoord.GetNorm()>0)
 			{
@@ -263,7 +319,17 @@ void CKnot::DrawFixed(CDC * dc, POINT & point, CParamView *pParamView)
 				p2=CPoint(int(-p.y*sin(ang)+p.x*cos(ang)),int(p.y*cos(ang)+p.x*sin(ang)) );
 				dc->LineTo(point.x-p2.y,point.y+p2.x);
 			}
+		}
+		break;
+	case 5:
+			dc->MoveTo(point.x-5,point.y+3);
+			dc->LineTo(point.x+3,point.y-5);
+			
+			dc->MoveTo(point.x-3,point.y+5);
+			dc->LineTo(point.x+5,point.y-3);
 			break;
+	default:
+		ASSERT(FALSE);
 	}
 	dc->SelectObject(pOldbrush);
 	dc->SelectObject(pOldpen);
@@ -736,6 +802,7 @@ int CKnot::SetFixedKnot()
 	case 2: {nXRez=-1; break;}
 	case 3: {nXRez=-1; nYRez=-1; break;}
 	case 4: {nXRez=-1; nYRez=-1; for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
+	case 5:	{for(int i=0;i<CntAngle;i++) nARez[i]=-1; break;}
 	};
 	return 0;
 }
@@ -860,6 +927,79 @@ void CKnot::EndIntegr()
 	if (TypeUy==2) SpUy.EndIntegr();
 }
 
+void CKnot::DrawFreeNums( CDC *pDC, POINT &point, CParamView *pParamView )
+{
+	CPen pen1( PS_SOLID|PS_GEOMETRIC, 1, RGB(0,0,0) );
+	CPen *pOldpen = static_cast<CPen*>(pDC->SelectObject(&pen1));
+	CFont *pOldFont = static_cast<CFont*>(pDC->SelectObject(&(pParamView->m_fntKnot)));
+	COLORREF oldClr = pDC->SetTextColor( RGB(0,0,0) );
+	int oldBkMode = pDC->SetBkMode(TRANSPARENT);
+
+	const int len1 = 10;
+	const int len2 = 5;
+	const int len3 = 20;
+
+	CString num;
+	if( nXRez >= 0 )
+	{
+		//стрелка вправо
+		pDC->MoveTo( point.x-len1,		point.y-len1 );
+		pDC->LineTo( point.x+len1,		point.y-len1 );
+		pDC->LineTo( point.x+len1-len2,	point.y-len1-len2 );
+		pDC->MoveTo( point.x+len1,		point.y-len1 );
+		pDC->LineTo( point.x+len1-len2,	point.y-len1+len2 );
+
+		num.Format("%d", nXRez );
+		pDC->TextOut( point.x+len1, point.y-len1, num );
+		num.Empty();
+	}
+	if( nYRez >= 0 )
+	{
+		//стрелка вниз
+		pDC->MoveTo( point.x-len1,		point.y-len1 );
+		pDC->LineTo( point.x-len1,		point.y+len1 );
+		pDC->LineTo( point.x-len1-len2,	point.y+len1-len2 );
+		pDC->MoveTo( point.x-len1,		point.y+len1 );
+		pDC->LineTo( point.x-len1+len2,	point.y+len1-len2 );
+
+		num.Format("%d", nYRez );
+		pDC->TextOut( point.x-len1, point.y+len1, num );
+		num.Empty();
+	}
+	for( int i = 0; i < CntAngle; i++ )
+	{
+		if( nARez[i] >= 0 )
+		{
+			CString tmp;
+			tmp.Format("%d,", nARez[i] );
+			num += tmp;
+		}
+	}
+	if( !num.IsEmpty() )
+	{
+		num = num.Left( num.GetLength() - 1 );
+		//круглая стрелка
+		int tmp = 5;
+		pDC->Arc(	point.x-len3, point.y-len3,
+					point.x+len3, point.y+len3,
+					point.x, point.y-len3-tmp,
+					point.x-len3-tmp, point.y );
+		pDC->MoveTo( point.x,		point.y-len3 );
+		pDC->LineTo( point.x-len2,	point.y-len3-len2 );
+		pDC->MoveTo( point.x,		point.y-len3 );
+		pDC->LineTo( point.x-len2,	point.y-len3+len2 );
+
+		UINT oldAlign = pDC->SetTextAlign( TA_LEFT|TA_BOTTOM );
+		pDC->TextOut( point.x, point.y-len3, num );
+		pDC->SetTextAlign( oldAlign );
+		num.Empty();
+	}
+	pDC->SetBkMode(oldBkMode);
+	pDC->SetTextColor(oldClr);
+	pDC->SelectObject(pOldFont);
+	pDC->SelectObject(pOldpen);
+}
+
 void CKnot::DrawPower(CDC * pDC, POINT & point, CParamView * pParamView)
 {
 	CPen pen1(PS_SOLID|PS_GEOMETRIC,2,RGB(0,1750,0));	
@@ -927,4 +1067,87 @@ int CKnot::SetKinematicPos(CMatr & matr_RezY1, CMatr & matr_RezY2, int i, double
 		matr_RezY2[nYRez][i]=GetUy(Tt,1);
 	}
 	return 0;
+}
+
+void CKnot::SetCommonProperties( CKnot *pKnot )
+{
+	str_Ux = pKnot->str_Ux;
+	str_Uy = pKnot->str_Uy;
+	str_Ua = pKnot->str_Ua;
+	str_Uxp = pKnot->str_Uxp;
+	str_Uyp = pKnot->str_Uyp;
+	str_Uap = pKnot->str_Uap;
+	Ux = pKnot->Ux;
+	Uy = pKnot->Uy;
+	Ua = pKnot->Ua;
+	Uxp = pKnot->Uxp;
+	Uyp = pKnot->Uyp;
+	Uap = pKnot->Uap;
+
+	str_Ax = pKnot->str_Ax;
+	str_Wx = pKnot->str_Wx;
+	str_Fix = pKnot->str_Fix;
+	str_Px = pKnot->str_Px;
+	str_Ay = str_Ay;
+	str_Wy = pKnot->str_Wy;
+	str_Fiy = pKnot->str_Fiy;
+	str_Py = pKnot->str_Py;
+	Ax = pKnot->Ax;
+	Wx = pKnot->Wx;
+	Fix = pKnot->Fix;
+	Ay = pKnot->Ay;
+	Wy = pKnot->Wy;
+	Fiy = Fiy;
+
+	SpPx.TypeSpectr = pKnot->SpPx.TypeSpectr;
+	SpPx.TypeInit = pKnot->SpPx.TypeInit;
+	SpPy.TypeSpectr = pKnot->SpPy.TypeSpectr;
+	SpPy.TypeInit = pKnot->SpPy.TypeInit;
+	SpUx.TypeSpectr = pKnot->SpUx.TypeSpectr;
+	SpUx.TypeInit = pKnot->SpUx.TypeInit;
+	SpUy.TypeSpectr = pKnot->SpUy.TypeSpectr;
+	SpUy.TypeInit = pKnot->SpUy.TypeInit;
+	for( int i = 0; i < 20; i++ )
+	{
+		SpPx.strEdit[i] = pKnot->SpPx.strEdit[i];
+		SpPx.param[i] = pKnot->SpPx.param[i];
+		SpPy.strEdit[i] = pKnot->SpPy.strEdit[i];
+		SpPy.param[i] = pKnot->SpPy.param[i];
+		SpUx.strEdit[i] = pKnot->SpUx.strEdit[i];
+		SpUx.param[i] = pKnot->SpUx.param[i];
+		SpUy.strEdit[i] = pKnot->SpUy.strEdit[i];
+		SpUy.param[i] = pKnot->SpUy.param[i];
+	}
+	//Произвольное, гармоническое или случайное возмущение
+	TypePx = pKnot->TypePx;
+	TypePy = pKnot->TypePy;
+	//Флаг наличия возмущения
+	PxEnable = pKnot->PxEnable;
+	PyEnable = pKnot->PyEnable;
+
+	//КИНЕМАТИЧЕСКОЕ ВОЗМУЩЕНИЕ (амплитуда, частота, фаза, произвольное возмущение)
+	str_uAx = pKnot->str_uAx;
+	str_uWx = pKnot->str_uWx;
+	str_uFix = pKnot->str_uFix;
+	str_uUx = pKnot->str_uUx;
+	str_uAy = pKnot->str_uAy;
+	str_uWy = pKnot->str_uWy;
+	str_uFiy = pKnot->str_uFiy;
+	str_uUy = pKnot->str_uUy;
+	uAx = pKnot->uAx;
+	uWx = pKnot->uWx;
+	uFix = pKnot->uFix;
+	uAy = pKnot->uAy;
+	uWy = pKnot->uWy;
+	uFiy = pKnot->uFiy;
+	//Произвольное, гармоническое или случайное возмущение
+	TypeUx = pKnot->TypeUx;
+	TypeUy = pKnot->TypeUy;
+	//Флаг наличия возмущения
+	UxEnable = pKnot->UxEnable;
+	UyEnable = pKnot->UyEnable;
+	//Тип закрепления в узле
+	FixedType = pKnot->FixedType;
+	//Тип соединения в узле (жёстко=0/шарнирно)
+	ConnectType = pKnot->ConnectType;
 }

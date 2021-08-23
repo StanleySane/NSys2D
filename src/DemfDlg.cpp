@@ -17,9 +17,12 @@ static char THIS_FILE[] = __FILE__;
 
 
 CDemfDlg::CDemfDlg(CListKnot *plistkn,
-				   CDemf *pdemf/*=NULL*/, CWnd* pParent /*=NULL*/)
+				   CDemf *pdemf/*=NULL*/,
+				   bool full/*true*/,
+				   CWnd* pParent /*=NULL*/)
 	: CDialog(CDemfDlg::IDD, pParent)
 {
+	m_bFull = full;
 	pListKnot=plistkn;
 	pDemf=pdemf;
 	//{{AFX_DATA_INIT(CDemfDlg)
@@ -95,6 +98,11 @@ BOOL CDemfDlg::OnInitDialog()
 		m_Radio_XS=(pDemf->type==6?0:-1);
 		m_Radio_XX=(pDemf->type==0?0:-1);
 	}
+
+	GetDlgItem(IDC_COMBO2)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_COMBO3)->EnableWindow(m_bFull);
+	GetDlgItem(IDC_BUTNEWKNOT)->EnableWindow(m_bFull);
+
 	SetState();
 	UpdateData(FALSE);
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -106,8 +114,17 @@ void CDemfDlg::OnOK()
 	// TODO: Add extra validation here
 	if (!VerifyInfo()) return;
 
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	CKnot *kn1, *kn2;
+	if( m_bFull )
+	{
+		kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+	}
+	else
+	{
+		kn1 = pDemf->knot1;
+		kn2 = pDemf->knot2;
+	}
 
 	if (!pDemf)
 		pDemf=new CDemf(kn1, kn2);
@@ -163,14 +180,17 @@ BOOL CDemfDlg::VerifyInfo()
 {
 	UpdateData();
 	
-	CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
-	CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
-
-	if (kn1==kn2) 
+	if( m_bFull )
 	{
-		MessageBox("Задано два одинаковых узла","Ошибка!"
-			,MB_OK|MB_ICONERROR);
-		return FALSE;
+		CKnot *kn1=pListKnot->GetKnotPos(m_ComboBoxKnot1.GetCurSel());
+		CKnot *kn2=pListKnot->GetKnotPos(m_ComboBoxKnot2.GetCurSel());
+
+		if (kn1==kn2) 
+		{
+			MessageBox("Задано два одинаковых узла","Ошибка!"
+				,MB_OK|MB_ICONERROR);
+			return FALSE;
+		}
 	}
 
 	CExpression e;
@@ -252,6 +272,7 @@ BOOL CDemfDlg::VerifyInfo()
 
 void CDemfDlg::InvalidateKnot(BOOL bSave)
 {
+	if( !m_bFull )	return;
 	int pos1=0,pos2=0;
 	
 	if (bSave)

@@ -8,6 +8,9 @@
 #include "ListSpectr.h"
 
 #include "shemedoc.h"
+#include "Sheme.h"
+
+using namespace std;
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -21,7 +24,8 @@ IMPLEMENT_DYNAMIC(CKnotPropertySheet, CPropertySheet)
 
 CKnotPropertySheet::CKnotPropertySheet(
 					CKnot *pKn, 
-					CWnd* pWndParent)
+					CWnd* pWndParent,
+					bool full )
 	 : CPropertySheet(IDS_PROPSHT_CAPTION1, pWndParent)
 {
 	// Add all of the property pages here.  Note that
@@ -33,11 +37,19 @@ CKnotPropertySheet::CKnotPropertySheet(
 	
 	//m_psh.dwFlags|=PSH_NOAPPLYNOW;
 
+	m_bFull = full;
+
 	CString str;
-	str.Format("Свойства узла №%d",pKn->Num);
+	if( m_bFull )
+		str.Format("Свойства узла №%d",pKn->Num);
+	else
+		str = CString("Свойства узлов группы");
 	SetTitle(str);
 
 	pKnot=pKn;
+
+	m_Page1.m_bFull = m_bFull;
+
 	AddPage(&m_Page1);
 	AddPage(&m_Page2);
 	AddPage(&m_Page3);
@@ -86,13 +98,16 @@ int CKnotPropertySheet::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	m_Page4.pKnot=pKnot;
 
 	CShemeDoc *pDoc=(CShemeDoc*)(((CMDIFrameWnd*)AfxGetMainWnd())->MDIGetActive()->GetActiveDocument());
-	m_Page3.pListKnot=&(pDoc->listKnot);
-	m_Page3.pListSpectr=&(pDoc->listspectrP);
-	m_Page4.pListKnot=&(pDoc->listKnot);
-	m_Page4.pListSpectr=&(pDoc->listspectrU);
+	m_Page3.pListKnot=&(pDoc->m_pSheme->listKnot);
+	m_Page3.pListSpectr=&(pDoc->m_pSheme->listspectrP);
+	m_Page4.pListKnot=&(pDoc->m_pSheme->listKnot);
+	m_Page4.pListSpectr=&(pDoc->m_pSheme->listspectrU);
 
 	CString str;
-	str.Format("узла №%d",pKnot->Num);
+	if( m_bFull )
+		str.Format("узла №%d",pKnot->Num);
+	else
+		str = CString("узлов группы");
 	SetTitle(str,PSH_PROPTITLE);
 	
 	return 0;

@@ -26,21 +26,27 @@ public:
 	virtual void Serialize(CArchive & ar);
 	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
 	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+
+	void GetMatrM( CMatr& ) const;
+	void GetMatrD( CMatr& ) const;
+	void GetMatrC( CMatr& ) const;
+
 	CString GetStrX1();
 	CString GetStrX3();
 	CString GetStrX5();
 	CString GetStrXX();
-	double GetSprnX1();
-	double GetSprnX3();
-	double GetSprnX5();
-	double GetSprnXX();
+	double GetSprnX1() const;
+	double GetSprnX3() const;
+	double GetSprnX5() const;
+	double GetSprnXX() const;
 	double SetSprnX1(CString str);
 	double SetSprnX3(CString str);
 	double SetSprnX5(CString str);
 	double SetSprnXX(CString str);
 	int type;
 	void Draw(CDC * pDC, CParamView * pParamView);
-	int GoDlg(CListKnot * pListKnot);
+	int GoDlg(CListKnot * pListKnot, bool full = true );
+	bool SetCommonProperties( CElem* elem );
 	CSpring(CKnot *kn1, CKnot *kn2);
 	virtual ~CSpring();
 };

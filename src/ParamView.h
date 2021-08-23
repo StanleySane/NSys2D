@@ -16,12 +16,42 @@ class CParamView
 {
 public:
 	void Serialize(CArchive& ar);
+	void DelZeroInSelNumbers();
+
 	double Scale;
+	static double m_DefaultScale;
 	CCoordD MoveCenter;
 	CPoint pos;
 	BOOL Gray;
 	double MultMove;
 	double MultAngl;
+
+	//m_iClickedObjects - показывает, что сейчас ведётся набор
+	//группы (1-элементов,2-узлов) мышкой, иначе m_iClickedObjects==0
+	int m_iClickedObjects;
+	//m_bSelType - флаг, показывающий, что надо выделять при рисовании:
+	//элементы (m_bSelType=true) или узлы (m_bSelType=true),
+	//если массив m_vecSelNumbers не пустой.
+	bool m_bSelType;
+	//вектор, содержащий номера элементов или узлов, которые
+	//необходимо выделить.
+	ARRAY m_vecSelNumbers;
+	//имена шрифтов
+	CString m_strFreeFontName, m_strNumElemsFontName, m_strNumKnotsFontName;
+	//шрифт для вывода номеров узлов
+	CFont m_fntKnot;
+	//шрифт для вывода собств.частот на экране
+	CFont m_fntFree;
+	//шрифт для вывода номеров эл-ов
+	CFont m_fntElems;
+	COLORREF m_clrFree, m_clrNumElems, m_clrNumKnots;
+	bool m_bTextOut;//выводить ли данные в виде текста
+	bool m_bNumElems, m_bNumKnots;
+	//величина смещения поворотной степени свободы массы,
+	//ниже которой поворот не показывается:
+	double m_ZeroRot;
+	//флаг о том, выводить ли номера степеней свободы в узлах:
+	bool m_bFreeNums;
 
 //	CParamView(double scale=2, CPoint &point=CPoint(0,0));
 	CParamView(double scale=2, 

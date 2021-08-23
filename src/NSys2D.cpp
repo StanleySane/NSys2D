@@ -14,8 +14,14 @@
 
 #include "GraphFrm.h"
 //#include "GraphView.h"
-
 #include "GraphicView.h"
+
+#include "ScriptFrame.h"
+#include "ScriptView.h"
+#include "ScriptDoc.h"
+
+#include "OutputFrame.h"
+#include "OutputView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -104,6 +110,21 @@ BOOL CNSys2DApp::InitInstance()
                 RUNTIME_CLASS(CShemeDoc),
                 RUNTIME_CLASS(CFormsFrame), // custom MDI child frame
                 RUNTIME_CLASS(CFormsView));
+        AddDocTemplate(pDocTemplate);
+
+		//скрипты:
+        pDocTemplate = new CMultiDocTemplate(
+                IDR_SCRIPT,
+                RUNTIME_CLASS(CScriptDoc),
+                RUNTIME_CLASS(CScriptFrame), // custom MDI child frame
+                RUNTIME_CLASS(CScriptView));
+        AddDocTemplate(pDocTemplate);
+
+        pDocTemplate = new CMultiDocTemplate(
+                IDR_OUTPUT,
+                RUNTIME_CLASS(CScriptDoc),
+                RUNTIME_CLASS(COutputFrame), // custom MDI child frame
+                RUNTIME_CLASS(COutputView));
         AddDocTemplate(pDocTemplate);
 
         /*pDocTemplate = new CMultiDocTemplate(

@@ -13,6 +13,7 @@
 
 class CSpringDlg : public CDialog
 {
+	bool m_bFull;
 // Construction
 public:
 	BOOL VerifyInfo();
@@ -21,7 +22,8 @@ public:
 	CListKnot *pListKnot;
 	CSpring* pSprn;
 	CSpringDlg(CListKnot *plistkn,
-				   CSpring *psprn=NULL, CWnd* pParent=NULL);
+				   CSpring *psprn=NULL, bool full = true,
+				   CWnd* pParent=NULL);
 
 // Dialog Data
 	//{{AFX_DATA(CSpringDlg)

@@ -56,6 +56,7 @@ void CListSpectr::DelSpectr(CComplexSpectr & Dat)
 		CComplexSpectr *pCS=(CComplexSpectr*)GetNext(pos);
 		if (Dat==(*pCS))
 		{
+			delete pCS;
 			RemoveAt(pos_prev);
 			return;
 		}

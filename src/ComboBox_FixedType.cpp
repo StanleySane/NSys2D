@@ -181,6 +181,16 @@ void CComboBox_FixedType::DrawItem(LPDRAWITEMSTRUCT lpDrawItemStruct)
 //					center_x+rad,center_y-5+rad);
 
 			break;
+	case 5:
+			dc.MoveTo(center_x-5,center_y+3);
+			dc.LineTo(center_x+3,center_y-5);
+			
+			dc.MoveTo(center_x-3,center_y+5);
+			dc.LineTo(center_x+5,center_y-3);
+
+			break;
+	default:
+		ASSERT(FALSE);
 	}
 
 	dc.SelectObject(pOldBrush);

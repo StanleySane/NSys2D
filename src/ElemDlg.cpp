@@ -54,11 +54,13 @@ BOOL CElemDlg::OnInitDialog()
 	//m_ListBox.ModifyStyle(0,LBS_MULTICOLUMN);
 	
 	m_ListControl.InsertColumn( 
-		0, _T("Тип элемента"), LVCFMT_LEFT, 88);
+		0, _T("Тип элемента"), LVCFMT_LEFT, 120);
 	m_ListControl.InsertColumn( 
-		1, _T("Узел 1"), LVCFMT_LEFT, 129);
+		1, _T("№:"), LVCFMT_LEFT, 30);
 	m_ListControl.InsertColumn( 
-		2, _T("Узел 2"), LVCFMT_LEFT, 129);
+		2, _T("Узел 1"), LVCFMT_LEFT, 129);
+	m_ListControl.InsertColumn( 
+		3, _T("Узел 2"), LVCFMT_LEFT, 129);
 
 	int count=0;
 	POSITION pos=pListElem->GetHeadPosition();
@@ -90,7 +92,8 @@ void CElemDlg::OnButtondel()
 	int index=GetSelectIndex();
 	if (index>=0)
 	{
-		CElem* elem=pListElem->GetAt(GetElemPosition(index));
+		CElem* elem = pListElem->GetAt(GetElemPosition(index));
+		delete elem;
 //		elem->knot1->DelElemKnot(elem->knot2);
 //		elem->knot2->DelElemKnot(elem->knot1);
 		pListElem->RemoveAt(GetElemPosition(index));
@@ -134,14 +137,21 @@ int CElemDlg::SetItem(CElem * elem, int index, BOOL insert/*=FALSE*/)
 	if (insert) m_ListControl.InsertItem(&item);
 	else m_ListControl.SetItem(&item);
 
+	csText.Format("%d", elem->GetNumber() );
 	item.iSubItem=1;
+	item.pszText=(LPTSTR)(LPCTSTR)csText;
+//	if (insert) m_ListControl.InsertItem(&item);
+//	else 
+	m_ListControl.SetItem(&item);
+
+	item.iSubItem=2;
 	csText=elem->knot1->GetName();
 	item.pszText=(LPTSTR)(LPCTSTR)csText;
 	m_ListControl.SetItem(&item);
 
 	if (elem->TypeElem!=IDC_MASS)
 	{
-		item.iSubItem=2;
+		item.iSubItem=3;
 		csText=elem->knot2->GetName();
 		item.pszText=(LPTSTR)(LPCTSTR)csText;
 		m_ListControl.SetItem(&item);

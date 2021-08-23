@@ -29,8 +29,12 @@ public:
 	virtual void Serialize(CArchive & ar);
 	int SetMatrmP(CMatr & mP, CMatr & RezY1, CMatr & RezY2, int i, double Tt);
 	void SetMatrMDC(CMatr & mM, CMatr & mD, CMatr & mC);
+
+	void GetMatrM( CMatr& ) const;
+	void GetMatrD( CMatr& ) const;
+	void GetMatrC( CMatr& ) const;
 //	double GetDemfXX();
-	double GetDemfX(int i);
+	double GetDemfX(int i) const;
 //	CString GetStrXX();
 	//получить строку для диалога в нужную строку (i)
 	CString GetStrX(int i);
@@ -43,7 +47,8 @@ public:
 	double SetDemfX(CString str, int i);
 //	double SetDemfX3(CString str);
 	int type;
-	int GoDlg(CListKnot *pListKnot);
+	int GoDlg(CListKnot *pListKnot, bool full = true );
+	bool SetCommonProperties( CElem* elem );
 	void Draw(CDC *pDC, CParamView *pParamView);
 	CDemf(CKnot *kn1, CKnot *kn2);
 	virtual ~CDemf();

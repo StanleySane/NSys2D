@@ -12,6 +12,7 @@
 
 class CMassDlg : public CDialog
 {
+	bool m_bFull;
 // Construction
 public:
 	BOOL VerifyInfo();
@@ -20,7 +21,8 @@ public:
 	CListKnot* pListKnot;
 
 	CMassDlg(CListKnot *plistkn,
-				   CMass *pmass=NULL, CWnd* pParent = NULL);   // standard constructor
+				   CMass *pmass=NULL, bool full = true,
+				   CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CMassDlg)
