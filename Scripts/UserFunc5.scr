@@ -1,0 +1,16 @@
+
+main()
+print "Ok"
+end
+
+int function main()
+	print "In main"
+	gosub 1lab
+	return 0
+end main
+
+1lab
+	print "In 1lab"
+	end
+	return
+end

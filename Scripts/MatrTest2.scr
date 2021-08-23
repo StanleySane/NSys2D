@@ -1,0 +1,69 @@
+
+matr m1
+bool res
+
+print "ReSize:"
+catch( ReSize( m1, 5, 5 ) )
+rem if res = false then goto 0Err
+
+int r, c
+
+print "Seting:"
+for r = 0 to Rows(m1)-1
+	for c = 0 to Cols(m1)-1
+		print r, c
+		catch( SetAt( m1, r, c, random(100) ) )
+		rem if res = false then goto 0Err
+	next c
+next r
+
+print "m1=";eol;m1
+
+file f1
+print "File:"
+catch( FileOpenTxt( f1, "matr1.txt" ) )
+rem if res = false then goto 0Err
+
+rem res = FileWrite( f1, rows(m1) )
+rem if res = false then goto 0Err
+rem res = FileWrite( f1, cols(m1) )
+rem if res = false then goto 0Err
+rem res = FileWriteEOL(f1)
+rem if res = false then goto 0Err
+
+catch( FileWrite( f1, m1 ) )
+rem if res = false then goto 0Err
+
+print "Inverting:"
+catch( Invert(m1) )
+rem if res = false then goto 0Err
+print "Inverted m1=";eol;m1
+
+rem file f2
+rem print "File2:"
+rem catch( FileOpenTxt( f2, "matr2.txt" ) )
+rem if res = false then goto 0Err
+
+rem res = FileWrite( f2, rows(m1) )
+rem if res = false then goto 0Err
+rem res = FileWrite( f2, cols(m1) )
+rem if res = false then goto 0Err
+rem res = FileWriteEOL(f2)
+rem if res = false then goto 0Err
+
+rem catch( FileWrite( f2, m1 ) )
+rem if res = false then goto 0Err
+
+
+print "Ok"
+end
+
+bool function catch( bool b )
+	if b = true then return true
+	gosub 0Err
+	return false
+end catch
+
+0Err
+print "Some Error!!!"
+end

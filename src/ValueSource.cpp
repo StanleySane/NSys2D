@@ -528,8 +528,8 @@ void Value::InitBy( const Value &v )
 	default:
 		if( Array::IsArray(v.m_tType) )
 			SetArray( *v.m_pArray );
-		//else
-		//	ASSERT(FALSE);
+		else
+			ASSERT(FALSE);
 	}
 }
 

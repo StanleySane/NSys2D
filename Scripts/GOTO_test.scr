@@ -1,0 +1,26 @@
+rem проверка корректности выполнения goto
+
+int i, j
+
+rem если разремувить это, то будет ошибка
+rem goto 0lab2
+
+print "Start:"
+	for i = 0 to 100
+		for j = 0 to 10
+0lab2
+			print "i=";i;" j=";j
+			if i >= 10 then goto 0lab
+			if i > 100 then next j
+		next j
+	next i
+
+0lab
+	print "After 0lab"
+
+int k
+	for k = 100 to 105
+		print "k=";k
+	next k
+
+end

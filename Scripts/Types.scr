@@ -1,0 +1,26 @@
+int i, j, k
+
+string str
+str = "Hello"
+str = str + " World " + 2001
+
+double d1, d2
+d1 = 1.95842732
+d2 = 0.0000000033333
+
+print
+print "Hi", str
+bool b
+b = true
+print pi
+print j, j, k, d1, d2, b, false, sin( 1.570796326795)
+
+str = "The pi number = " + pi + " !"
+print str
+
+b  = d1 < d2
+print b
+b  = d1 > d2
+print b
+
+end

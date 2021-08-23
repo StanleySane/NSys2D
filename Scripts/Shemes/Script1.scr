@@ -1,0 +1,33 @@
+
+sheme sh
+
+print "Opening of sheme:"
+catch( OpenSheme( sh, "d:\Visualc\DevStudio\MyProjects\Курсовики\Динамика\Shemes\My\Курсовик\Hard1.shm" ) )
+
+matr forms, freqs
+
+print "Calculating of eigen:"
+catch( GetEigen( sh, freqs, forms, 2 ) )
+
+print "Собственные частоты:"; eol; freqs
+
+end
+
+file f
+print "File opening:"
+catch( FileOpenTxt( f, "d:\Visualc\DevStudio\MyProjects\Курсовики\Динамика\Shemes\My\Курсовик\Hard1.txt" ) )
+print "File writing:"
+catch( FileWrite( f, "freqs:"+eol ) )
+catch( FileWrite( f, freqs ) )
+
+print "Ok"
+End
+
+bool function catch( bool v )
+	if v = false then gosub 0Err
+	return true
+end catch
+
+0Err
+	print "Some Error!!!"
+end

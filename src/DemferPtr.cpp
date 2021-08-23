@@ -80,12 +80,7 @@ void DemferPtr::Destruct()
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		//ASSERT( it != m_RefMap.end() );
-		if( it == m_RefMap.end() )
-		{
-			m_pElem = NULL;
-			return;
-		}
+		ASSERT( it != m_RefMap.end() );
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -108,13 +103,8 @@ void DemferPtr::InitBy( const DemferPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			//ASSERT( it != m_RefMap.end() );
-			if( it == m_RefMap.end() )
-			{
-				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
-			}
-			else
-				(*it).second++;
+			ASSERT( it != m_RefMap.end() );
+			(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}

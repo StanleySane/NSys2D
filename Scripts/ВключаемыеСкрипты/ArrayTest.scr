@@ -1,0 +1,18 @@
+
+array_double scriptparam1
+
+print "We have: "; scriptparam1
+
+int i
+bool res
+for i = 1 to sizeof(scriptparam1)-1
+	res = SetAt( scriptparam1, i, GetAt(scriptparam1, i)+1 )
+	if res = false then goto 0Error
+next i
+print "Now we have:";scriptparam1
+
+print "Ok"
+end
+0Error
+	print "Some Error."
+end

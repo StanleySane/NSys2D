@@ -1,0 +1,23 @@
+
+matr m1
+
+catch( Resize(m1, 3, 3) )
+catch( LoadIdentity(m1) )
+
+print "m1=";eol;m1
+
+catch(Invert(m1))
+print "After inverting:";eol
+print "m1=";eol;m1
+
+print "Ok"
+end
+
+bool function catch( bool b )
+	if b = false then gosub 0Err
+	return true
+end catch
+
+0Err
+	print "Error"
+end

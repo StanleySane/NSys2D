@@ -617,8 +617,6 @@ private:
 	bool isdelim(char c);
 	SBtokensT look_up( std::string &s );
 
-	static TypeID GetScriptElemType( int );
-
 };//class ScriptObject
 ////////////////////////////////////////////////////////////////
 

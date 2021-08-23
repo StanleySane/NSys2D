@@ -1,0 +1,33 @@
+
+int a, b, c
+
+a = 1
+b = 2
+c = main(a)
+print c
+
+end
+
+int function main(int a)
+	int c, b
+	b = 8
+	c = 7
+	print "In main a=";a, "b=";b;" c=";c
+
+	rem gosub 0sub
+
+	print f1(4)
+	return a
+end main
+
+int function f1(int a)
+	int b
+	b = 6
+	print "In f1 a=";a, "b=";b;" c=";c
+	return a
+end f1
+
+0sub
+	end
+	return
+

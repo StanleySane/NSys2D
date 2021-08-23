@@ -1,0 +1,33 @@
+ print "Проверка ф-ций"
+
+int num
+num = PrintAllReservedWords()
+
+print
+print "The num of reserved words is "; num
+
+double d, x, y, f
+f = 0.5
+d = 1.5
+
+print "d=";d;" sin=";sin(d); " cos=";cos(d); " tan=";tan(d)
+print " asin="; asin(f) ; " acos=";acos(f);" exp=";exp(d)
+print " sqrt=";sqrt(d); " log=";log(d);" atan=";atan(d)
+print "floor=";floor(d);" ceil=";ceil(d);" round="; round(d)
+
+x = 23.6500000000001
+y = 0.1
+print " round(";x;",";y;")="; round(x,y)
+print " fabs(-5.6)="; fabs(-5.6);" abs(-7)"; abs(-7)
+print " fmod(";1.5;",";1;")="; fmod(d,1)
+
+x = 2
+y = 2
+print " power(";x;",";y;")="; power(x,y)
+
+string str1, str2
+str1 = "2.5"
+str2 = "100"
+print "atoi(";str2;")=";atoi(str2), "atof(";str1;")=";atof(str1), "random(100)=";random(100)
+
+end

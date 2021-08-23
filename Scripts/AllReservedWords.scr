@@ -1,0 +1,6 @@
+
+print ">>>>>>>>>AllReservedWords:"
+rem PrintAllReservedWords( a, b, 1, 60, "Hi", 3)
+PrintAllReservedWords()
+print
+print ">>>>>>>>>ok"

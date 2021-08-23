@@ -1,0 +1,7 @@
+
+double d
+d = 1.7
+print d
+d = sin(d) + 1.9
+print d
+end

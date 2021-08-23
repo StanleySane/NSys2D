@@ -1,0 +1,45 @@
+
+array_double ard
+bool res
+res = Resize( ard, 10 )
+if res = false then goto 0err
+
+int i
+
+for i = 0 to Sizeof(ard)-1
+	res = SetAt( ard, i, i*0.5 )
+	if res = false then goto 0err
+next i
+
+print "Opening:"
+file f, f2
+res = FileOpenTxt( f, "test1.txt" )
+if res = false then goto 0err
+res = FileOpenTxt( f2, "test2.txt" )
+if res = false then goto 0err
+rem FileClear( f )
+
+print "Writing in the file "; f ;":"
+res = FileWrite( f, -0.33 )
+if res = false then goto 0err
+res = FileWrite( f, ard )
+if res = false then goto 0err
+res = FileWrite( f, " \nEnd " )
+if res = false then goto 0err
+res = FileWriteEOL( f )
+if res = false then goto 0err
+
+print "Writing in the file "; f2 ;":"
+res = FileWriteEOL( f2 )
+if res = false then goto 0err
+res = FileWrite( f2, "Some Text" )
+if res = false then goto 0err
+res = FileWriteEOL( f2 )
+if res = false then goto 0err
+
+print "Ok"
+
+end
+0err
+	print "Error"
+end

@@ -1,0 +1,35 @@
+
+array_double ard
+bool res
+res = Resize( ard, 11 )
+if res = false then goto 0err
+
+int i
+
+for i = 0 to Sizeof(ard)-1
+	res = SetAt( ard, i, 100 )
+	if res = false then goto 0err
+next i
+
+print "Opening:"
+file f
+res = FileOpenTxt( f, "test1.txt" )
+if res = false then goto 0err
+rem FileRewind(f)
+
+print "Reading from the file "; f ;":"
+res = FileRead( f, ard )
+if res = false then goto 0err
+print "ard=", ard
+
+string str
+res = FileRead( f, str )
+if res = false then goto 0err
+print str
+
+print "Ok"
+
+end
+0err
+	print "Error"
+end

@@ -228,6 +228,7 @@ void COutputView::Show( const CString &str )
 {
 	m_Output += str;
 	CEdit *pEdit = &GetEditCtrl();
+	LockWindowUpdate();
 	pEdit->SetWindowText( m_Output.LockBuffer() );
 	m_Output.UnlockBuffer();
 //	Invalidate();
@@ -236,5 +237,6 @@ void COutputView::Show( const CString &str )
 //	SetScrollPos( SB_VERT, max );
 	int c = pEdit->GetLineCount();
 	pEdit->LineScroll(c);
+	UnlockWindowUpdate();
 }
 

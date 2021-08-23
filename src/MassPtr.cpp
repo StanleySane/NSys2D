@@ -76,12 +76,7 @@ void MassPtr::Destruct()
 	if( m_pElem )
 	{
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		//ASSERT( it != m_RefMap.end() );
-		if( it == m_RefMap.end() )
-		{
-			m_pElem = NULL;
-			return;
-		}
+		ASSERT( it != m_RefMap.end() );
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		if( (*it).second == 0 )
@@ -103,13 +98,8 @@ void MassPtr::InitBy( const MassPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			//ASSERT( it != m_RefMap.end() );
-			if( it == m_RefMap.end() )
-			{
-				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
-			}
-			else
-				(*it).second++;
+			ASSERT( it != m_RefMap.end() );
+			(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 		}
 	}

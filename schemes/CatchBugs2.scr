@@ -1,0 +1,40 @@
+
+knot kn1, kn2
+rod rd
+print "Создание узла №1..."
+catch( CreateKnot( kn1, 0, 0 ) )
+print "Создание узла №2..."
+catch( CreateKnot( kn2, 1, 0 ) )
+print "Создание КЭ..."
+catch( CreateElem(rd, kn1, kn2 ) )
+print "Добавление КЭ..."
+rem catch( AddElement( sh, rd ) )
+print "Удаление..."
+catch( Delete( kn1 ) )
+catch( Delete( kn2 ) )
+catch( Delete( rd ) )
+
+print "Этап №2:"
+print "Создание узла №1..."
+catch( CreateKnot( kn1, 0, 1 ) )
+print "Создание узла №2..."
+catch( CreateKnot( kn2, 1, 1 ) )
+print "Создание КЭ..."
+catch( CreateElem(rd, kn1, kn2 ) )
+print "Добавление КЭ..."
+rem catch( AddElement( sh, rd ) )
+print "Удаление..."
+catch( Delete( kn1 ) )
+catch( Delete( kn2 ) )
+catch( Delete( rd ) )
+
+print "Ok."
+
+end
+bool function catch( bool flg )
+	if flg = false then gosub 0Err
+	return true
+end catch
+0Err
+	print "Some Error"
+end

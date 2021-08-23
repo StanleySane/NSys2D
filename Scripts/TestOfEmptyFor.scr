@@ -1,0 +1,20 @@
+
+int i, j
+
+	for i = 0 to 5
+		for j = 0 to -1
+			print "i=";i;" j=";j
+		next j
+	next i
+
+rem next
+
+int k
+
+	for k = 0 to 3
+		print "k=";k, i, j
+	next k
+
+rem next 
+
+end

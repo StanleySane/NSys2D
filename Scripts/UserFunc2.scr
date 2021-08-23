@@ -1,0 +1,12 @@
+
+int a, b
+
+rem a = 
+
+print "a=";a,"f1=";f1(2.5)
+
+end
+
+double function f1( double x )
+	return sin(x)
+end f1

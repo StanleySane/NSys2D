@@ -1,0 +1,52 @@
+
+rem Пример скриптов.
+rem Круг.
+
+double R
+R = 1.0
+sheme sh
+catch( SaveShemeAs( sh, "D:\Circle.shm") )
+int fi
+double dfi, N
+
+rem Число КЭ:
+N = 40
+catch( N >= 4 )
+catch( N < 100 )
+dfi = 2*pi/N
+print "Цикл создания КЭ..."
+for fi = 0 to N-1
+	double cfi
+	cfi = fi*dfi
+	Add(cfi)
+next fi
+catch( SaveSheme( sh ) )
+
+print "Ok."
+end
+
+bool function Add( double x )
+	knot kn1, kn2
+	rod rd
+	print "Fi="; fi
+	print "Создание узла №1..."
+	catch( CreateKnot( kn1, R*cos(fi), R*sin(fi) ) )
+	print "Создание узла №2..."
+	catch( CreateKnot( kn2, R*cos(fi+dfi), R*sin(fi+dfi) ) )
+	print "Создание КЭ..."
+	catch( CreateElem(rd, kn1, kn2 ) )
+	print "Добавление КЭ..."
+	catch( AddElement( sh, rd ) )
+rem	catch( Delete( kn1 ) )
+rem	catch( Delete( kn2 ) )
+rem	catch( Delete( rd ) )
+	return true
+end Add
+
+bool function catch( bool flg )
+	if flg = false then gosub 0Err
+	return true
+end catch
+0Err
+	print "Some Error"
+end

@@ -1,0 +1,41 @@
+REM число степеней свободы схемы
+INT n
+n = 3
+SHEME sh
+PRINT "Открываем схему..."
+catch( OpenSheme( sh, "D:\rod.shm" ) )
+ROD rd
+PRINT "Получаем элемент..."
+catch( GetElem( rd, 1, sh ) )
+FILE fout
+PRINT "Открываем текстовый файл..."
+catch( FileOpenTxt( fout, "D:\data.txt" ) )
+MATR freqs, forms
+INT i
+FOR i = 0 TO 10
+	DOUBLE m0, f1
+	m0 = i*0.1 + 1.0
+	PRINT "Меняем массу..."
+	catch( SetElemM( rd, m0 ) )
+	PRINT "Вычисляем собств. частоты..."
+	catch( GetEigen( sh, freqs, forms, 2 ) )
+	REM получаем величину первой частоты в радианах
+	f1 = GetAt( freqs, 0, 0 ) / (2*pi)
+	PRINT "Записываем результат..."
+	catch( FileWrite( fout, m0 ) )
+	catch( FileWrite( fout, "     " ) )
+	catch( FileWrite( fout, f1 ) )
+	catch( FileWriteEOL( fout ) )
+NEXT i
+
+FileClose( fout )
+PRINT "Ok"
+END
+
+BOOL FUNCTION catch( BOOL val )
+	IF val = FALSE THEN GOSUB 0Err
+	RETURN TRUE
+END catch
+0Err
+	PRINT "Some Error!!!"
+END

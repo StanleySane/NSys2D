@@ -1,0 +1,33 @@
+
+matr m1, m2
+
+bool res
+
+print "Resize:"
+res = Resize( m1, 3, 3 )
+if res = false then goto 0Err
+print "m1="
+print m1
+
+print "SetAt:"
+res = SetAt( m1, 1, 1, 25 )
+if res = false then goto 0Err
+
+m2 = m1
+print "m2=";m2;eol;"m1=";eol;m1
+
+print "SetAt:"
+res = SetAt( m2, 1, 2, 65 )
+if res = false then goto 0Err
+print "m1=";eol;m1;"m2=";eol;m2
+
+double d
+d = GetAt( m2, 1, 1 )
+print "d="; d
+
+print "Ok"
+end
+
+0Err
+print "Some Error!"
+end

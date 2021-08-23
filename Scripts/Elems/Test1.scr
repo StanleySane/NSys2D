@@ -1,0 +1,11 @@
+
+rod rd
+hardrod hrd
+spring spr
+knot kn
+demfer demf
+mass m
+
+print rd, hrd, spr, kn, demf, m, eol, "Ok"
+
+end

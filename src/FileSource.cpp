@@ -50,12 +50,7 @@ void File::Close()
 	if( m_pFile )
 	{
 		FilePtrs::iterator it = m_FilePtrMap.find(m_pFile);
-		//ASSERT( it != m_FilePtrMap.end() );
-		if( it == m_FilePtrMap.end() )
-		{
-			m_pFile = NULL;
-			return;
-		}
+		ASSERT( it != m_FilePtrMap.end() );
 		(*it).second--;
 		if( (*it).second == 0 )
 		{

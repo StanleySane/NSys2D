@@ -1,0 +1,20 @@
+	print "Первый тест скриптов:"
+
+	gosub 1Sub
+	print "After 1Sub"
+	gosub 1SubLevel
+	print "After 1SubLevel"
+
+	rem Это комментарий !@#$%^&*()
+	print "Ok"
+
+End
+
+1Sub
+	print "   In 1Sub"
+	gosub 1SubLevel
+return
+
+1SubLevel
+	print "   In 1SubLevel"
+return

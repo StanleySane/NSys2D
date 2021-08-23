@@ -1,0 +1,4 @@
+[NSys2D ShemeGroupsFile v3.0]
+$Sheme Groups File
+без имени 0<ELEMENTS>(1,3,5)
+knots<KNOTS>(20)

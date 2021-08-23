@@ -1,0 +1,45 @@
+
+knot kn1, kn2
+rod rd
+bool res
+
+print "CreateKnot1:"
+res = CreateKnot( kn1, 0, 0 )
+if res = false then goto 0Err
+
+print "CreateKnot2:"
+res = CreateKnot( kn2, 1, 0 )
+if res = false then goto 0Err
+
+print "CreateElem:"
+res = CreateElem( rd, kn1, kn2 )
+if res = false then goto 0Err
+
+print "GetLenth = "; GetLength(rd)
+print "ReCreateKnot2:"
+res = CreateKnot( kn2, 2, 0 )
+if res = false then goto 0Err
+print "GetLenth = "; GetLength(rd)
+
+print "SetElemM:"
+res = SetElemM( rd, 2.0 )
+if res = false then goto 0Err
+
+print "SetElemF:"
+res = SetElemF( rd, 3.0 )
+if res = false then goto 0Err
+
+print "SetElemJ:"
+res = SetElemJ( rd, 4.0 )
+if res = false then goto 0Err
+
+print "SetElemE:"
+res = SetElemE( rd, 5.0 )
+if res = false then goto 0Err
+
+
+end
+
+0Err
+print "Some Error!!!"
+end

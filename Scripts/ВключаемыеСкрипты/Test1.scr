@@ -1,0 +1,17 @@
+
+rem Тест включаемых скриптов
+
+using scr1("Doubling.bas")
+
+double data
+data = 3.5
+print "Before="; data
+
+bool res
+res = RunScript( scr1, data )
+if res = false then print "Error of RunScript(";scr1;")"
+
+print "After="; data
+
+print "Ok."
+end

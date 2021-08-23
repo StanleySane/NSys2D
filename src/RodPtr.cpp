@@ -81,18 +81,8 @@ void RodPtr::Destruct()
 {
 	if( m_pElem )
 	{
-		//KnotPtr::RemoveRef( m_pElem->knot1 );
-		//KnotPtr::RemoveRef( m_pElem->knot2 );
-		//delete m_pElem;
-		//m_pElem = NULL;
-		//return;
 		Refs::iterator it = m_RefMap.find(m_pElem);
-		//ASSERT( it != m_RefMap.end() );
-		if( it == m_RefMap.end() )
-		{
-			m_pElem = NULL;
-			return;
-		}
+		ASSERT( it != m_RefMap.end() );
 		(*it).second--;
 		KnotPtr::RemoveRef( m_pElem->knot1 );
 		KnotPtr::RemoveRef( m_pElem->knot2 );
@@ -107,16 +97,6 @@ void RodPtr::Destruct()
 
 void RodPtr::InitBy( const RodPtr &obj )
 {
-	/*
-	Destruct();
-	if( obj.m_pElem )
-	{
-		m_pElem = new CRod( *obj.m_pElem );
-		KnotPtr::AddRef( m_pElem->knot1 );
-		KnotPtr::AddRef( m_pElem->knot2 );
-	}
-	return;
-	*/
 	if( m_pElem != obj.m_pElem )
 	{
 		if( m_pElem )
@@ -125,15 +105,8 @@ void RodPtr::InitBy( const RodPtr &obj )
 		if( m_pElem )
 		{
 			Refs::iterator it = m_RefMap.find(m_pElem);
-			//ASSERT( it != m_RefMap.end() );
-			if( it == m_RefMap.end() )
-			{
-				Pair p = m_RefMap.insert( MakeRef(m_pElem,1) );
-				//ASSERT( p.second != false );
-				//++(*p.first).second; ???
-			}
-			else
-				++((*it).second);
+			ASSERT( it != m_RefMap.end() );
+			(*it).second++;
 			KnotPtr::AddRef( m_pElem->knot1 );
 			KnotPtr::AddRef( m_pElem->knot2 );
 		}

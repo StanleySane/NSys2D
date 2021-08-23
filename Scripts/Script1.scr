@@ -1,0 +1,20 @@
+
+
+int i
+
+ for i = 1 to 100
+	print i
+	gosub 0pause
+ next i
+
+print "Ok"
+end
+
+0pause
+	double a
+	int j
+	for j = 0 to 10000
+		a = sin(5)
+	next j
+	return
+end

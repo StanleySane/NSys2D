@@ -1,0 +1,2 @@
+[NSys2D ShemeGroupsFile v3.0]
+$Sheme Groups File

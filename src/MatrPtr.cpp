@@ -78,12 +78,7 @@ void MatrPtr::Destruct()
 	if( m_pMatr )
 	{
 		Refs::iterator it = m_MatrRefMap.find(m_pMatr);
-		//ASSERT( it != m_MatrRefMap.end() );
-		if( it == m_MatrRefMap.end() )
-		{
-			m_pMatr = NULL;
-			return;
-		}
+		ASSERT( it != m_MatrRefMap.end() );
 		(*it).second--;
 		if( (*it).second == 0 )
 		{

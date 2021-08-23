@@ -1,0 +1,9 @@
+
+rem скрипт выводит переданное значение и удваивает его
+
+double scriptparam1
+print "I have "; scriptparam1
+scriptparam1 = scriptparam1*2
+print "Now="; scriptparam1
+
+end

@@ -1545,12 +1545,10 @@ void CKnot::Init()
 
 	//Кинематическое возмущение
 	m_uUx.Reset( Zero, pVT );
-	TypeUx = 0;
-	nXU = 0;
+	TypeUx=0; 
 	UxEnable=false;
 	m_uUy.Reset( Zero, pVT );
-	TypeUy = 0;
-	nYU = 0;
+	TypeUy=0;
 	UyEnable=false;
 
 	SelectMode=OldMode=0;

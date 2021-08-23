@@ -47,9 +47,7 @@ bool ShemePtr::RemoveRef( CSheme *pSh )
 	if( pSh != NULL )
 	{
 		Refs::iterator it = m_RefMap.find(pSh);
-		//ASSERT( it != m_RefMap.end() );
-		if( it == m_RefMap.end() )
-			return false;
+		ASSERT( it != m_RefMap.end() );
 		(*it).second--;
 		if( (*it).second != 0 )	return false;
 		m_RefMap.erase(it);
@@ -131,7 +129,6 @@ bool ShemePtr::Open( const std::string &path )
 		CArchive ar( &F, CArchive::load );
 		
 		m_pSheme->Serialize( ar );
-		m_pSheme->ReNumElems();
 
 //		ar.Flush();
 //		F.Flush();
@@ -194,11 +191,8 @@ bool ShemePtr::Save()
 bool ShemePtr::SaveAs( const std::string &path )
 {
 	m_strShemeName = "";
-	if( m_pSheme == NULL )
-	{
-		if( !Construct() )
-			return false;
-	}
+	if( m_pSheme == NULL ) 
+		return false;
 
 	CString strPathName( path.c_str() );
 	try

@@ -1,0 +1,30 @@
+double R
+R = 1.0
+sheme sh
+catch( SaveShemeAs( sh, "D:\Circle.shm") )
+
+knot kn1, kn2
+rod rd
+print "Создание узла №1..."
+catch( CreateKnot( kn1, 0, 0 ) )
+print "Создание узла №2..."
+catch( CreateKnot( kn2, 1, 0 ) )
+print "Создание КЭ..."
+catch( CreateElem(rd, kn1, kn2 ) )
+print "Добавление КЭ..."
+catch( AddElement( sh, rd ) )
+catch( Delete( kn1 ) )
+catch( Delete( kn2 ) )
+catch( Delete( rd ) )
+
+catch( SaveSheme( sh ) )
+
+print "Ok."
+
+bool function catch( bool flg )
+	if flg = false then gosub 0Err
+	return true
+end catch
+0Err
+	print "Some Error"
+end

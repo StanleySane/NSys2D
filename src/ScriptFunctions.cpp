@@ -730,8 +730,8 @@ errorsT ScriptObject::Fun_FileRead( const ValList &lst, Value *val )
 		if( (*it).second == NULL )
 		{
 			ErrMesCompile(NOT_VAR);
-			return NOERR;
 		}
+		return NOERR;
 	}
 	string VarName = *(*it).second;
 	Variables *varsVar = GetVarTable( VarName );
@@ -2653,8 +2653,8 @@ errorsT ScriptObject::Fun_GetMatrMDC( const ValList &lst, Value *val )
 		if( tid != TYPE_MATR )
 		{
 			ErrMesCompile(CONVERT_ERR);
+			return NOERR;
 		}
-		return NOERR;
 	}
 
 	val->SetBool( false );
@@ -2753,7 +2753,7 @@ errorsT ScriptObject::Fun_GetElem( const ValList &lst, Value *val )
 	CElem *pEl = pSh->GetElemByNum( (*it).first->GetInt() );
 	if( pEl == NULL )
 		return NOERR;
-	if( ScriptObject::GetScriptElemType( pEl->TypeElem ) != tEl )
+	if( pEl->TypeElem != tEl )
 		return NOERR;
 	switch( tEl )
 	{
@@ -2832,8 +2832,8 @@ errorsT ScriptObject::Fun_DelElem( const ValList &lst, Value *val )
 		if( tid != TYPE_SHEME )
 		{
 			ErrMesCompile(CONVERT_ERR);
-			return NOERR;
 		}
+		return NOERR;
 	}
 	//вычисляем значение второго пар-ра - имени элемента:
 	++it;
@@ -2854,8 +2854,8 @@ errorsT ScriptObject::Fun_DelElem( const ValList &lst, Value *val )
 		if( !Variables::IsElem(tid) )
 		{
 			ErrMesCompile(CONVERT_ERR);
+			return NOERR;
 		}
-		return NOERR;
 	}
 
 	val->SetBool( false );
@@ -3141,8 +3141,8 @@ errorsT ScriptObject::Fun_AddElement( const ValList &lst, Value *val )
 		if( tid != TYPE_SHEME )
 		{
 			ErrMesCompile(CONVERT_ERR);
-			return NOERR;
 		}
+		return NOERR;
 	}
 	//вычисляем значение второго пар-ра - имени элемента:
 	++it;
@@ -3163,8 +3163,8 @@ errorsT ScriptObject::Fun_AddElement( const ValList &lst, Value *val )
 		if( !Variables::IsElem(tid) )
 		{
 			ErrMesCompile(CONVERT_ERR);
+			return NOERR;
 		}
-		return NOERR;
 	}
 
 	val->SetBool( false );

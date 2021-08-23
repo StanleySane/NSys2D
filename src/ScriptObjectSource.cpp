@@ -2996,35 +2996,6 @@ Variables* ScriptObject::GetVarTable( const std::string &str )
 	return &m_Vars;
 }
 
-TypeID ScriptObject::GetScriptElemType( int te )
-{
-//ф-ци€ возвращает скриптовый вариант типа te.
-//где te - тип  Ё.
-	TypeID tid = TYPE_UNKNOWN;
-	switch( te )
-	{
-	case IDC_ROD:
-		tid = TYPE_ROD;
-		break;
-	case IDC_HARDROD:
-		tid = TYPE_HARDROD;
-		break;
-	case IDC_SPRING:
-		tid = TYPE_SPRING;
-		break;
-	case IDC_DEMF:
-		tid = TYPE_DEMFER;
-		break;
-	case IDC_MASS:
-		tid = TYPE_MASS;
-		break;
-	default:
-		tid = TYPE_UNKNOWN;
-		break;
-	}
-	return tid;
-}
-
 TypeID ScriptObject::IsConstant( const std::string &s )
 {
 	TypeID tp = m_ConstTable.GetVarType(s);

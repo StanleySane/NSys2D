@@ -1,0 +1,9 @@
+
+main(2)
+
+end
+
+int function main(int x)
+	print x
+	return x
+end main

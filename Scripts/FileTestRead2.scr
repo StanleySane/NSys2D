@@ -1,0 +1,20 @@
+
+file f
+bool res
+
+res = FileOpenTxt( f, "test5.txt" )
+if res = false then goto 0Err
+
+double d
+res = FileRead( f, d )
+if res = false then goto 0Err
+print "d=";d
+res = FileRead( f, d )
+if res = false then goto 0Err
+print "d=";d
+
+print "Ok."
+end
+0Err
+print "Error"
+end

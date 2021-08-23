@@ -1,0 +1,59 @@
+
+array_int ar
+bool res
+int i
+
+print "Resize:"
+res = Resize( ar, 10 )
+if res = false then goto 0err
+
+print "SetAt:"
+
+for i = 0 to Sizeof(ar)-1
+	res = SetAt( ar, i, 100 )
+	if res = false then goto 0err
+next i
+
+res = SetAt( ar, 3, 5 )
+if res = false then goto 0err
+
+print "GetAt:"
+i = GetAt( ar, 2 )
+print "ar(2)=";i
+print "ar=", ar
+
+print "Resize 2:"
+res = Resize( ar, 3 )
+if res = false then goto 0err
+print "ar=", ar
+
+array_int ar2
+ar2 = ar
+SetAt( ar2, 0, 45 )
+print "ar2=", ar2
+print "ar=", ar
+
+print "StringArray:"
+array_string ar3
+res = Resize( ar3, 3 )
+if res = false then goto 0err
+res = SetAt( ar3, 0, "Hello" )
+if res = false then goto 0err
+res = SetAt( ar3, 1, "My" )
+if res = false then goto 0err
+res = SetAt( ar3, 2, "Friend" )
+if res = false then goto 0err
+print "ar3=", ar3
+
+print "Before error:"
+ar = ar3
+print "ar=", ar
+
+rem GetAt(ar,15)
+
+print "Ok"
+end
+
+0err
+	print "Error"
+end

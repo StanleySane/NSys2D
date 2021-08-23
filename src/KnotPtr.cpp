@@ -62,9 +62,7 @@ bool KnotPtr::RemoveRef( CKnot *pKn )
 	if( pKn != NULL )
 	{
 		Refs::iterator it = m_RefMap.find(pKn);
-		//ASSERT( it != m_RefMap.end() );
-		if( it == m_RefMap.end() )
-			return false;
+		ASSERT( it != m_RefMap.end() );
 		(*it).second--;
 		if( (*it).second != 0 )	return false;
 		m_RefMap.erase(it);
@@ -82,8 +80,7 @@ bool KnotPtr::AddRef( CKnot *pKn )
 	if( pKn != NULL )
 	{
 		Pair p = m_RefMap.insert( MakeRef(pKn,1) );
-		if( p.second )	
-			return true;
+		if( p.second )	return true;
 		//значит такой указатель уже есть
 		++(*p.first).second;
 	}
@@ -96,7 +93,7 @@ void KnotPtr::Destruct()
 	{
 		if( RemoveRef(m_pKnot) )
 		{
-			//delete m_pKnot;
+			delete m_pKnot;
 			m_pKnot = NULL;
 		}
 	}
@@ -112,7 +109,7 @@ void KnotPtr::InitBy( const KnotPtr &obj )
 		if( m_pKnot )
 		{
 			bool res = AddRef( m_pKnot );
-			//ASSERT( res == false );
+			ASSERT( res == false );
 			//Refs::iterator it = m_RefMap.find(m_pKnot);
 			//ASSERT( it != m_RefMap.end() );
 			//(*it).second++;

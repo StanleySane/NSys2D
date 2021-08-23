@@ -28,7 +28,6 @@ static char THIS_FILE[]=__FILE__;
 
 CSpectrParam::CSpectrParam( CSheme *p ):m_pSheme(p)
 {
-	m_6Wmin = m_Late = m_1S = m_2S = m_2a = m_3S = m_3Wo = m_3a = m_4S = m_4a = m_4b = m_5S = m_5a = m_5b = 0.0;
 //	for( int i = 0; i < sizeof(param)/sizeof(double); i++ )
 //	{
 //		param[i] = 0;

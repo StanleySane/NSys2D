@@ -1,0 +1,5 @@
+$SHEMEGROUPS
+
+Пружины<ELEMENTS>(1,3,5);
+
+$END

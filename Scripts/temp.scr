@@ -1,0 +1,16 @@
+
+int a, b, i
+a = 6
+b = 5
+
+if a>b then rem
+ for i = 1 to 5
+print i
+next i
+
+print "before 1lab"
+
+1lab
+print "Ok"
+
+end
