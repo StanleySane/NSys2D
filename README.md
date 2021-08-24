@@ -4,6 +4,8 @@ Finite Element Method Software for mechanical oscillations investigation.
 
 Software for graduate student thesis of Buravilin Stanislav (Bryansk State Technical University, 2002).
 
+See [wiki](https://github.com/StanleySane/NSys2D/wiki).
+
 ![About](https://user-images.githubusercontent.com/49347502/130484957-23a447aa-6adf-43e5-b176-fd85a4dad593.png)
 
 ![Animation](https://user-images.githubusercontent.com/49347502/130484960-b1efe512-f66a-47e1-a9d0-c3b919b0fea6.gif)
